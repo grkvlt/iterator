@@ -1,0 +1,17 @@
+\#*\#
+.settings/
+.metadata/
+.idea/
+target/
+test-output/
+*~
+*.DS_Store
+*.class
+*.project
+*.classpath
+*.log
+*.iml
+*.swo
+*.swp
+stacktrace.log
+tmp/
