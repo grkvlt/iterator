@@ -5,7 +5,6 @@ package iterator;
 
 import iterator.model.IFS;
 import iterator.view.Editor;
-import iterator.view.Status;
 import iterator.view.Viewer;
 
 import java.awt.BorderLayout;
@@ -56,7 +55,6 @@ public class Explorer implements KeyListener {
     private JMenuBar menuBar;
     private Editor editor;
     private Viewer viewer;
-    private Status status;
     private JPanel view;
     private CardLayout cards;
     private String current;
@@ -162,9 +160,6 @@ public class Explorer implements KeyListener {
         };
         window.addWindowListener(windowListener);
         
-        status = new Status(bus, this);
-        content.add(status, BorderLayout.SOUTH);
-        
         editor = new Editor(bus, this);
         viewer = new Viewer(bus, this);
 
@@ -184,15 +179,15 @@ public class Explorer implements KeyListener {
             editor.setSize(minimum);
             viewer.setMinimumSize(minimum);
             viewer.setSize(minimum);
-	        Dimension size = new Dimension(500, 500 + (status.getHeight() + menuBar.getHeight()));
+	        Dimension size = new Dimension(500, 500 + menuBar.getHeight());
 	        window.setSize(size);
 	        window.setMinimumSize(size);
 	        window.addComponentListener(new ComponentAdapter() {
 	            @Override
 				public void componentResized(ComponentEvent e) {
 	                Dimension s = window.getSize();
-	                int side = Math.min(s.width, s.height - (status.getHeight() + menuBar.getHeight()));
-	                window.setSize(side,  side + (status.getHeight() + menuBar.getHeight()));
+	                int side = Math.min(s.width, s.height - menuBar.getHeight());
+	                window.setSize(side,  side + menuBar.getHeight());
 	                Explorer.this.bus.post(window.getSize());
 	            }
             });

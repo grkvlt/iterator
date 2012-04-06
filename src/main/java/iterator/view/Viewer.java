@@ -37,7 +37,11 @@ public class Viewer extends JPanel implements ActionListener {
     private static final long serialVersionUID = -1;
 
     public static final Logger LOG = LoggerFactory.getLogger(Viewer.class);
-
+    public static final Color[] COLORS = new Color[] {
+        Color.BLACK, Color.BLUE, Color.CYAN, Color.GREEN, Color.LIGHT_GRAY,
+        Color.MAGENTA, Color.ORANGE, Color.GRAY, Color.PINK, Color.RED, Color.YELLOW, Color.DARK_GRAY
+    };
+    
     private final EventBus bus;
     private final Explorer controller;
 
@@ -85,14 +89,17 @@ public class Viewer extends JPanel implements ActionListener {
     
     public void iterate(int n) {
         Graphics2D g = image.createGraphics();
-        g.setPaint(new Color(0f, 0f, 0f, 0.01f));
         for (int i = 0; i < n; i++) {
-            Transform t = ifs.getTransforms().get(random.nextInt(ifs.getTransforms().size()));
+            int j = random.nextInt(ifs.getTransforms().size());
+            Transform t = ifs.getTransforms().get(j);
+//            Color c = COLORS[j % ifs.getTransforms().size()];
+            Color c = Color.BLACK;
+	        g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), 1));
             Point p = new Point(x, y);
             Point d = new Point();
             t.getTransform().transform(p, d);
             x = d.x; y = d.y;
-            Rectangle rect = new Rectangle(x, y, 1, 1);
+            Rectangle rect = new Rectangle(x, y, 2, 2);
             g.fill(rect);
         }
         g.dispose();
