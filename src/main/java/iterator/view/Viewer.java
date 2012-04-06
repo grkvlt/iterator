@@ -12,6 +12,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
@@ -80,19 +81,19 @@ public class Viewer extends JPanel implements ActionListener {
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;
-        reset();
     }
     
     public void iterate(int n) {
         Graphics2D g = image.createGraphics();
-        g.setColor(Color.BLACK);
+        g.setPaint(new Color(0f, 0f, 0f, 0.01f));
         for (int i = 0; i < n; i++) {
             Transform t = ifs.getTransforms().get(random.nextInt(ifs.getTransforms().size()));
             Point p = new Point(x, y);
             Point d = new Point();
             t.getTransform().transform(p, d);
             x = d.x; y = d.y;
-            g.fillRect(d.x, d.y, 1, 1);
+            Rectangle rect = new Rectangle(x, y, 2, 2);
+            g.fill(rect);
         }
         g.dispose();
     }
@@ -105,6 +106,7 @@ public class Viewer extends JPanel implements ActionListener {
     }
 
     public void start() {
+        reset();
         timer.start();
     }
     

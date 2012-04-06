@@ -111,6 +111,12 @@ public class Editor extends JPanel implements MouseInputListener {
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;
+        start = null;
+        end = null;
+        resize = null;
+        move = null;
+        rotate = null;
+        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         repaint();
     }
     
@@ -169,8 +175,8 @@ public class Editor extends JPanel implements MouseInputListener {
         }
         g.draw(rect);
 
-        double scaleX = Math.max(0.25d, t.getTransform().getScaleX());
-        double scaleY = Math.max(0.25d, t.getTransform().getScaleY());
+        double scaleX = Math.max(0.5d, t.getTransform().getScaleX());
+        double scaleY = Math.max(0.5d, t.getTransform().getScaleY());
         double fiveX = 5d / scaleX; 
         double fiveY = 5d / scaleY; 
         
@@ -236,8 +242,8 @@ public class Editor extends JPanel implements MouseInputListener {
     }
     
     public Cursor getCorner(Transform t, Point point) {
-        double scaleX = Math.max(0.25d, t.getTransform().getScaleX());
-        double scaleY = Math.max(0.25d, t.getTransform().getScaleY());
+        double scaleX = Math.max(0.5d, t.getTransform().getScaleX());
+        double scaleY = Math.max(0.5d, t.getTransform().getScaleY());
         double fiveX = 5d / scaleX; 
         double fiveY = 5d / scaleY; 
         double[] cornerX = new double[] { 0d, 0d, getWidth(), getWidth() };
@@ -340,12 +346,6 @@ public class Editor extends JPanel implements MouseInputListener {
             } else if (selected != null  && start != null && end != null) {
                 ifs.addTransform(selected);
             }
-	        start = null;
-	        end = null;
-	        resize = null;
-	        move = null;
-	        rotate = null;
-            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             bus.post(ifs);
         }
     }
