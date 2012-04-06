@@ -9,6 +9,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +28,8 @@ import com.google.common.collect.Lists;
  *
  * @since Apr 1, 2012
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "IFS")
 public class IFS {
     public static final Logger LOG = LoggerFactory.getLogger(IFS.class);
     
@@ -33,7 +42,10 @@ public class IFS {
         }
     };
     
+    @XmlAttribute
     private String name;
+    @XmlElementWrapper(name = "Transforms")
+    @XmlElement(name = "Transform")
     private List<Transform> transforms = Lists.newArrayList();
 
     public void setSize(Dimension size) {
@@ -41,6 +53,8 @@ public class IFS {
             t.setSize(size);
         }
     }
+    
+    private IFS() { }
 
     public IFS(String name) {
         this.name = name;
