@@ -5,6 +5,10 @@ ITERATOR
 
 Iterated Function System [1] [2] Explorer.
 
+Run the program as follows, with the '-F' option to specify full-screen.
+
+    $ ./bin/explorer.sh [-F]
+
 [1] http://en.wikipedia.org/wiki/Iterated_function_system
 [2] Construction of fractal objects with iterated function systems,
     Demko, Stephen and Hodges, Laurie and Naylor, Bruce,
