@@ -19,7 +19,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.util.Arrays;
 
@@ -33,6 +32,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -47,7 +47,10 @@ import com.google.common.eventbus.EventBus;
  *
  * @author andrew.international@gmail.com
  */
-public class Explorer implements KeyListener {
+public class Explorer extends JFrame implements KeyListener {
+    /** serialVersionUID */
+    private static final long serialVersionUID = -2003170067188344917L;
+
     public static final Logger LOG = LoggerFactory.getLogger(Explorer.class);
     
     public static final String EXPLORER = "IFS Explorer";
@@ -58,7 +61,6 @@ public class Explorer implements KeyListener {
     
     private boolean fullScreen = false;
     
-    private JFrame window;
     private JMenuBar menuBar;
     private Editor editor;
     private Viewer viewer;
@@ -68,24 +70,23 @@ public class Explorer implements KeyListener {
     private JCheckBoxMenuItem showEditor, showViewer, showDetails;
     private JMenuItem export;
     
-    private EventBus bus = new EventBus("explorer");
+    private EventBus bus = new EventBus();
 
     public Explorer(String...argv) {
+        super(EXPLORER);
+
         // Parse arguments
         if (argv.length == 1 && argv[0].equalsIgnoreCase(FULLSCREEN_OPTION)) {
             fullScreen = true;
         }
 
-        // Create explorer window
-        window = new JFrame(EXPLORER);
-        
         // Setup full-screen mode if required
         GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice device = environment.getDefaultScreenDevice();
         if (fullScreen && device.isFullScreenSupported()) {
-            window.setUndecorated(true);
-            window.setResizable(false);
-            device.setFullScreenWindow(window);
+            setUndecorated(true);
+            setResizable(false);
+            device.setFullScreenWindow(this);
         }
     }
 
@@ -171,17 +172,16 @@ public class Explorer implements KeyListener {
         displayGroup.add(showViewer);
         displayGroup.add(showDetails);
         menuBar.add(system);
-        window.setJMenuBar(menuBar);
+        setJMenuBar(menuBar);
 
-        window.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        WindowListener windowListener = new WindowAdapter() {
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
             /** @see WindowListener#windowClosed(WindowEvent) */
             @Override
             public void windowClosed(WindowEvent e) {
                 System.exit(0);   
             }
-        };
-        window.addWindowListener(windowListener);
+        });
         
         editor = new Editor(bus, this);
         viewer = new Viewer(bus, this);
@@ -194,7 +194,7 @@ public class Explorer implements KeyListener {
         show(EDITOR);
         showEditor.setSelected(true);
 
-        window.setContentPane(content);
+        setContentPane(content);
 
         if (!fullScreen) {
 	        Dimension minimum = new Dimension(500, 500);
@@ -203,28 +203,28 @@ public class Explorer implements KeyListener {
             viewer.setMinimumSize(minimum);
             viewer.setSize(minimum);
 	        Dimension size = new Dimension(500, 500 + menuBar.getHeight());
-	        window.setSize(size);
-	        window.setMinimumSize(size);
-	        window.addComponentListener(new ComponentAdapter() {
+	        setSize(size);
+	        setMinimumSize(size);
+	        addComponentListener(new ComponentAdapter() {
 	            @Override
 				public void componentResized(ComponentEvent e) {
-	                Dimension s = window.getSize();
+	                Dimension s = getSize();
 	                int side = Math.min(s.width, s.height - menuBar.getHeight());
-	                window.setSize(side,  side + menuBar.getHeight());
-	                Explorer.this.bus.post(window.getSize());
+	                setSize(side,  side + menuBar.getHeight());
+	                Explorer.this.bus.post(getSize());
 	            }
             });
         }
         
-        window.setFocusable(true);
-        window.requestFocusInWindow();
-        window.addKeyListener(this);
-        window.addKeyListener(editor);
+        setFocusable(true);
+        requestFocusInWindow();
+        addKeyListener(this);
+        addKeyListener(editor);
 
         IFS untitled = new IFS("Untitled");
         bus.post(untitled);
         
-        window.setVisible(true);
+        setVisible(true);
     }
 
     private void show(String name) {
@@ -266,8 +266,13 @@ public class Explorer implements KeyListener {
     /**
      * Explorer
      */
-    public static void main(String...argv) throws Exception {
-        Explorer explorer = new Explorer(argv);
-        explorer.start();
+    public static void main(final String...argv) throws Exception {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+		        Explorer explorer = new Explorer(argv);
+		        explorer.start();
+            }
+        });
     }
 }
