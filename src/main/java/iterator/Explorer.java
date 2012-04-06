@@ -20,19 +20,26 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
+import java.util.Arrays;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
 
 /**
@@ -59,6 +66,7 @@ public class Explorer implements KeyListener {
     private CardLayout cards;
     private String current;
     private JCheckBoxMenuItem showEditor, showViewer, showDetails;
+    private JMenuItem export;
     
     private EventBus bus = new EventBus("explorer");
 
@@ -109,6 +117,21 @@ public class Explorer implements KeyListener {
             public void actionPerformed(ActionEvent e) {
             }
         });
+        export = new JMenuItem(new AbstractAction("Export...") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String[] extensions = ImageIO.getWriterFileSuffixes();
+                String filterName = String.format("Image Files (%s)", Iterables.toString(Arrays.asList(extensions)));
+                FileNameExtensionFilter filter = new FileNameExtensionFilter(filterName, extensions);
+                JFileChooser chooser = new JFileChooser();
+                chooser.setFileFilter(filter);
+		        int result = chooser.showSaveDialog(null);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    viewer.save(chooser.getSelectedFile());
+                }
+            }
+        });
+        file.add(export);
         file.add(new AbstractAction("Preferences...") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -208,8 +231,10 @@ public class Explorer implements KeyListener {
         cards.show(view, name);
         current = name;
         if (name.equals(VIEWER)) {
+	        export.setEnabled(true);
 	        viewer.start();
         } else {
+	        export.setEnabled(false);
             viewer.stop();
         }
     }

@@ -18,14 +18,18 @@ import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Throwables;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
@@ -85,6 +89,14 @@ public class Viewer extends JPanel implements ActionListener {
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;
+    }
+
+    public void save(File file) {
+        try {
+            ImageIO.write(image, "png", file);
+        } catch (IOException e) {
+            Throwables.propagate(e);
+        }
     }
     
     public void iterate(int n) {
