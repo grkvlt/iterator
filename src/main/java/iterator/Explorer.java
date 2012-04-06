@@ -139,7 +139,7 @@ public class Explorer implements KeyListener {
         showDetails = new JCheckBoxMenuItem(new AbstractAction("Details") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                show(VIEWER);
+//                show(DETAILS);
             }
         });
         system.add(showEditor);
@@ -201,6 +201,7 @@ public class Explorer implements KeyListener {
         window.setFocusable(true);
         window.requestFocusInWindow();
         window.addKeyListener(this);
+        window.addKeyListener(editor);
 
         IFS untitled = new IFS("Untitled");
         bus.post(untitled);
@@ -230,8 +231,7 @@ public class Explorer implements KeyListener {
             if (current.equals(EDITOR)) {
                 showViewer.setSelected(true);
                 show(VIEWER);
-            }
-            if (current.equals(VIEWER)) {
+            } else if (current.equals(VIEWER)) {
                 showEditor.setSelected(true);
                 show(EDITOR);
             }

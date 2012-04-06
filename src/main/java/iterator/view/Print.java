@@ -16,16 +16,12 @@ import com.google.common.eventbus.Subscribe;
  * Printing.
  */
 public class Print {
-    /** serialVersionUID */
-    private static final long serialVersionUID = -1;
-
     public static final Logger LOG = LoggerFactory.getLogger(Print.class);
 
     private final EventBus bus;
     private final Explorer controller;
 
     private IFS ifs;
-    private boolean done = false;
 
     public Print(EventBus bus, Explorer controller) {
         super();

@@ -4,7 +4,6 @@
 package iterator.view;
 
 import iterator.Explorer;
-import iterator.model.IFS;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -31,9 +30,6 @@ public class Status extends JLabel {
     private final EventBus bus;
     private final Explorer controller;
 
-    private IFS ifs;
-    private boolean done = false;
-
     public Status(EventBus bus, Explorer controller) {
         super();
         this.bus = bus;
@@ -51,12 +47,6 @@ public class Status extends JLabel {
     @Subscribe
     public void status(String text) {
         setText(Strings.isNullOrEmpty(text) ? "-" : text);
-        repaint();
-    }
-    
-    @Subscribe
-    public void update(IFS ifs) {
-        this.ifs = ifs;
         repaint();
     }
 }

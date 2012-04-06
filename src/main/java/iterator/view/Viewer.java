@@ -92,7 +92,7 @@ public class Viewer extends JPanel implements ActionListener {
             Point d = new Point();
             t.getTransform().transform(p, d);
             x = d.x; y = d.y;
-            Rectangle rect = new Rectangle(x, y, 2, 2);
+            Rectangle rect = new Rectangle(x, y, 1, 1);
             g.fill(rect);
         }
         g.dispose();
@@ -101,8 +101,10 @@ public class Viewer extends JPanel implements ActionListener {
     /** @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent) */
     @Override
     public void actionPerformed(ActionEvent e) {
-        iterate(10000);
-        repaint();
+        if (ifs != null && !ifs.getTransforms().isEmpty()) {
+            iterate(10000);
+	        repaint();
+        }
     }
 
     public void start() {

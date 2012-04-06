@@ -117,11 +117,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         });
         add(transform);
         
-        setFocusable(true);
-        requestFocusInWindow();
+//        setFocusable(true);
+//        requestFocusInWindow();
         addMouseListener(this);
         addMouseMotionListener(this);
-        addKeyListener(this);
+//        addKeyListener(this);
 
         bus.register(this);
     }
@@ -222,7 +222,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         AffineTransform rotation = new AffineTransform();
         rotation.rotate(t.r, first[0], first[1]);
         gr.setTransform(rotation);
-        gr.drawString(String.format("T%02d", t.getId()), first[0] + 5, first[1] + 25f);
+        gr.drawString(String.format("T%02d%s", t.getId(), (highlight && rotate != null) ? String.format(" (%d)", (int) Math.toDegrees(t.r)) : ""), first[0] + 5, first[1] + 25f);
         gr.dispose();
     }
 
