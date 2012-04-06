@@ -106,7 +106,7 @@ public class Viewer extends JPanel implements ActionListener {
             Transform t = ifs.getTransforms().get(j);
 //            Color c = COLORS[j % ifs.getTransforms().size()];
             Color c = Color.BLACK;
-	        g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), 1));
+	        g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), 4));
             Point p = new Point(x, y);
             Point d = new Point();
             t.getTransform().transform(p, d);
