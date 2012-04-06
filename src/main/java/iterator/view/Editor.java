@@ -18,6 +18,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -37,7 +39,7 @@ import com.google.common.eventbus.Subscribe;
 /**
  * IFS Editor.
  */
-public class Editor extends JPanel implements MouseInputListener {
+public class Editor extends JPanel implements MouseInputListener, KeyListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1;
 
@@ -72,6 +74,19 @@ public class Editor extends JPanel implements MouseInputListener {
                 Editor.this.bus.post(ifs);
             }
         });
+        transform.add(new AbstractAction("Duplicate") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Transform copy = ifs.newTransform(getSize());
+                copy.x = selected.x + 50;
+                copy.y = selected.y + 50;
+                copy.w = selected.w;
+                copy.h = selected.h;
+                copy.r = selected.r;
+                selected = copy;
+                Editor.this.bus.post(ifs);
+            }
+        });
         transform.add(new AbstractAction("Raise") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -102,8 +117,11 @@ public class Editor extends JPanel implements MouseInputListener {
         });
         add(transform);
         
+        setFocusable(true);
+        requestFocusInWindow();
         addMouseListener(this);
         addMouseMotionListener(this);
+        addKeyListener(this);
 
         bus.register(this);
     }
@@ -123,7 +141,7 @@ public class Editor extends JPanel implements MouseInputListener {
     @Subscribe
     public void size(Dimension size) {
         ifs.setSize(size);
-        repaint();
+        bus.post(ifs);
     }
 
     @Override
@@ -142,7 +160,7 @@ public class Editor extends JPanel implements MouseInputListener {
             
             if (selected == null && start != null && end != null) {
                 g.setPaint(Color.BLACK);
-                g.setStroke(new BasicStroke(4f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 10, 10 }, 0f));
+                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 10, 10 }, 0f));
                 int x = Math.min(start.x, end.x);
                 int y = Math.min(start.y, end.y);
                 int w = Math.max(start.x, end.x) - x;
@@ -169,9 +187,9 @@ public class Editor extends JPanel implements MouseInputListener {
         // Draw the outline
         g.setPaint(Color.BLACK);
         if (highlight) {
-            g.setStroke(new BasicStroke(4f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 25f, 25f}, 0f));
+            g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 25f, 25f}, 0f));
         } else {
-            g.setStroke(new BasicStroke(4f));
+            g.setStroke(new BasicStroke(2f));
         }
         g.draw(rect);
 
@@ -181,7 +199,7 @@ public class Editor extends JPanel implements MouseInputListener {
         double fiveY = 5d / scaleY; 
         
         // Draw the resize handles
-        g.setStroke(new BasicStroke(4f));
+        g.setStroke(new BasicStroke(2f));
         g.setPaint(Color.BLACK);
         double[] cornerX = new double[] { 0d, 0d, getWidth(), getWidth() };
         double[] cornerY = new double[] { 0d, getHeight(), getHeight(), 0d };
@@ -212,6 +230,14 @@ public class Editor extends JPanel implements MouseInputListener {
         Rectangle s = new Rectangle(getSize());
         g.setPaint(Color.WHITE);
         g.fill(s);
+        g.setPaint(Color.LIGHT_GRAY);
+        g.setStroke(new BasicStroke(1f));
+        for (int x = 0; x < getWidth(); x += 10) {
+            g.drawLine(x, 0, x, getHeight());
+        }
+        for (int y = 0; y < getHeight(); y += 10) {
+            g.drawLine(0, y, getWidth(), y);
+        }
         g.setPaint(Color.GRAY);
         g.setStroke(new BasicStroke(2f));
         for (int x = 0; x < getWidth(); x += 50) {
@@ -424,8 +450,10 @@ public class Editor extends JPanel implements MouseInputListener {
                 selected.h = move.h;
                 selected.r = move.r;
             } else if (selected != null && rotate != null) {
-                int dx = end.x - start.x;
-                int dy = end.y - start.y;
+                Point origin = new Point();
+                rotate.getTransform().transform(new Point(0, 0), origin);
+                int dx = end.x - origin.x;
+                int dy = end.y - origin.y;
                 double r = Math.atan2(dy, dx);
 
                 selected = new Transform(selected.getId(), selected.getZIndex(), getSize());
@@ -456,5 +484,38 @@ public class Editor extends JPanel implements MouseInputListener {
 	            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	        }
         }
+    }
+
+    /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (selected != null) {
+            switch (e.getKeyCode()) {
+            case KeyEvent.VK_DELETE:
+            case KeyEvent.VK_BACK_SPACE:
+                ifs.deleteTransform(selected);
+                selected = null;
+                Editor.this.bus.post(ifs);
+                break;
+            case KeyEvent.VK_RIGHT:
+                selected.r += Math.PI / 2d;
+                Editor.this.bus.post(ifs);
+                break;
+            case KeyEvent.VK_LEFT:
+                selected.r -= Math.PI / 2d;
+                Editor.this.bus.post(ifs);
+                break;
+            }
+        }
+    }
+
+    /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
+    @Override
+    public void keyReleased(KeyEvent e) {
     }
 }

@@ -68,6 +68,8 @@ public class Transform {
     }
     
     public void setSize(Dimension size) {
+        this.w = (int) ((w / this.size.getWidth()) * size.getWidth());
+        this.h = (int) ((h / this.size.getHeight()) * size.getHeight());
         this.size = size;
     } 
 }

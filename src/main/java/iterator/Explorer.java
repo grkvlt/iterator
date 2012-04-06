@@ -23,6 +23,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 import javax.swing.AbstractAction;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -58,6 +60,7 @@ public class Explorer implements KeyListener {
     private JPanel view;
     private CardLayout cards;
     private String current;
+    private JCheckBoxMenuItem showEditor, showViewer, showDetails;
     
     private EventBus bus = new EventBus("explorer");
 
@@ -116,27 +119,36 @@ public class Explorer implements KeyListener {
         file.add(new AbstractAction("Quit") {
             @Override
             public void actionPerformed(ActionEvent e) {
+                System.exit(0);
             }
         });
         menuBar.add(file);
         JMenu system = new JMenu("Display");
-        system.add(new AbstractAction("Editor") {
+        showEditor = new JCheckBoxMenuItem(new AbstractAction("Editor") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 show(EDITOR);
             }
         });
-        system.add(new AbstractAction("Viewer") {
+        showViewer = new JCheckBoxMenuItem(new AbstractAction("Viewer") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 show(VIEWER);
             }
         });
-        system.add(new AbstractAction("Details") {
+        showDetails = new JCheckBoxMenuItem(new AbstractAction("Details") {
             @Override
             public void actionPerformed(ActionEvent e) {
+                show(VIEWER);
             }
         });
+        system.add(showEditor);
+        system.add(showViewer);
+        system.add(showDetails);
+        ButtonGroup displayGroup = new ButtonGroup();
+        displayGroup.add(showEditor);
+        displayGroup.add(showViewer);
+        displayGroup.add(showDetails);
         menuBar.add(system);
         window.setJMenuBar(menuBar);
 
@@ -162,6 +174,7 @@ public class Explorer implements KeyListener {
         view.add(viewer, VIEWER);
         content.add(view, BorderLayout.CENTER);
         show(EDITOR);
+        showEditor.setSelected(true);
 
         window.setContentPane(content);
 
@@ -184,6 +197,10 @@ public class Explorer implements KeyListener {
 	            }
             });
         }
+        
+        window.setFocusable(true);
+        window.requestFocusInWindow();
+        window.addKeyListener(this);
 
         IFS untitled = new IFS("Untitled");
         bus.post(untitled);
@@ -204,19 +221,21 @@ public class Explorer implements KeyListener {
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override
     public void keyTyped(KeyEvent e) {
-        if (e.getKeyChar() == ' ') {
-            if (current.equals(EDITOR)) {
-                show(VIEWER);
-            }
-            if (current.equals(VIEWER)) {
-                show(EDITOR);
-            }
-        }
     }
 
     /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
     @Override
     public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            if (current.equals(EDITOR)) {
+                showViewer.setSelected(true);
+                show(VIEWER);
+            }
+            if (current.equals(VIEWER)) {
+                showEditor.setSelected(true);
+                show(EDITOR);
+            }
+        }
     }
 
     /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
