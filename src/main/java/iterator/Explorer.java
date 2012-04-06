@@ -20,9 +20,9 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.util.Arrays;
+import java.io.FileReader;
+import java.io.FileWriter;
 
-import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -35,12 +35,17 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Iterables;
+import com.google.common.base.Throwables;
 import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
+import com.google.common.io.Closeables;
 
 /**
  * IFS Explorer main class.
@@ -61,6 +66,8 @@ public class Explorer extends JFrame implements KeyListener {
     
     private boolean fullScreen = false;
     
+    private IFS ifs;
+
     private JMenuBar menuBar;
     private Editor editor;
     private Viewer viewer;
@@ -68,9 +75,9 @@ public class Explorer extends JFrame implements KeyListener {
     private CardLayout cards;
     private String current;
     private JCheckBoxMenuItem showEditor, showViewer, showDetails;
-    private JMenuItem export;
+    private JMenuItem export, save, saveAs;
     
-    private EventBus bus = new EventBus();
+    private EventBus bus;
 
     public Explorer(String...argv) {
         super(EXPLORER);
@@ -88,6 +95,10 @@ public class Explorer extends JFrame implements KeyListener {
             setResizable(false);
             device.setFullScreenWindow(this);
         }
+
+        // Setup event bus
+        bus = new EventBus(EXPLORER);
+        bus.register(this);
     }
 
     @SuppressWarnings("serial")
@@ -106,32 +117,58 @@ public class Explorer extends JFrame implements KeyListener {
         file.add(new AbstractAction("Open...") {
             @Override
             public void actionPerformed(ActionEvent e) {
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("XML Files", "xml");
+                JFileChooser chooser = new JFileChooser();
+                chooser.setFileFilter(filter);
+                int result = chooser.showOpenDialog(null);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    IFS loaded = load(chooser.getSelectedFile());
+                    loaded.setSize(getSize());
+	                Explorer.this.bus.post(loaded);
+                }
             }
         });
-        file.add(new AbstractAction("Save") {
+        save = new JMenuItem(new AbstractAction("Save") {
             @Override
             public void actionPerformed(ActionEvent e) {
+                File saveAs = new File(ifs.getName() + ".xml");
+                save(saveAs);
+	            save.setEnabled(false);
             }
         });
-        file.add(new AbstractAction("Save As...") {
+        save.setEnabled(false);
+        saveAs = new JMenuItem(new AbstractAction("Save As...") {
             @Override
             public void actionPerformed(ActionEvent e) {
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("XML Files", "xml");
+                JFileChooser chooser = new JFileChooser();
+                chooser.setFileFilter(filter);
+                chooser.setSelectedFile(new File(ifs.getName() + ".xml"));
+                int result = chooser.showSaveDialog(null);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File saveAs = chooser.getSelectedFile();
+                    ifs.setName(saveAs.getName().replace(".xml", ""));
+                    save(saveAs);
+	                Explorer.this.bus.post(ifs);
+                }
             }
         });
+        saveAs.setEnabled(false);
         export = new JMenuItem(new AbstractAction("Export...") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String[] extensions = ImageIO.getWriterFileSuffixes();
-                String filterName = String.format("Image Files (%s)", Iterables.toString(Arrays.asList(extensions)));
-                FileNameExtensionFilter filter = new FileNameExtensionFilter(filterName, extensions);
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("PNG Image Files", "png");
                 JFileChooser chooser = new JFileChooser();
                 chooser.setFileFilter(filter);
+                chooser.setSelectedFile(new File(ifs.getName() + ".png"));
 		        int result = chooser.showSaveDialog(null);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     viewer.save(chooser.getSelectedFile());
                 }
             }
         });
+        file.add(save);
+        file.add(saveAs);
         file.add(export);
         file.add(new AbstractAction("Preferences...") {
             @Override
@@ -167,6 +204,7 @@ public class Explorer extends JFrame implements KeyListener {
         system.add(showEditor);
         system.add(showViewer);
         system.add(showDetails);
+        showDetails.setEnabled(false);
         ButtonGroup displayGroup = new ButtonGroup();
         displayGroup.add(showEditor);
         displayGroup.add(showViewer);
@@ -237,6 +275,42 @@ public class Explorer extends JFrame implements KeyListener {
 	        export.setEnabled(false);
             viewer.stop();
         }
+    }
+    
+    @Subscribe
+    public void update(IFS ifs) {
+        this.ifs = ifs;
+        setTitle(ifs.getName());
+        if (!ifs.getTransforms().isEmpty()) {
+            save.setEnabled(true);
+            saveAs.setEnabled(true);
+        }
+     }
+
+    public void save(File file) {
+       try {
+          JAXBContext context = JAXBContext.newInstance(IFS.class);
+          Marshaller marshaller = context.createMarshaller();
+          marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+          FileWriter writer = new FileWriter(file);
+          marshaller.marshal(ifs, writer);
+          Closeables.closeQuietly(writer);
+       } catch (Exception e) {
+          throw Throwables.propagate(e);
+       }
+    }
+
+    public IFS load(File file) {
+       try {
+          JAXBContext context = JAXBContext.newInstance(IFS.class);
+          FileReader reader = new FileReader(file);
+          Unmarshaller unmarshaller = context.createUnmarshaller();
+          IFS ifs = (IFS) unmarshaller.unmarshal(reader);
+          Closeables.closeQuietly(reader);
+          return ifs;
+       } catch (Exception e) {
+          throw Throwables.propagate(e);
+       }
     }
     
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */

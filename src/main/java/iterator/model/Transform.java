@@ -92,8 +92,10 @@ public class Transform {
     }
     
     public void setSize(Dimension size) {
-        this.w = (int) (((float) w / (float) sw) * size.getWidth());
-        this.h = (int) (((float) h / (float) sh) * size.getHeight());
+        this.w = (int) ((float) w * (size.getWidth() / (float) sw));
+        this.h = (int) ((float) h * (size.getHeight()/ (float) sh));
+        this.x = (int) ((float) x * (size.getWidth() / (float) sw));
+        this.y = (int) ((float) y * (size.getHeight() / (float) sh));
         this.sw = size.width;
         this.sh = size.height;
     } 
