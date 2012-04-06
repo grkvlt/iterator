@@ -67,4 +67,7 @@ public class Transform {
         this.weight = weight;
     }
     
+    public void setSize(Dimension size) {
+        this.size = size;
+    } 
 }

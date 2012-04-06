@@ -10,6 +10,7 @@ import iterator.model.Transform;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -20,8 +21,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import java.awt.geom.Point2D;
-import java.util.concurrent.Callable;
 
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
@@ -36,9 +35,9 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 /**
- * Main display window
+ * IFS Editor.
  */
-public class Editor extends JPanel implements Callable<Void>, MouseInputListener {
+public class Editor extends JPanel implements MouseInputListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1;
 
@@ -48,10 +47,9 @@ public class Editor extends JPanel implements Callable<Void>, MouseInputListener
     private JPopupMenu transform;
     
     private IFS ifs;
-    private boolean done = false;
     private Transform selected;
     private Transform resize, move, rotate;
-    private Point start, end, click;
+    private Point start, end;
     private Cursor corner;
 
     @SuppressWarnings("serial")
@@ -115,11 +113,11 @@ public class Editor extends JPanel implements Callable<Void>, MouseInputListener
         this.ifs = ifs;
         repaint();
     }
-
-    /** @see java.util.concurrent.Callable#call() */
-    @Override
-    public Void call() throws Exception {
-        return null;
+    
+    @Subscribe
+    public void size(Dimension size) {
+        ifs.setSize(size);
+        repaint();
     }
 
     @Override
@@ -274,7 +272,7 @@ public class Editor extends JPanel implements Callable<Void>, MouseInputListener
 	        }
 	        if (resize != null) {
 	            corner = getCorner(resize, e.getPoint());
-	            click = e.getPoint();
+	            e.getPoint();
 	            setCursor(corner);
 	            Point nw = new Point();
 	            Point ne = new Point();
@@ -290,7 +288,6 @@ public class Editor extends JPanel implements Callable<Void>, MouseInputListener
 	            case Cursor.SW_RESIZE_CURSOR: start = sw; break;
 	            case Cursor.SE_RESIZE_CURSOR: start = se; break;
 	            }
-	            end = new Point(start.x, start.y);
 	            ifs.deleteTransform(resize);
 	            selected = resize;
 	        } else if (clicked != null) {
@@ -312,6 +309,7 @@ public class Editor extends JPanel implements Callable<Void>, MouseInputListener
 	            selected = null;
 	            setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 	        }
+            end = new Point(start.x, start.y);
         } else if (SwingUtilities.isRightMouseButton(e)) {
             if (clicked != null) {
                 selected = clicked;

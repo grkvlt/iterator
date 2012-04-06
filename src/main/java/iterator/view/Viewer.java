@@ -5,12 +5,22 @@ package iterator.view;
 
 import iterator.Explorer;
 import iterator.model.IFS;
+import iterator.model.Transform;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
-import java.util.concurrent.Callable;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.util.Random;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +29,9 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 /**
- * Main display window
+ * Rendered IFS viewer.
  */
-public class Viewer extends JPanel implements Callable<Void> {
+public class Viewer extends JPanel implements ActionListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1;
 
@@ -31,7 +41,10 @@ public class Viewer extends JPanel implements Callable<Void> {
     private final Explorer controller;
 
     private IFS ifs;
-    private boolean done = false;
+    private BufferedImage image;
+    private Timer timer  = new Timer(10, this);
+    private int x, y;
+    private Random random = new Random();
 
     public Viewer(EventBus bus, Explorer controller) {
         super();
@@ -40,23 +53,62 @@ public class Viewer extends JPanel implements Callable<Void> {
 
         bus.register(this);
     }
+
+    
+    @Subscribe
+    public void size(Dimension size) {
+        reset();
+    }
+
+    @Override
+    public void paintComponent(Graphics graphics) {
+        Graphics2D g = (Graphics2D) graphics.create();
+        g.drawImage(image, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_NEAREST_NEIGHBOR), 0, 0);
+        g.dispose();
+    }
+    
+    private void reset() {
+        image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, getWidth(), getHeight());
+        g.dispose();
+        x = random.nextInt(getWidth());
+        y = random.nextInt(getHeight());
+    }
     
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;
+        reset();
     }
-
-    /** @see java.util.concurrent.Callable#call() */
-    @Override
-    public Void call() throws Exception {
-        return null;
-    }
-
-    public void render() {
-        while (!done) {
-            Graphics myGraphics = getGraphics();
-            // TODO draw
-            myGraphics.dispose();
+    
+    public void iterate(int n) {
+        Graphics2D g = image.createGraphics();
+        g.setColor(Color.BLACK);
+        for (int i = 0; i < n; i++) {
+            Transform t = ifs.getTransforms().get(random.nextInt(ifs.getTransforms().size()));
+            Point p = new Point(x, y);
+            Point d = new Point();
+            t.getTransform().transform(p, d);
+            x = d.x; y = d.y;
+            g.fillRect(d.x, d.y, 1, 1);
         }
+        g.dispose();
+    }
+
+    /** @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent) */
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        iterate(10000);
+        repaint();
+    }
+
+    public void start() {
+        timer.start();
+    }
+    
+    public void stop() {
+        timer.stop();
     }
 }

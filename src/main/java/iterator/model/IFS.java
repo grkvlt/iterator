@@ -36,6 +36,12 @@ public class IFS {
     private String name;
     private List<Transform> transforms = Lists.newArrayList();
 
+    public void setSize(Dimension size) {
+        for (Transform t : transforms) {
+            t.setSize(size);
+        }
+    }
+
     public IFS(String name) {
         this.name = name;
     }

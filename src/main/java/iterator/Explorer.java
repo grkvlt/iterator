@@ -3,11 +3,9 @@
  */
 package iterator;
 
-import static com.google.common.collect.Sets.intersection;
 import iterator.model.IFS;
 import iterator.view.Editor;
 import iterator.view.Status;
-import iterator.view.ToolBar;
 import iterator.view.Viewer;
 
 import java.awt.BorderLayout;
@@ -152,9 +150,6 @@ public class Explorer implements KeyListener {
         };
         window.addWindowListener(windowListener);
         
-//        bar = new ToolBar(bus, this);
-//        content.add(bar, BorderLayout.NORTH);
-        
         status = new Status(bus, this);
         content.add(status, BorderLayout.SOUTH);
         
@@ -172,8 +167,10 @@ public class Explorer implements KeyListener {
 
         if (!fullScreen) {
 	        Dimension minimum = new Dimension(500, 500);
-	        editor.setMinimumSize(minimum);
-	        editor.setSize(minimum);
+            editor.setMinimumSize(minimum);
+            editor.setSize(minimum);
+            viewer.setMinimumSize(minimum);
+            viewer.setSize(minimum);
 	        Dimension size = new Dimension(500, 500 + (status.getHeight() + menuBar.getHeight()));
 	        window.setSize(size);
 	        window.setMinimumSize(size);
@@ -183,6 +180,7 @@ public class Explorer implements KeyListener {
 	                Dimension s = window.getSize();
 	                int side = Math.min(s.width, s.height - (status.getHeight() + menuBar.getHeight()));
 	                window.setSize(side,  side + (status.getHeight() + menuBar.getHeight()));
+	                Explorer.this.bus.post(window.getSize());
 	            }
             });
         }
@@ -196,14 +194,23 @@ public class Explorer implements KeyListener {
     private void show(String name) {
         cards.show(view, name);
         current = name;
+        if (name.equals(VIEWER)) {
+	        viewer.start();
+        } else {
+            viewer.stop();
+        }
     }
     
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override
     public void keyTyped(KeyEvent e) {
         if (e.getKeyChar() == ' ') {
-            if (current.equals(EDITOR)) show(VIEWER);
-            if (current.equals(VIEWER)) show(EDITOR);
+            if (current.equals(EDITOR)) {
+                show(VIEWER);
+            }
+            if (current.equals(VIEWER)) {
+                show(EDITOR);
+            }
         }
     }
 
