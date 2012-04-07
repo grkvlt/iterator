@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<IFS name="Example">
+    <Transforms>
+        <Transform sh="478" sw="500" r="0.0" h="260" w="200" y="10" x="20" weight="1.0" zIndex="0" id="1"/>
+        <Transform sh="478" sw="500" r="0.0" h="260" w="210" y="80" x="110" weight="1.0" zIndex="1" id="2"/>
+        <Transform sh="478" sw="500" r="0.0" h="150" w="450" y="300" x="20" weight="1.0" zIndex="2" id="3"/>
+        <Transform sh="478" sw="500" r="3.141592653589793" h="240" w="210" y="270" x="450" weight="1.0" zIndex="3" id="4"/>
+    </Transforms>
+</IFS>
