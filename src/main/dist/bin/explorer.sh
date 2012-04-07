@@ -16,6 +16,7 @@ BIN=$(dirname $0)
 PARENT=$(echo "${BIN}/.." | sed -e "s/\/bin\/..//")
 LIB="${PARENT}/lib"
 ETC="${PARENT}/etc"
+JAVA_OPTS="-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true"
 
 ##
 # Exexcute Java

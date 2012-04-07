@@ -13,11 +13,13 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
@@ -72,7 +74,8 @@ public class Viewer extends JPanel implements ActionListener {
     @Override
     public void paintComponent(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
-        g.drawImage(image, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_NEAREST_NEIGHBOR), 0, 0);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.drawImage(image, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
         g.dispose();
     }
     
@@ -101,6 +104,7 @@ public class Viewer extends JPanel implements ActionListener {
     
     public void iterate(int n) {
         Graphics2D g = image.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         for (int i = 0; i < n; i++) {
             int j = random.nextInt(ifs.getTransforms().size());
             Transform t = ifs.getTransforms().get(j);

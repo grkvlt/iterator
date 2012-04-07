@@ -16,7 +16,7 @@ BIN=$(dirname $0)
 PARENT=$(echo "${BIN}/.." | sed -e "s/\/bin\/..//")
 LIB="${PARENT}/lib"
 ETC="${PARENT}/etc"
-JAVA_OPTS="${JAVA_OPTS} -Dapple.laf.useScreenMenuBar=true -Xdock:name=IFSExplorer"
+JAVA_OPTS="${JAVA_OPTS} -Dapple.laf.useScreenMenuBar=true -Dapple.awt.antialiasing=on -Dapple.awt.textantialiasing=on -Dapple.awt.graphics.UseQuartz=true -Xdock:name=IFSExplorer"
 
 ##
 # Exexcute Java
