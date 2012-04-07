@@ -4,14 +4,15 @@
 package iterator;
 
 import iterator.model.IFS;
+import iterator.view.Details;
 import iterator.view.Editor;
 import iterator.view.Viewer;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -61,6 +62,7 @@ public class Explorer extends JFrame implements KeyListener {
     public static final String EXPLORER = "IFS Explorer";
     public static final String EDITOR = "Editor";
     public static final String VIEWER = "Viewer";
+    public static final String DETAILS = "Details";
     
     public static final String FULLSCREEN_OPTION = "-F";
     
@@ -71,6 +73,7 @@ public class Explorer extends JFrame implements KeyListener {
     private JMenuBar menuBar;
     private Editor editor;
     private Viewer viewer;
+    private Details details;
     private JPanel view;
     private CardLayout cards;
     private String current;
@@ -88,12 +91,12 @@ public class Explorer extends JFrame implements KeyListener {
         }
 
         // Setup full-screen mode if required
-        GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice device = environment.getDefaultScreenDevice();
-        if (fullScreen && device.isFullScreenSupported()) {
+        if (fullScreen) {
             setUndecorated(true);
             setResizable(false);
-            device.setFullScreenWindow(this);
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
+            setBounds(insets.left, insets.top, screenSize.width - (insets.left + insets.right), screenSize.height - (insets.top + insets.bottom));
         }
 
         // Setup event bus
@@ -110,7 +113,7 @@ public class Explorer extends JFrame implements KeyListener {
         file.add(new AbstractAction("New IFS") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                IFS untitled = new IFS("Untitled");
+                IFS untitled = new IFS();
                 Explorer.this.bus.post(untitled);
             }
         });
@@ -131,9 +134,13 @@ public class Explorer extends JFrame implements KeyListener {
         save = new JMenuItem(new AbstractAction("Save") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                File saveAs = new File(ifs.getName() + ".xml");
-                save(saveAs);
-	            save.setEnabled(false);
+                if (ifs.getName() == null) {
+                    saveAs.doClick();
+	            } else {
+	                File saveAs = new File(ifs.getName() + ".xml");
+	                save(saveAs);
+		            save.setEnabled(false);
+	            }
             }
         });
         save.setEnabled(false);
@@ -143,7 +150,7 @@ public class Explorer extends JFrame implements KeyListener {
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("XML Files", "xml");
                 JFileChooser chooser = new JFileChooser();
                 chooser.setFileFilter(filter);
-                chooser.setSelectedFile(new File(ifs.getName() + ".xml"));
+                chooser.setSelectedFile(new File((ifs.getName() == null ? IFS.UNTITLED : ifs.getName()) + ".xml"));
                 int result = chooser.showSaveDialog(null);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     File saveAs = chooser.getSelectedFile();
@@ -198,13 +205,12 @@ public class Explorer extends JFrame implements KeyListener {
         showDetails = new JCheckBoxMenuItem(new AbstractAction("Details") {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                show(DETAILS);
+                show(DETAILS);
             }
         });
         system.add(showEditor);
         system.add(showViewer);
         system.add(showDetails);
-        showDetails.setEnabled(false);
         ButtonGroup displayGroup = new ButtonGroup();
         displayGroup.add(showEditor);
         displayGroup.add(showViewer);
@@ -223,11 +229,13 @@ public class Explorer extends JFrame implements KeyListener {
         
         editor = new Editor(bus, this);
         viewer = new Viewer(bus, this);
+        details = new Details(bus, this);
 
         cards = new CardLayout();
         view = new JPanel(cards);
         view.add(editor, EDITOR);
         view.add(viewer, VIEWER);
+        view.add(details, DETAILS);
         content.add(view, BorderLayout.CENTER);
         show(EDITOR);
         showEditor.setSelected(true);
@@ -259,7 +267,7 @@ public class Explorer extends JFrame implements KeyListener {
         addKeyListener(this);
         addKeyListener(editor);
 
-        IFS untitled = new IFS("Untitled");
+        IFS untitled = new IFS();
         bus.post(untitled);
         
         setVisible(true);
@@ -280,11 +288,12 @@ public class Explorer extends JFrame implements KeyListener {
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;
-        setTitle(ifs.getName());
+        setTitle(ifs.getName() == null ? IFS.UNTITLED : ifs.getName());
         if (!ifs.getTransforms().isEmpty()) {
             save.setEnabled(true);
             saveAs.setEnabled(true);
         }
+        repaint();
      }
 
     public void save(File file) {

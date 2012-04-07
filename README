@@ -1,14 +1,26 @@
-ITERATOR
---------
+ITERATOR 1.0.0
+--------------
 
-    April 01, 2012; <andrew.international@gmail.com>
+	andrew.international@gmail.com
+	April 2012
 
 Iterated Function System [1] [2] Explorer.
 
-Run the program as follows, with the '-F' option to specify full-screen.
+Program requirements:
+ - Java 1.6.0 Runtime Environment
+ - Windows, Linux or OSX Operating System
+
+Run the program as follows, with the '-F' option to specify full-screen,
+using the relevant script for your operating system..
 
     $ ./bin/explorer.sh [-F]
+    $ ./bin/explorer.command [-F]
+    c> .\bin\explorer.cmd [-F]
 
+TODO
+ - Properties editor for IFS and Transform
+ - Printing
+    
 [1] http://en.wikipedia.org/wiki/Iterated_function_system
 [2] Construction of fractal objects with iterated function systems,
     Demko, Stephen and Hodges, Laurie and Naylor, Bruce,

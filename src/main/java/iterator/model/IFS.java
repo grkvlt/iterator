@@ -33,6 +33,8 @@ import com.google.common.collect.Lists;
 public class IFS {
     public static final Logger LOG = LoggerFactory.getLogger(IFS.class);
     
+    public static final String UNTITLED = "Untitled";
+    
     private static final Comparator<Transform> Z_ORDER = new Comparator<Transform>() {
         @Override
         public int compare(Transform left, Transform right) {
@@ -54,11 +56,7 @@ public class IFS {
         }
     }
     
-    private IFS() { }
-
-    public IFS(String name) {
-        this.name = name;
-    }
+    public IFS() { }
 
     public String getName() {
         return name;
