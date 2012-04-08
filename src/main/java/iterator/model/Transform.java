@@ -10,7 +10,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +27,7 @@ public class Transform {
     @XmlAttribute
     private int zIndex;
     @XmlAttribute
-    private float weight;
+    private double weight;
     @XmlAttribute
     public int x;
     @XmlAttribute
@@ -71,7 +70,7 @@ public class Transform {
         AffineTransform transform = new AffineTransform();
         transform.translate(x, y);
         transform.rotate(r);
-        transform.scale((float) w / (float) sw, (float) h / (float) sh);
+        transform.scale((double) w / (double) sw, (double) h / (double) sh);
         return transform;
     }
 
@@ -83,19 +82,19 @@ public class Transform {
         this.zIndex = zIndex;
     }
 
-    public float getWeight() {
+    public double getWeight() {
         return this.weight;
     }
     
-    public void setWeight(float weight) {
+    public void setWeight(double weight) {
         this.weight = weight;
     }
     
     public void setSize(Dimension size) {
-        this.w = (int) ((float) w * (size.getWidth() / (float) sw));
-        this.h = (int) ((float) h * (size.getHeight()/ (float) sh));
-        this.x = (int) ((float) x * (size.getWidth() / (float) sw));
-        this.y = (int) ((float) y * (size.getHeight() / (float) sh));
+        this.w = (int) ((double) w * (size.getWidth() / (double) sw));
+        this.h = (int) ((double) h * (size.getHeight()/ (double) sh));
+        this.x = (int) ((double) x * (size.getWidth() / (double) sw));
+        this.y = (int) ((double) y * (size.getHeight() / (double) sh));
         this.sw = size.width;
         this.sh = size.height;
     } 
