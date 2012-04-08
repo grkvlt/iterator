@@ -215,12 +215,12 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
             gr.setPaint(new Color(Color.BLACK.getRed(), Color.BLACK.getGreen(), Color.BLACK.getBlue(), 128));
         }
         gr.setFont(new Font("Calibri", Font.BOLD, 25));
-        float[] first = new float[2];
-        rect.getPathIterator(null).currentSegment(first);
+        Point text = new Point();
+        t.getTransform().transform(new Point(0, 0), text);
         AffineTransform rotation = new AffineTransform();
-        rotation.rotate(t.r, first[0], first[1]);
+        rotation.rotate(t.r, text.x, text.y);
         gr.setTransform(rotation);
-        gr.drawString(String.format("T%02d%s", t.getId(), (highlight && rotate != null) ? String.format(" (%d)", (int) Math.toDegrees(t.r)) : ""), first[0] + 5, first[1] + 25f);
+        gr.drawString(String.format("T%02d%s", t.getId(), (highlight && rotate != null) ? String.format(" (%d)", (int) Math.toDegrees(t.r)) : ""), text.x + 5, text.y + 25);
         gr.dispose();
     }
 
