@@ -8,8 +8,6 @@ import iterator.model.IFS;
 import iterator.model.Transform;
 
 import javax.swing.JTextPane;
-import javax.swing.text.Element;
-import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
