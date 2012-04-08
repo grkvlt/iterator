@@ -1,30 +1,16 @@
-ITERATOR 1.0.0
---------------
+IFS Explorer 1.0.0
 
-	andrew.international@gmail.com
-	April 2012
+Iterated Function System Explorer. Full documentation available at:
 
-Iterated Function System [1] [2] Explorer.
+    http://grkvlt.github.com/iterator/
 
-Program requirements:
+Program Requirements
  - Java 1.6.0 Runtime Environment
  - Windows, Linux or OSX Operating System
-
-Run the program as follows, with the '-F' option to specify full-screen,
-using the relevant script for your operating system..
-
-    $ ./bin/explorer.sh [-F]
-    $ ./bin/explorer.command [-F]
-    c> .\bin\explorer.cmd [-F]
+ - Maven and JDK to build
 
 TODO
  - Properties editor for IFS and Transform
  - Printing
-    
-[1] http://en.wikipedia.org/wiki/Iterated_function_system
-[2] Construction of fractal objects with iterated function systems,
-    Demko, Stephen and Hodges, Laurie and Naylor, Bruce,
-    SIGGRAPH Computer Graphics, Volume 19, Number 3, 1985, 
-    http://www-users.cs.umn.edu/~bstanton/pdf/p271-demko.pdf
 
-Copyright 2012 by Andrew Kennedy; All Rights Reserved.
+Andrew Kennedy <andrew.international@gmail.com> April 2012
