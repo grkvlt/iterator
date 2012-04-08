@@ -91,6 +91,7 @@ public class Viewer extends JPanel implements ActionListener {
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;
+        reset();
     }
 
     public void save(File file) {

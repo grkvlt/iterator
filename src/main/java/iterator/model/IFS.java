@@ -25,8 +25,6 @@ import com.google.common.collect.Lists;
 
 /**
  * Iterator 
- *
- * @since Apr 1, 2012
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "IFS")
@@ -40,6 +38,7 @@ public class IFS {
         public int compare(Transform left, Transform right) {
             return ComparisonChain.start()
                     .compare(left.getZIndex(), right.getZIndex())
+                    .compare(left.getId(), right.getId())
                     .result();
         }
     };
