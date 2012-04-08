@@ -16,6 +16,8 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -37,7 +39,7 @@ import com.google.common.eventbus.Subscribe;
 /**
  * Rendered IFS viewer.
  */
-public class Viewer extends JPanel implements ActionListener {
+public class Viewer extends JPanel implements ActionListener, KeyListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1;
 
@@ -137,5 +139,27 @@ public class Viewer extends JPanel implements ActionListener {
     
     public void stop() {
         timer.stop();
+    }
+    
+    /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            if (timer.isRunning()) {
+                timer.stop();
+            } else {
+                timer.start();
+            }
+        }
+    }
+
+    /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
+    @Override
+    public void keyReleased(KeyEvent e) {
     }
 }

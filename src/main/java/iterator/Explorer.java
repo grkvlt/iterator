@@ -43,6 +43,7 @@ import javax.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.CaseFormat;
 import com.google.common.base.Throwables;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
@@ -264,8 +265,10 @@ public class Explorer extends JFrame implements KeyListener {
         
         setFocusable(true);
         requestFocusInWindow();
+        setFocusTraversalKeysEnabled(false);
         addKeyListener(this);
         addKeyListener(editor);
+        addKeyListener(viewer);
 
         IFS untitled = new IFS();
         bus.post(untitled);
@@ -288,7 +291,8 @@ public class Explorer extends JFrame implements KeyListener {
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;
-        setTitle(ifs.getName() == null ? IFS.UNTITLED : ifs.getName());
+        String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, ifs.getName() == null ? IFS.UNTITLED : ifs.getName());
+        setTitle(name);
         if (!ifs.getTransforms().isEmpty()) {
             save.setEnabled(true);
             saveAs.setEnabled(true);
@@ -330,11 +334,14 @@ public class Explorer extends JFrame implements KeyListener {
     /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+        if (e.getKeyCode() == KeyEvent.VK_TAB) {
             if (current.equals(EDITOR)) {
                 showViewer.setSelected(true);
                 show(VIEWER);
             } else if (current.equals(VIEWER)) {
+                showDetails.setSelected(true);
+                show(DETAILS);
+            } else if (current.equals(DETAILS)) {
                 showEditor.setSelected(true);
                 show(EDITOR);
             }
