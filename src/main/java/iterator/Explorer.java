@@ -406,15 +406,28 @@ public class Explorer extends JFrame implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_TAB) {
-            if (current.equals(EDITOR)) {
-                showViewer.setSelected(true);
-                show(VIEWER);
-            } else if (current.equals(VIEWER)) {
-                showDetails.setSelected(true);
-                show(DETAILS);
-            } else if (current.equals(DETAILS)) {
-                showEditor.setSelected(true);
-                show(EDITOR);
+            if (e.isShiftDown()) {
+                if (current.equals(EDITOR)) {
+                    showDetails.setSelected(true);
+                    show(DETAILS);
+                } else if (current.equals(DETAILS)) {
+                    showViewer.setSelected(true);
+                    show(VIEWER);
+                } else if (current.equals(VIEWER)) {
+                    showEditor.setSelected(true);
+                    show(EDITOR);
+                }
+            } else {
+                if (current.equals(EDITOR)) {
+                    showViewer.setSelected(true);
+                    show(VIEWER);
+                } else if (current.equals(VIEWER)) {
+                    showDetails.setSelected(true);
+                    show(DETAILS);
+                } else if (current.equals(DETAILS)) {
+                    showEditor.setSelected(true);
+                    show(EDITOR);
+                }
             }
         }
     }
