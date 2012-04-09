@@ -66,6 +66,24 @@ public class Explorer extends JFrame implements KeyListener {
 
     public static final Logger LOG = LoggerFactory.getLogger(Explorer.class);
     
+    public static enum Platform {
+        LINUX,
+        OSX,
+        WINDOWS,
+        UNKNOWN;
+        
+        private static final String OS_NAME = "os.name";
+        
+        public static Platform getPlatform() {
+            String osName = Strings.nullToEmpty(System.getProperty(OS_NAME));
+            if (osName.equals("Linux")) return LINUX;
+            if (osName.equals("Mac OS X")) return OSX;
+            if (osName.startsWith("Windows")) return WINDOWS;
+            // TODO other operating systems
+            return UNKNOWN;
+        }
+    }
+    
     public static final String EXPLORER = "IFS Explorer";
     public static final String EDITOR = "Editor";
     public static final String VIEWER = "Viewer";
@@ -132,6 +150,12 @@ public class Explorer extends JFrame implements KeyListener {
         // Load splash screen
         splashScreen = new Splash(bus, this);
         splashScreen.open();
+
+        // Setup platform specifics
+        if (platform == Platform.OSX) {
+            AppleSupport apple = new AppleSupport(bus, this);
+            apple.setup();
+        }
     }
 
     @SuppressWarnings("serial")
@@ -207,17 +231,24 @@ public class Explorer extends JFrame implements KeyListener {
         file.add(save);
         file.add(saveAs);
         file.add(export);
-        file.add(new AbstractAction("Preferences...") {
+        file.add(new AbstractAction("Print...") {
             @Override
             public void actionPerformed(ActionEvent e) {
             }
         });
-        file.add(new AbstractAction("Quit") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
+        if (platform != Platform.OSX) {
+	        file.add(new AbstractAction("Preferences...") {
+	            @Override
+	            public void actionPerformed(ActionEvent e) {
+	            }
+	        });
+	        file.add(new AbstractAction("Quit") {
+	            @Override
+	            public void actionPerformed(ActionEvent e) {
+	                System.exit(0);
+	            }
+	        });
+        }
         menuBar.add(file);
         JMenu system = new JMenu("Display");
         showEditor = new JCheckBoxMenuItem(new AbstractAction("Editor") {
