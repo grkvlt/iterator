@@ -129,7 +129,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
     /** @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent) */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (ifs != null && !ifs.getTransforms().isEmpty()) {
+        if (ifs != null && !ifs.getTransforms().isEmpty() && image != null) {
             iterate(10000);
 	        repaint();
         }
@@ -152,7 +152,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
     /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE && isVisible()) {
             if (timer.isRunning()) {
                 timer.stop();
             } else {
