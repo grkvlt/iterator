@@ -149,7 +149,7 @@ public class Explorer extends JFrame implements KeyListener {
         
         // Load splash screen
         splashScreen = new Splash(bus, this);
-        splashScreen.open();
+        splashScreen.showDialog();
 
         // Setup platform specifics
         if (platform == Platform.OSX) {
@@ -164,6 +164,14 @@ public class Explorer extends JFrame implements KeyListener {
 
         menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
+        if (platform != Platform.OSX) {
+            file.add(new AbstractAction("About...") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    about.showDialog();
+                }
+            });
+        }
         file.add(new AbstractAction("New IFS") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -237,11 +245,11 @@ public class Explorer extends JFrame implements KeyListener {
             }
         });
         if (platform != Platform.OSX) {
-	        file.add(new AbstractAction("Preferences...") {
-	            @Override
-	            public void actionPerformed(ActionEvent e) {
-	            }
-	        });
+            file.add(new AbstractAction("Preferences...") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                }
+            });
 	        file.add(new AbstractAction("Quit") {
 	            @Override
 	            public void actionPerformed(ActionEvent e) {
@@ -309,7 +317,7 @@ public class Explorer extends JFrame implements KeyListener {
             editor.setSize(minimum);
             viewer.setMinimumSize(minimum);
             viewer.setSize(minimum);
-            final int top = getInsets().top + (fullScreen ? 0 :  menuBar.getHeight());
+            final int top = getInsets().top + getInsets().bottom + (fullScreen ? 0 :  menuBar.getHeight());
 	        Dimension size = new Dimension(SIDE, SIDE + top);
 	        setSize(size);
 	        setMinimumSize(size);

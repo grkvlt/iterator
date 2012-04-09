@@ -66,5 +66,6 @@ public class AppleSupport implements OpenFilesHandler, AboutHandler, Preferences
     /** @see com.apple.eawt.AboutHandler#handleAbout(com.apple.eawt.AppEvent.AboutEvent) */
     @Override
     public void handleAbout(AboutEvent e) {
+        controller.getAbout().showDialog();
     }
 }
