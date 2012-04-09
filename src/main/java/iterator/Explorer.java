@@ -11,7 +11,6 @@ import iterator.view.Viewer;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -37,6 +36,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -65,15 +65,15 @@ public class Explorer extends JFrame implements KeyListener {
     private static final long serialVersionUID = -2003170067188344917L;
 
     public static final Logger LOG = LoggerFactory.getLogger(Explorer.class);
-    
+
     public static enum Platform {
         LINUX,
         OSX,
         WINDOWS,
         UNKNOWN;
-        
+
         private static final String OS_NAME = "os.name";
-        
+
         public static Platform getPlatform() {
             String osName = Strings.nullToEmpty(System.getProperty(OS_NAME));
             if (osName.equals("Linux")) return LINUX;
@@ -83,15 +83,15 @@ public class Explorer extends JFrame implements KeyListener {
             return UNKNOWN;
         }
     }
-    
+
     public static final String EXPLORER = "IFS Explorer";
     public static final String EDITOR = "Editor";
     public static final String VIEWER = "Viewer";
     public static final String DETAILS = "Details";
-    
-    public static final Integer SIDE = 750;
+
+    public static final Integer SIZE = 600;
     public static final String FULLSCREEN_OPTION = "-F";
-    
+
     private boolean fullScreen = false;
     private Platform platform = Platform.getPlatform();
     private BufferedImage icon, splash;
@@ -110,7 +110,7 @@ public class Explorer extends JFrame implements KeyListener {
     private String current;
     private JCheckBoxMenuItem showEditor, showViewer, showDetails;
     private JMenuItem export, save, saveAs;
-    
+
     private EventBus bus;
 
     public Explorer(String...argv) {
@@ -133,7 +133,7 @@ public class Explorer extends JFrame implements KeyListener {
         // Setup event bus
         bus = new EventBus(EXPLORER);
         bus.register(this);
-        
+
         // Load resources
         try {
 	        icon = ImageIO.read(Resources.getResource("icon.png"));
@@ -142,11 +142,11 @@ public class Explorer extends JFrame implements KeyListener {
             Throwables.propagate(ioe);
         }
         setIconImage(icon);
-        
+
         // Load dialogs
         prefs = new Preferences(bus, this);
         about = new About(bus, this);
-        
+
         // Load splash screen
         splashScreen = new Splash(bus, this);
         splashScreen.showDialog();
@@ -172,14 +172,16 @@ public class Explorer extends JFrame implements KeyListener {
                 }
             });
         }
-        file.add(new AbstractAction("New IFS") {
+        JMenuItem newIfs = new JMenuItem(new AbstractAction("New IFS") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 IFS untitled = new IFS();
                 Explorer.this.bus.post(untitled);
             }
         });
-        file.add(new AbstractAction("Open...") {
+        newIfs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        file.add(newIfs);
+        JMenuItem open = new JMenuItem(new AbstractAction("Open...") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("XML Files", "xml");
@@ -193,6 +195,8 @@ public class Explorer extends JFrame implements KeyListener {
                 }
             }
         });
+        open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        file.add(open);
         save = new JMenuItem(new AbstractAction("Save") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -205,7 +209,9 @@ public class Explorer extends JFrame implements KeyListener {
 	            }
             }
         });
+        save.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         save.setEnabled(false);
+        file.add(save);
         saveAs = new JMenuItem(new AbstractAction("Save As...") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -223,6 +229,7 @@ public class Explorer extends JFrame implements KeyListener {
             }
         });
         saveAs.setEnabled(false);
+        file.add(saveAs);
         export = new JMenuItem(new AbstractAction("Export...") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -236,28 +243,32 @@ public class Explorer extends JFrame implements KeyListener {
                 }
             }
         });
-        file.add(save);
-        file.add(saveAs);
+        export.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         file.add(export);
-        file.add(new AbstractAction("Print...") {
+        JMenuItem print = new JMenuItem(new AbstractAction("Print...") {
             @Override
             public void actionPerformed(ActionEvent e) {
             }
         });
+        print.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        file.add(print);
         if (platform != Platform.OSX) {
             file.add(new AbstractAction("Preferences...") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                 }
             });
-	        file.add(new AbstractAction("Quit") {
+	        JMenuItem quit = new JMenuItem(new AbstractAction("Quit") {
 	            @Override
 	            public void actionPerformed(ActionEvent e) {
 	                System.exit(0);
 	            }
 	        });
+	        quit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+	        file.add(quit);
         }
         menuBar.add(file);
+
         JMenu system = new JMenu("Display");
         showEditor = new JCheckBoxMenuItem(new AbstractAction("Editor") {
             @Override
@@ -292,10 +303,10 @@ public class Explorer extends JFrame implements KeyListener {
             /** @see WindowListener#windowClosed(WindowEvent) */
             @Override
             public void windowClosed(WindowEvent e) {
-                System.exit(0);   
+                System.exit(0);
             }
         });
-        
+
         editor = new Editor(bus, this);
         viewer = new Viewer(bus, this);
         details = new Details(bus, this);
@@ -312,14 +323,14 @@ public class Explorer extends JFrame implements KeyListener {
         setContentPane(content);
 
         if (!fullScreen) {
-	        Dimension minimum = new Dimension(SIDE, SIDE);
+	        Dimension minimum = new Dimension(SIZE, SIZE);
             editor.setMinimumSize(minimum);
             editor.setSize(minimum);
             viewer.setMinimumSize(minimum);
             viewer.setSize(minimum);
             pack();
             final int top = getInsets().top + (fullScreen ? 0 :  menuBar.getHeight());
-	        Dimension size = new Dimension(SIDE, SIDE + top);
+	        Dimension size = new Dimension(SIZE, SIZE + top);
 	        setSize(size);
 	        setPreferredSize(size);
 	        setMinimumSize(size);
@@ -335,7 +346,7 @@ public class Explorer extends JFrame implements KeyListener {
 	            }
             });
         }
-        
+
         setFocusable(true);
         requestFocusInWindow();
         setFocusTraversalKeysEnabled(false);
@@ -360,7 +371,7 @@ public class Explorer extends JFrame implements KeyListener {
             viewer.stop();
         }
     }
-    
+
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;
@@ -400,13 +411,13 @@ public class Explorer extends JFrame implements KeyListener {
     }
 
     public BufferedImage getIcon() { return icon; }
-    
+
     public BufferedImage getSplash() { return splash; }
-    
+
     public About getAbout() { return about; }
-    
+
     public Preferences getPreferences() { return prefs; }
-    
+
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override
     public void keyTyped(KeyEvent e) {
