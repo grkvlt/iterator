@@ -6,18 +6,19 @@ package iterator;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog.ModalityType;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.RescaleOp;
 
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import com.google.common.eventbus.EventBus;
@@ -33,36 +34,34 @@ public class About extends JPanel implements MouseListener {
     private final Explorer controller;
 
     private JDialog about;
-    private JLabel link;
     private BufferedImage splash;
 
     public About(EventBus bus, Explorer controller) {
         super();
         this.bus = bus;
         this.controller = controller;
-        
+
         splash = controller.getSplash();
-        
-        about = new JDialog(controller, "IFS Explorere 1.0.0", ModalityType.APPLICATION_MODAL);
+        setSize(splash.getWidth(), splash.getHeight());
+
+        about = new JDialog(controller, "About IFS Explorer", ModalityType.APPLICATION_MODAL);
         about.setLayout(new BorderLayout());
         about.add(this, BorderLayout.CENTER);
-        
-        link = new JLabel("http://grkvlt.github.com/iterator", JLabel.CENTER);
-        link.setFont(new Font("Calibri", Font.BOLD, 13));
-        link.setOpaque(true);
-        link.setBackground(Color.WHITE);
-        link.setForeground(Color.BLACK);
-        about.add(link, BorderLayout.SOUTH);
-        
-        about.setSize(splash.getWidth(), splash.getHeight() + about.getInsets().top + link.getHeight());
+
+        about.pack();
+        Dimension size = new Dimension(splash.getWidth(), splash.getHeight() + about.getInsets().top);
+        about.setSize(size);
+        about.setPreferredSize(size);
+        about.setMinimumSize(size);
         about.setResizable(false);
+
         about.addMouseListener(this);
 
         bus.register(this);
     }
-    
+
     public void showDialog() {
-        about.setLocation((controller.getWidth() / 2) - (about.getWidth() / 2), (controller.getHeight() / 2) - (about.getHeight() / 2));
+        about.setLocationByPlatform(true);
         about.setVisible(true);
     }
 
@@ -70,7 +69,16 @@ public class About extends JPanel implements MouseListener {
     public void paint(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.drawImage(splash, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
+        float[] scales = { 1f, 1f, 1f, 0.5f };
+        float[] offsets = new float[4];
+        BufferedImageOp filter = new RescaleOp(scales, offsets, null);
+        g.drawImage(filter.filter(splash, null), 0, 0, null);
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Calibri", Font.BOLD, 40));
+        g.drawString("IFS Explorer Version 1.0.0", 10, 40);
+        g.setFont(new Font("Calibri", Font.BOLD, 15));
+        g.drawString("Copyright 2012 by Andrew Kennedy", 10, getHeight() - 10);
+        g.drawString("http://grkvlt.github.com/iterator", 260, getHeight() - 10);
         g.dispose();
     }
 

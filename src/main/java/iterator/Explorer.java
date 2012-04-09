@@ -317,9 +317,11 @@ public class Explorer extends JFrame implements KeyListener {
             editor.setSize(minimum);
             viewer.setMinimumSize(minimum);
             viewer.setSize(minimum);
-            final int top = getInsets().top + getInsets().bottom + (fullScreen ? 0 :  menuBar.getHeight());
+            pack();
+            final int top = getInsets().top + (fullScreen ? 0 :  menuBar.getHeight());
 	        Dimension size = new Dimension(SIDE, SIDE + top);
 	        setSize(size);
+	        setPreferredSize(size);
 	        setMinimumSize(size);
 	        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 	        setLocation((screen.width / 2) - (size.width / 2), (screen.height / 2) - (size.height / 2));

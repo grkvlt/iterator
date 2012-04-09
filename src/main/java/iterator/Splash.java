@@ -3,16 +3,20 @@
  */
 package iterator;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.color.ColorSpace;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.ColorConvertOp;
+import java.awt.image.RescaleOp;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -37,7 +41,7 @@ public class Splash extends JPanel implements ActionListener {
         super();
         this.bus = bus;
         this.controller = controller;
-        
+
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         splash = controller.getSplash();
 
@@ -51,9 +55,9 @@ public class Splash extends JPanel implements ActionListener {
         parent.setPreferredSize(size);
         parent.setMinimumSize(size);
         parent.setLocation((screen.width / 2) - (size.width / 2), (screen.height / 2) - (size.height / 2));
-        
+
         parent.getContentPane().add(this);
-        
+
         bus.register(this);
     }
 
@@ -61,7 +65,16 @@ public class Splash extends JPanel implements ActionListener {
     public void paint(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.drawImage(splash, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
+        float[] scales = { 1f, 1f, 1f, 0.5f };
+        float[] offsets = new float[4];
+        BufferedImageOp filter = new RescaleOp(scales, offsets, null);
+        g.drawImage(filter.filter(splash, null), 0, 0, null);
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Calibri", Font.BOLD, 40));
+        g.drawString("IFS Explorer Version 1.0.0", 10, 40);
+        g.setFont(new Font("Calibri", Font.BOLD, 15));
+        g.drawString("Copyright 2012 by Andrew Kennedy", 10, getHeight() - 10);
+        g.drawString("http://grkvlt.github.com/iterator", 260, getHeight() - 10);
         g.dispose();
     }
 
