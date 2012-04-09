@@ -10,7 +10,10 @@ Program Requirements
  - Maven and JDK to build
 
 TODO
- - Properties editor for IFS and Transform
+ - Properties editor for Transform
  - Printing
+ - Preferences dialog
+ - Animated transforms
+ - Better details view
 
 Andrew Kennedy <andrew.international@gmail.com> April 2012
