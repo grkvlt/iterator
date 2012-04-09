@@ -48,8 +48,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         Color.BLACK, Color.BLUE, Color.CYAN, Color.GREEN, Color.LIGHT_GRAY,
         Color.MAGENTA, Color.ORANGE, Color.GRAY, Color.PINK, Color.RED, Color.YELLOW, Color.DARK_GRAY
     };
-    
-    private final EventBus bus;
+
     private final Explorer controller;
 
     private IFS ifs;
@@ -60,13 +59,18 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
 
     public Viewer(EventBus bus, Explorer controller) {
         super();
-        this.bus = bus;
+
         this.controller = controller;
 
         bus.register(this);
     }
 
-    
+    @Subscribe
+    public void update(IFS ifs) {
+        this.ifs = ifs;
+        reset();
+    }
+
     @Subscribe
     public void size(Dimension size) {
         reset();
@@ -79,21 +83,17 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         g.drawImage(image, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
         g.dispose();
     }
-    
+
     private void reset() {
-        image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = image.createGraphics();
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, getWidth(), getHeight());
-        g.dispose();
-        x = random.nextInt(getWidth());
-        y = random.nextInt(getHeight());
-    }
-    
-    @Subscribe
-    public void update(IFS ifs) {
-        this.ifs = ifs;
-        reset();
+        if (isVisible()) {
+	        image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+	        Graphics2D g = image.createGraphics();
+	        g.setColor(Color.WHITE);
+	        g.fillRect(0, 0, getWidth(), getHeight());
+	        g.dispose();
+	        x = random.nextInt(getWidth());
+	        y = random.nextInt(getHeight());
+        }
     }
 
     public void save(File file) {
@@ -103,10 +103,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
             Throwables.propagate(e);
         }
     }
-    
+
     public void iterate(int n) {
         Graphics2D g = image.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         for (int i = 0; i < n; i++) {
             int j = random.nextInt(ifs.getTransforms().size());
             Transform t = ifs.getTransforms().get(j);
@@ -136,11 +139,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         reset();
         timer.start();
     }
-    
+
     public void stop() {
         timer.stop();
     }
-    
+
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override
     public void keyTyped(KeyEvent e) {

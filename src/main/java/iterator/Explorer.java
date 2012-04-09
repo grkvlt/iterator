@@ -11,6 +11,7 @@ import iterator.view.Viewer;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -20,10 +21,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -44,10 +48,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.CaseFormat;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.io.Closeables;
+import com.google.common.io.Resources;
 
 /**
  * IFS Explorer main class.
@@ -65,10 +71,16 @@ public class Explorer extends JFrame implements KeyListener {
     public static final String VIEWER = "Viewer";
     public static final String DETAILS = "Details";
     
+    public static final Integer SIDE = 750;
     public static final String FULLSCREEN_OPTION = "-F";
     
     private boolean fullScreen = false;
-    
+    private Platform platform = Platform.getPlatform();
+    private BufferedImage icon, splash;
+    private Preferences prefs;
+    private About about;
+    private Splash splashScreen;
+
     private IFS ifs;
 
     private JMenuBar menuBar;
@@ -95,14 +107,31 @@ public class Explorer extends JFrame implements KeyListener {
         if (fullScreen) {
             setUndecorated(true);
             setResizable(false);
-            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
             Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
-            setBounds(insets.left, insets.top, screenSize.width - (insets.left + insets.right), screenSize.height - (insets.top + insets.bottom));
+            setBounds(insets.left, insets.top, screen.width - (insets.left + insets.right), screen.height - (insets.top + insets.bottom));
         }
 
         // Setup event bus
         bus = new EventBus(EXPLORER);
         bus.register(this);
+        
+        // Load resources
+        try {
+	        icon = ImageIO.read(Resources.getResource("icon.png"));
+	        splash = ImageIO.read(Resources.getResource("splash.png"));
+        } catch (IOException ioe) {
+            Throwables.propagate(ioe);
+        }
+        setIconImage(icon);
+        
+        // Load dialogs
+        prefs = new Preferences(bus, this);
+        about = new About(bus, this);
+        
+        // Load splash screen
+        splashScreen = new Splash(bus, this);
+        splashScreen.open();
     }
 
     @SuppressWarnings("serial")
@@ -168,7 +197,7 @@ public class Explorer extends JFrame implements KeyListener {
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("PNG Image Files", "png");
                 JFileChooser chooser = new JFileChooser();
                 chooser.setFileFilter(filter);
-                chooser.setSelectedFile(new File(ifs.getName() + ".png"));
+                chooser.setSelectedFile(new File((ifs.getName() == null ? IFS.UNTITLED : ifs.getName()) + ".png"));
 		        int result = chooser.showSaveDialog(null);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     viewer.save(chooser.getSelectedFile());
@@ -244,21 +273,24 @@ public class Explorer extends JFrame implements KeyListener {
         setContentPane(content);
 
         if (!fullScreen) {
-	        Dimension minimum = new Dimension(500, 500);
+	        Dimension minimum = new Dimension(SIDE, SIDE);
             editor.setMinimumSize(minimum);
             editor.setSize(minimum);
             viewer.setMinimumSize(minimum);
             viewer.setSize(minimum);
-	        Dimension size = new Dimension(500, 500 + menuBar.getHeight());
+            final int top = getInsets().top + (fullScreen ? 0 :  menuBar.getHeight());
+	        Dimension size = new Dimension(SIDE, SIDE + top);
 	        setSize(size);
 	        setMinimumSize(size);
+	        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+	        setLocation((screen.width / 2) - (size.width / 2), (screen.height / 2) - (size.height / 2));
 	        addComponentListener(new ComponentAdapter() {
 	            @Override
 				public void componentResized(ComponentEvent e) {
 	                Dimension s = getSize();
-	                int side = Math.min(s.width, s.height - menuBar.getHeight());
-	                setSize(side,  side + menuBar.getHeight());
-	                Explorer.this.bus.post(getSize());
+	                int side = Math.min(s.width, s.height - top);
+	                setSize(side,  side + top);
+	                Explorer.this.bus.post(new Dimension(side, side));
 	            }
             });
         }
@@ -272,7 +304,7 @@ public class Explorer extends JFrame implements KeyListener {
 
         IFS untitled = new IFS();
         bus.post(untitled);
-        
+
         setVisible(true);
     }
 
@@ -325,6 +357,14 @@ public class Explorer extends JFrame implements KeyListener {
           throw Throwables.propagate(e);
        }
     }
+
+    public BufferedImage getIcon() { return icon; }
+    
+    public BufferedImage getSplash() { return splash; }
+    
+    public About getAbout() { return about; }
+    
+    public Preferences getPreferences() { return prefs; }
     
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override

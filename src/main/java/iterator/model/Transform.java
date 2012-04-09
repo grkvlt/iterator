@@ -43,7 +43,10 @@ public class Transform {
     @XmlAttribute
     private int sh;
     
-    private Transform() { }
+    @SuppressWarnings("unused")
+    private Transform() {
+        // JAXB
+    }
     
     public Transform(int id, int zIndex, Dimension size) {
         this.id = id;
