@@ -54,7 +54,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
     private IFS ifs;
     private BufferedImage image;
     private Timer timer  = new Timer(10, this);
-    private int x, y;
+    private double x, y;
     private Random random = new Random();
 
     public Viewer(EventBus bus, Explorer controller) {
@@ -116,11 +116,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
 //            Color c = COLORS[j % ifs.getTransforms().size()];
             Color c = Color.BLACK;
 	        g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), 4));
-            Point p = new Point(x, y);
-            Point d = new Point();
-            t.getTransform().transform(p, d);
-            x = d.x; y = d.y;
-            Rectangle rect = new Rectangle(x, y, 2, 2);
+            double[] src = new double[] { x, y };
+            double[] dst = new double[2];
+            t.getTransform().transform(src, 0, dst, 0, 1);
+            x = dst[0]; y = dst[1];
+            Rectangle rect = new Rectangle((int) Math.floor(x + 0.5d), (int) Math.floor(y + 0.5d), 2, 2);
             g.fill(rect);
         }
         g.dispose();
