@@ -11,7 +11,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -24,22 +23,17 @@ import javax.swing.JPanel;
 import com.google.common.eventbus.EventBus;
 
 /**
- * IFS Editor.
+ * About dialog.
  */
 public class About extends JPanel implements MouseListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1;
-
-    private final EventBus bus;
-    private final Explorer controller;
 
     private JDialog about;
     private BufferedImage splash;
 
     public About(EventBus bus, Explorer controller) {
         super();
-        this.bus = bus;
-        this.controller = controller;
 
         splash = controller.getSplash();
         setSize(splash.getWidth(), splash.getHeight());
@@ -56,8 +50,6 @@ public class About extends JPanel implements MouseListener {
         about.setResizable(false);
 
         about.addMouseListener(this);
-
-        bus.register(this);
     }
 
     public void showDialog() {

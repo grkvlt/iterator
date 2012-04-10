@@ -27,15 +27,10 @@ public class Details extends JTextPane {
 
     public static final Logger LOG = LoggerFactory.getLogger(Details.class);
 
-    private final EventBus bus;
-    private final Explorer controller;
-
     private IFS ifs;
 
     public Details(EventBus bus, Explorer controller) {
         super();
-        this.bus = bus;
-        this.controller = controller;
 
         setContentType("text/html");
         setText("<html><h1 id=\"title\">Iterated Function System</h1><html>");
@@ -46,6 +41,7 @@ public class Details extends JTextPane {
         css.addRule("span.id { font-family: Calibri, sans-serif; font-style: bold; font-size: 15pt; }");
         css.addRule("div.matrix { font-family: Cambria, serif; font-style: italic; font-size: 15pt; margin-left: 40px;}");
         css.addRule("div#transforms { margin-left: 20px; }");
+
         bus.register(this);
     }
     

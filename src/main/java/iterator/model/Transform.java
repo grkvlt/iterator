@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Transform 
+ * Transform.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Transform")

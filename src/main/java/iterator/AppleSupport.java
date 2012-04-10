@@ -22,17 +22,13 @@ import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
 
 /**
- * Iterator 
- *
- * @since Apr 9, 2012
+ * Apple OSX native support.
  */
 public class AppleSupport implements OpenFilesHandler, AboutHandler, PreferencesHandler {
     public static final Logger LOG = LoggerFactory.getLogger(AppleSupport.class);
 
     private final EventBus bus;
     private final Explorer controller;
-
-    private IFS ifs;
 
     public AppleSupport(EventBus bus, Explorer controller) {
         super();

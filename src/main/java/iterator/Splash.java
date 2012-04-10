@@ -10,12 +10,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
-import java.awt.color.ColorSpace;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
-import java.awt.image.ColorConvertOp;
 import java.awt.image.RescaleOp;
 
 import javax.swing.JFrame;
@@ -31,16 +29,11 @@ public class Splash extends JPanel implements ActionListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1;
 
-    private final EventBus bus;
-    private final Explorer controller;
-
     private JFrame parent;
     private BufferedImage splash;
 
     public Splash(EventBus bus, Explorer controller) {
         super();
-        this.bus = bus;
-        this.controller = controller;
 
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         splash = controller.getSplash();
@@ -57,8 +50,6 @@ public class Splash extends JPanel implements ActionListener {
         parent.setLocation((screen.width / 2) - (size.width / 2), (screen.height / 2) - (size.height / 2));
 
         parent.getContentPane().add(this);
-
-        bus.register(this);
     }
 
     @Override

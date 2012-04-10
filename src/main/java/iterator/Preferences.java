@@ -11,7 +11,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 /**
- * IFS Editor.
+ * Preferences dialog.
  */
 public class Preferences extends JDialog {
     /** serialVersionUID */

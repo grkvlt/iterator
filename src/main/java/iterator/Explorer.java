@@ -90,9 +90,13 @@ public class Explorer extends JFrame implements KeyListener {
     public static final String DETAILS = "Details";
 
     public static final Integer SIZE = 600;
+
     public static final String FULLSCREEN_OPTION = "-F";
+    public static final String COLOUR_OPTION = "-C";
 
     private boolean fullScreen = false;
+    private boolean colour = false;
+    
     private Platform platform = Platform.getPlatform();
     private BufferedImage icon, splash;
     private Preferences prefs;
@@ -117,8 +121,14 @@ public class Explorer extends JFrame implements KeyListener {
         super(EXPLORER);
 
         // Parse arguments
-        if (argv.length == 1 && argv[0].equalsIgnoreCase(FULLSCREEN_OPTION)) {
-            fullScreen = true;
+        if (argv.length != 0) {
+            for (int i = 0; i < argv.length; i++) {
+	            if (argv[i].equalsIgnoreCase(FULLSCREEN_OPTION)) {
+	                fullScreen = true;
+	            } else if (argv[i].equalsIgnoreCase(COLOUR_OPTION)) {
+	                colour = true;
+	            } else throw new IllegalArgumentException();
+            }
         }
 
         // Setup full-screen mode if required
@@ -143,13 +153,13 @@ public class Explorer extends JFrame implements KeyListener {
         }
         setIconImage(icon);
 
-        // Load dialogs
-        prefs = new Preferences(bus, this);
-        about = new About(bus, this);
-
         // Load splash screen
         splashScreen = new Splash(bus, this);
         splashScreen.showDialog();
+
+        // Load dialogs
+        prefs = new Preferences(bus, this);
+        about = new About(bus, this);
 
         // Setup platform specifics
         if (platform == Platform.OSX) {
@@ -409,6 +419,19 @@ public class Explorer extends JFrame implements KeyListener {
           throw Throwables.propagate(e);
        }
     }
+    
+    public boolean isFullScreen() { return fullScreen; }
+    
+    public boolean isColour() { return colour; }
+
+    /** Small grid spacing. */
+    public int getMinGrid() { return 10; }
+
+    /** Large grid spacing. */
+    public int getMaxGrid() { return 50; }
+
+    /** Snap to grid distance. */
+    public int getSnapGrid() { return 10; }
 
     public BufferedImage getIcon() { return icon; }
 

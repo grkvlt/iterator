@@ -225,23 +225,25 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
     }
 
     public void paintGrid(Graphics2D g) {
+        int min = controller.getMinGrid();
+        int max = controller.getMaxGrid();
         Rectangle s = new Rectangle(getSize());
         g.setPaint(Color.WHITE);
         g.fill(s);
         g.setPaint(Color.LIGHT_GRAY);
         g.setStroke(new BasicStroke(1f));
-        for (int x = 0; x < getWidth(); x += 10) {
+        for (int x = 0; x < getWidth(); x += min) {
             g.drawLine(x, 0, x, getHeight());
         }
-        for (int y = 0; y < getHeight(); y += 10) {
+        for (int y = 0; y < getHeight(); y += min) {
             g.drawLine(0, y, getWidth(), y);
         }
         g.setPaint(Color.GRAY);
         g.setStroke(new BasicStroke(2f));
-        for (int x = 0; x < getWidth(); x += 50) {
+        for (int x = 0; x < getWidth(); x += max) {
             g.drawLine(x, 0, x, getHeight());
         }
-        for (int y = 0; y < getHeight(); y += 50) {
+        for (int y = 0; y < getHeight(); y += max) {
             g.drawLine(0, y, getWidth(), y);
         }
     }
@@ -321,17 +323,17 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
                     selected = clicked;
                     rotate = selected;
                     ifs.deleteTransform(rotate);
-                    start = snap(e.getPoint(), 10);
+                    start = snap(e.getPoint());
                     setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 	            } else {
                     selected = clicked;
                     move = selected;
                     ifs.deleteTransform(move);
-                    start = snap(e.getPoint(), 10);
+                    start = snap(e.getPoint());
                     setCursor(new Cursor(Cursor.MOVE_CURSOR));
 	            }
 	        } else  {
-	            start = snap(e.getPoint(), 10);
+	            start = snap(e.getPoint());
 	            selected = null;
 	            setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 	        }
@@ -345,8 +347,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         repaint();
     }
 
-    private Point snap(Point point, int i) {
-        return new Point(i * (point.x / i), i * (point.y / i));
+    private Point snap(Point point) {
+        int grid = controller.getSnapGrid();
+        return new Point(grid * (point.x / grid), grid * (point.y / grid));
     }
 
     /** @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent) */
@@ -359,8 +362,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
                 int w = Math.max(start.x, end.x) - x;
                 int h = Math.max(start.y, end.y) - y;
                 
-                w = Math.max(10, w);
-                h = Math.max(10, h);
+                int grid = controller.getMinGrid();
+                w = Math.max(grid, w);
+                h = Math.max(grid, h);
                 
                 selected = ifs.newTransform(getSize());
                 selected.x = x;
@@ -388,7 +392,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
     /** @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent) */
     @Override public void mouseDragged(MouseEvent e) {
         if (start != null) {
-	        end = snap(e.getPoint(), 10);
+	        end = snap(e.getPoint());
             if (selected != null && resize != null) {
                 int w = resize.w;
                 int h = resize.h;
@@ -426,8 +430,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
                     break;
                 }
                 
-                w = Math.max(10, w);
-                h = Math.max(10, h);
+                int grid = controller.getMinGrid();
+                w = Math.max(grid, w);
+                h = Math.max(grid, h);
                 
                 selected = new Transform(selected.getId(), selected.getZIndex(), getSize());
                 selected.x = x;

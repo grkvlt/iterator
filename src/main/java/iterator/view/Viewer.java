@@ -11,7 +11,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -44,9 +43,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
     private static final long serialVersionUID = -1;
 
     public static final Logger LOG = LoggerFactory.getLogger(Viewer.class);
+
     public static final Color[] COLORS = new Color[] {
-        Color.BLACK, Color.BLUE, Color.CYAN, Color.GREEN, Color.LIGHT_GRAY,
-        Color.MAGENTA, Color.ORANGE, Color.GRAY, Color.PINK, Color.RED, Color.YELLOW, Color.DARK_GRAY
+        Color.GREEN, Color.BLUE, Color.RED, Color.CYAN, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.BLACK, Color.YELLOW
     };
 
     private final Explorer controller;
@@ -113,8 +112,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         for (int i = 0; i < n; i++) {
             int j = random.nextInt(ifs.getTransforms().size());
             Transform t = ifs.getTransforms().get(j);
-//            Color c = COLORS[j % ifs.getTransforms().size()];
-            Color c = Color.BLACK;
+            Color c = controller.isColour() ? COLORS[j % COLORS.length] : Color.BLACK;
 	        g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), 4));
             double[] src = new double[] { x, y };
             double[] dst = new double[2];
