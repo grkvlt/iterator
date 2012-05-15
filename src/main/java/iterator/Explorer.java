@@ -78,10 +78,10 @@ public class Explorer extends JFrame implements KeyListener {
         private static final String OS_NAME = "os.name";
 
         public static Platform getPlatform() {
-            String osName = Strings.nullToEmpty(System.getProperty(OS_NAME));
-            if (osName.equals("Linux")) return LINUX;
-            if (osName.equals("Mac OS X")) return OSX;
-            if (osName.startsWith("Windows")) return WINDOWS;
+            String osName = Strings.nullToEmpty(System.getProperty(OS_NAME)).toLowerCase();
+            if (osName.equals("linux")) return LINUX;
+            if (osName.equals("mac os x")) return OSX;
+            if (osName.startsWith("windows")) return WINDOWS;
             // TODO other operating systems
             return UNKNOWN;
         }
