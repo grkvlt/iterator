@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>IFS Explorer 1.0.1 by grkvlt</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>IFS Explorer 1.0.1</h1>
+        <p>Iterated Function System Explorer</p>
+        <p class="view"><a href="https://github.com/grkvlt/iterator">View the Project on GitHub <small>grkvlt/iterator</small></a></p>
+        <ul>
+          <li><a href="https://github.com/grkvlt/iterator/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/grkvlt/iterator/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/grkvlt/iterator">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>Iterated Function System Explorer</h1>
+
+<p>An interactive Iterated Function System explorer. This program allows you to explore the vast world of complex and beautiful fractal images produced by simple mathematical rules through a process of trial and error, experimentation and exploration. See the <em>References</em> section below for more details on the mathematics and concepts behind these systems.</p>
+
+<p><strong>IFS Explorer</strong> provides an interactive UI to create and manipulate a set of affine transforms, which are then rendered to produce an image. The Java <code>AffineTransform</code> graphics object is used internally to represent and plot the transforms. IFS systems can be saved and loaded as XML files, and the rendered images can be exported as PNG graphics files.</p>
+
+ 
+<img src="images/editor-screenshot.png" alt="Editor" title="Editor" border="1" width="200"> <img src="images/viewer-screenshot.png" alt="Viewer" title="Viewer" border="1" width="200"> 
+
+<p><em>Screenshots for the <strong>Editor</strong> and <strong>Viewer</strong> modes.</em></p>
+
+<h3>Program requirements</h3>
+
+<ul>
+<li>Java 1.6.0 Runtime Environment</li>
+<li>Windows, Linux or OSX Operating System</li>
+<li>Maven and JDK for building</li>
+</ul><h3>Instructions</h3>
+
+<p>Either build the program using Maven or extract one of the packaged distributions. These can be <a href="https://github.com/grkvlt/iterator/downloads">downloaded from GitHub</a> as either .tar.gz or .zip archives. Then run the relevant script for your operating system, using the optional <em>-F</em> flag to specify full-screen mode. </p>
+
+<pre><code>$ mvn clean install
+...
+$ cd target/iterator-1.0.1-SNAPSHOT-dist/iterator-1.0.1-SNAPSHOT
+$ ./bin/explorer.sh [-F]
+$ ./bin/explorer.command [-F]
+C&gt; .\bin\explorer.cmd [-F]
+</code></pre>
+
+<p>One the program starts, it will diplay an empty grid in the <strong>Editor</strong> mode. The menus provide access to standard operations, including the ability to switch modes. The keyboard can also be used to toggle between modes using the <em>Tab</em> key.</p>
+
+<p>In the <strong>Editor</strong> mode, clicking and dragging the mouse will create a new transform which can then be moved, resised and rotated (with <em>Shift</em> held down) as desired. In this mode, the <em>Delete</em> or <em>Backspace</em> key will delete the selected transform and the <em>Left</em> or <em>Right</em> arrow keys will rotate it by ninety degrees. When in <strong>Viewer</strong> mode the <em>Space</em> key will pause or continue the rendering process.  The <strong>Details</strong> mode shows the actual affine transform matrices for each transform.</p>
+
+<h3>TODO</h3>
+
+<ul>
+<li>Properties editor for transform</li>
+<li>Printing</li>
+<li>Preferences dialog</li>
+<li>Animated transforms</li>
+<li>Better details view</li>
+<li>Weighting for transforms</li>
+<li>Better operating system integration</li>
+</ul><h3>References</h3>
+
+<ul>
+<li>
+<a href="http://en.wikipedia.org/wiki/Iterated_function_system">Iterated Function System</a>; <em>Wikipedia</em>
+</li>
+<li>
+<a href="http://en.wikipedia.org/wiki/Affine_transformation">Affine Transform</a>; <em>Wikipedia</em>
+</li>
+<li>
+<a href="http://www-users.cs.umn.edu/%7Ebstanton/pdf/p271-demko.pdf">Construction of fractal objects with iterated function systems</a>; <em>Demko, Stephen and Hodges, Laurie and Naylor, Bruce; SIGGRAPH Computer Graphics, Volume 19, Number 3, 1985</em>
+</li>
+<li>
+<a href="http://www.amazon.co.uk/The-Computational-Beauty-Nature-Explorations/dp/0262561271">The Computational Beauty of Nature: Computer Explorations of Fractals, Chaos, Complex Systems and Adaptation</a>; <em>Flake, Gary W; MIT Press; 1 Mar 2000; ISBN 978-0262561273</em>
+</li>
+</ul><hr><p><a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png"></a>
+<a rel="dct:type" href="https://github.com/grkvlt/iterator">IFS Explorer</a> is Copyright 2012 by <a href="mailto:andrew.international@gmail.com" rel="cc:attributionURL">Andrew Kennedy</a>.<br>
+Licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.<br><a href="http://travis-ci.org/grkvlt/iterator"><img src="https://secure.travis-ci.org/grkvlt/iterator.png?branch=master" alt="Build Status"></a> Continuous Integration service from <a href="http://travis-ci.org">Travis CI</a>.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/grkvlt">grkvlt</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-30690260-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
