@@ -54,4 +54,31 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+		<profile>
+	        <id>osx</id>
+	        <activation>
+	            <activeByDefault>false</activeByDefault>
+	            <os>
+		            <family>mac</family>
+		            <name>mac os x</name>
+	            </os>
+		    </activation>
+		    <build>
+		        <plugins>
+		            <plugin>
+		                <groupId>org.codehaus.mojo</groupId>
+		                <artifactId>build-helper-maven-plugin</artifactId>
+		                <version>1.7</version>
+                        <configuration>
+                            <sources>
+                                <source>src/main/osx</source>
+                            </sources>
+                        </configuration>
+		            </plugin>
+		        </plugins>
+		    </build>
+	    </profile>
+    </profiles>
 </project>

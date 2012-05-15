@@ -25,6 +25,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -163,8 +166,18 @@ public class Explorer extends JFrame implements KeyListener {
 
         // Setup platform specifics
         if (platform == Platform.OSX) {
-            AppleSupport apple = new AppleSupport(bus, this);
-            apple.setup();
+            try {
+	            Class<?> support = Class.forName("iterator.AppleSupport");
+	            Constructor<?> ctor = support.getConstructor(EventBus.class, Explorer.class);
+	            Method setup = support.getDeclaredMethod("setup");
+	            Object apple = ctor.newInstance(bus, this);
+	            setup.invoke(apple);
+            } catch (InvocationTargetException ite) {
+                LOG.error("Error while configuring OSX support: %s", ite.getCause().getMessage());
+                System.exit(1);
+            } catch (Exception e) {
+                LOG.warn("Unable to configure OSX support: %s", e.getMessage());
+            }
         }
     }
 
