@@ -1,11 +1,11 @@
 #!/bin/bash
 ##
-# Copyright 2012-2013 by Andrew Kennedy; All Rights Reserved
+# Copyright 2012-2013 by Andrew Kennedy.
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Iterated Function System Explorer
 #
-# Author: andrew.international@gmail.com
-# Last Modified: 2013-08-30
+# andrew.international+iterator@gmail.com
 ##
 #set -x # debug
 

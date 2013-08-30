@@ -1,13 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2012 by Andrew Kennedy; All Rights Reserved. -->
+<!-- Copyright 2012-2013 by Andrew Kennedy. -->
+<!-- http://www.apache.org/licenses/LICENSE-2.0 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>iterator</groupId>
     <artifactId>iterator</artifactId>
     <version>1.0.2-SNAPSHOT</version>
     <name>Iterator</name>
     <description>Iterated Function System Explorer</description>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>grkvlt</id>
+            <name>Andrew Kennedy</name>
+            <email>andrew.international+iterator@gmail.org</email>
+            <url>http://grkvlt.blogspot.com/</url>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/grkvlt/iterator/</url>
+        <connection>scm:git:https://github.com/grkvlt/iterator.git</connection>
+        <developerConnection>scm:git:git@github.com:grkvlt/iterator.git</developerConnection>
+    </scm>
+
+    <issueManagement>
+        <url>https://github.com/grkvlt/iterator/issues</url>
+        <system>GitHub Issues</system>
+    </issueManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
