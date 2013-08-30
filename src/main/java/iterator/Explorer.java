@@ -450,6 +450,10 @@ public class Explorer extends JFrame implements KeyListener {
 
     public BufferedImage getSplash() { return splash; }
 
+    public Viewer getViewer() { return viewer; }
+
+    public Editor getEditor() { return editor; }
+
     public About getAbout() { return about; }
 
     public Preferences getPreferences() { return prefs; }

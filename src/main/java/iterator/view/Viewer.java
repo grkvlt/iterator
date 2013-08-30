@@ -31,7 +31,9 @@ import javax.swing.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
@@ -64,6 +66,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         bus.register(this);
     }
 
+    public BufferedImage getImage() { return image; }
+
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;
@@ -83,16 +87,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         g.dispose();
     }
 
-    private void reset() {
-        if (isVisible()) {
-	        image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-	        Graphics2D g = image.createGraphics();
-	        g.setColor(Color.WHITE);
-	        g.fillRect(0, 0, getWidth(), getHeight());
-	        g.dispose();
-	        x = random.nextInt(getWidth());
-	        y = random.nextInt(getHeight());
-        }
+    public void reset() {
+        image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        g.setColor(isVisible() ? Color.WHITE : new Color(1f, 1f, 1f, 0f));
+        g.fillRect(0, 0, getWidth(), getHeight());
+        g.dispose();
+        x = random.nextInt(getWidth());
+        y = random.nextInt(getHeight());
     }
 
     public void save(File file) {
@@ -109,11 +111,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+        Transform selected = controller.getEditor().getSelected();
+        if (ifs.getTransforms().contains(selected)) { selected = null; }
         for (int i = 0; i < n; i++) {
-            int j = random.nextInt(ifs.getTransforms().size());
-            Transform t = ifs.getTransforms().get(j);
+            int j = random.nextInt(ifs.getTransforms().size() + (selected == null ? 0 : 1));
+            Transform t = Iterables.get(Iterables.concat(ifs.getTransforms(), Optional.fromNullable(selected).asSet()), j);
             Color c = controller.isColour() ? COLORS[j % COLORS.length] : Color.BLACK;
-	        g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), 4));
+            g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), isVisible() ? 4 : 16));
             double[] src = new double[] { x, y };
             double[] dst = new double[2];
             t.getTransform().transform(src, 0, dst, 0, 1);

@@ -7,8 +7,10 @@ import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
 
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -24,6 +26,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.awt.image.AffineTransformOp;
 
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
@@ -124,6 +127,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         bus.register(this);
     }
     
+    public Transform getSelected() { return selected; }
+    
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;
@@ -149,7 +154,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
     public void paintComponent(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         paintGrid(g);
+
         if (ifs != null) {
             for (Transform t : ifs.getTransforms()) {
                 if (!t.equals(selected)) {
@@ -159,7 +166,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
             if (selected != null) {
 	            paintTransform(selected, true, g);
             }
-            
+
             if (selected == null && start != null && end != null) {
                 g.setPaint(Color.BLACK);
                 g.setStroke(new BasicStroke(3f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
@@ -170,7 +177,16 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
                 Rectangle ants = new Rectangle(x, y, w, h);
                 g.draw(ants);
             }
+
+            if (!ifs.getTransforms().isEmpty()) {
+                Viewer viewer = controller.getViewer();
+                viewer.reset();
+                viewer.iterate(150000);
+                g.setComposite(AlphaComposite.SrcOver);
+                g.drawImage(viewer.getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
+            }
         }
+    
         g.dispose();
     }
     
@@ -180,9 +196,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         
         // Fill the rectangle
         if (highlight) {
-            g.setPaint(new Color(Color.BLUE.getRed(), Color.BLUE.getGreen(), Color.BLUE.getBlue(), 128));
+            g.setPaint(new Color(Color.BLUE.getRed(), Color.BLUE.getGreen(), Color.BLUE.getBlue(), 32));
         } else {
-            g.setPaint(new Color(Color.GRAY.getRed(), Color.GRAY.getGreen(), Color.GRAY.getBlue(), 128));
+            g.setPaint(new Color(Color.GRAY.getRed(), Color.GRAY.getGreen(), Color.GRAY.getBlue(), 32));
         }
         g.fill(rect);
         
