@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<IFS name="wings">
+    <Transforms>
+        <Transform id="1" zIndex="0" weight="1.0" x="0" y="0" w="400" h="350" r="0.0" sw="1440" sh="832"/>
+        <Transform id="2" zIndex="1" weight="1.0" x="780" y="140" w="400" h="350" r="0.714090698612158" sw="1440" sh="832"/>
+        <Transform id="3" zIndex="2" weight="1.0" x="400" y="0" w="400" h="350" r="0.35299038782691045" sw="1440" sh="832"/>
+        <Transform id="4" zIndex="3" weight="1.0" x="1080" y="400" w="400" h="350" r="1.0584068664841588" sw="1440" sh="832"/>
+        <Transform id="5" zIndex="4" weight="1.0" x="0" y="350" w="1100" h="520" r="0.0" sw="1440" sh="832"/>
+        <Transform id="7" zIndex="6" weight="1.0" x="940" y="80" w="400" h="350" r="-0.3547056520109403" sw="1440" sh="832"/>
+    </Transforms>
+</IFS>

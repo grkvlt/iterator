@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<IFS name="lines">
+    <Transforms>
+        <Transform id="1" zIndex="0" weight="1.0" x="80" y="40" w="250" h="370" r="0.0" sw="600" sh="600"/>
+        <Transform id="4" zIndex="3" weight="1.0" x="230" y="50" w="520" h="10" r="0.7980557152315002" sw="600" sh="600"/>
+        <Transform id="5" zIndex="4" weight="1.0" x="100" y="380" w="550" h="10" r="-0.4714599500609072" sw="600" sh="600"/>
+        <Transform id="4" zIndex="5" weight="1.0" x="130" y="441" w="434" h="10" r="-1.0265158418489166" sw="600" sh="600"/>
+        <Transform id="5" zIndex="6" weight="1.0" x="230" y="80" w="230" h="360" r="0.6556956262415362" sw="600" sh="600"/>
+        <Transform id="6" zIndex="7" weight="1.0" x="330" y="-40" w="230" h="360" r="0.6556956262415362" sw="600" sh="600"/>
+        <Transform id="7" zIndex="8" weight="1.0" x="0" y="160" w="570" h="10" r="0.0" sw="600" sh="600"/>
+        <Transform id="8" zIndex="9" weight="1.0" x="170" y="110" w="370" h="330" r="0.0" sw="600" sh="600"/>
+        <Transform id="9" zIndex="10" weight="1.0" x="440" y="50" w="10" h="540" r="0.0" sw="600" sh="600"/>
+        <Transform id="10" zIndex="11" weight="1.0" x="30" y="500" w="330" h="360" r="-1.025141272267905" sw="600" sh="600"/>
+    </Transforms>
+</IFS>
