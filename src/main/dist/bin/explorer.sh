@@ -1,11 +1,11 @@
 #!/bin/bash
 ##
-# Copyright 2012 by Andrew Kennedy; All Rights Reserved
+# Copyright 2012-2013 by Andrew Kennedy; All Rights Reserved
 #
 # Iterated Function System Explorer
 #
 # Author: andrew.international@gmail.com
-# Last Modified: 2012-04-06
+# Last Modified: 2013-08-30
 ##
 #set -x # debug
 
@@ -15,8 +15,7 @@
 BIN=$(dirname $0)
 PARENT=$(echo "${BIN}/.." | sed -e "s/\/bin\/..//")
 LIB="${PARENT}/lib"
-ETC="${PARENT}/etc"
-JAVA_OPTS="-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true"
+JAVA_OPTS="${JAVA_OPTS} -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true"
 
 ##
 # Exexcute Java
