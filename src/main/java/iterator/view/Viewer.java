@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 by Andrew Kennedy; All Rights Reserved
+ * Copyright 2012-2013 by Andrew Kennedy; All Rights Reserved
  */
 package iterator.view;
 
@@ -134,7 +134,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
     public void actionPerformed(ActionEvent e) {
         if (ifs != null && !ifs.getTransforms().isEmpty() && image != null) {
             iterate(10000);
-	        repaint();
+            repaint();
         }
     }
 

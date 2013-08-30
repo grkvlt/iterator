@@ -44,37 +44,37 @@ public class Details extends JTextPane {
 
         bus.register(this);
     }
-    
+
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;
-        
+
         setDetails();
     }
 
     public void setDetails() {
         StringBuilder html = new StringBuilder();
         try {
-	        html.append("<html><h1>Iterated Function System</h1>");
-	        html.append(String.format("<h2 id=\"name\">%s</h2>", ifs.getName() == null ? IFS.UNTITLED : ifs.getName()));
-	        if (ifs.getTransforms().isEmpty()) {
-	            html.append("<h2>No Transforms</h2>");
-	        } else {
-	            html.append("<h2>Transforms</h2>");
-	            html.append("<div id=\"transforms\">");
-		        for (Transform t : ifs.getTransforms()) {
-		            double[] matrix = new double[6];
-		            t.getTransform().getMatrix(matrix);
-		            String data = String.format("<div class=\"transform\"><span class=\"id\">%02d</span>" +
-		            		"<div class=\"matrix\">[ %f, %f, %f ]<br />[ %f, %f, %f ]</div>" +
-		            		"</div>",
-		                    t.getId(), matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
-		            html.append(data);
-		        }
-	            html.append("</div>");
-	        }
-	        html.append("</html>");
-	        setText(html.toString());
+            html.append("<html><h1>Iterated Function System</h1>");
+            html.append(String.format("<h2 id=\"name\">%s</h2>", ifs.getName() == null ? IFS.UNTITLED : ifs.getName()));
+            if (ifs.getTransforms().isEmpty()) {
+                html.append("<h2>No Transforms</h2>");
+            } else {
+                html.append("<h2>Transforms</h2>");
+                html.append("<div id=\"transforms\">");
+                for (Transform t : ifs.getTransforms()) {
+                    double[] matrix = new double[6];
+                    t.getTransform().getMatrix(matrix);
+                    String data = String.format("<div class=\"transform\"><span class=\"id\">%02d</span>" +
+                            "<div class=\"matrix\">[ %f, %f, %f ]<br />[ %f, %f, %f ]</div>" +
+                            "</div>",
+                            t.getId(), matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+                    html.append(data);
+                }
+                html.append("</div>");
+            }
+            html.append("</html>");
+            setText(html.toString());
         } catch (Exception e) {
             Throwables.propagate(e);
         }

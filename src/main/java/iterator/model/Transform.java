@@ -42,12 +42,12 @@ public class Transform {
     private int sw;
     @XmlAttribute
     private int sh;
-    
+
     @SuppressWarnings("unused")
     private Transform() {
         // JAXB
     }
-    
+
     public Transform(int id, int zIndex, Dimension size) {
         this.id = id;
         this.zIndex = zIndex;
@@ -88,11 +88,11 @@ public class Transform {
     public double getWeight() {
         return this.weight;
     }
-    
+
     public void setWeight(double weight) {
         this.weight = weight;
     }
-    
+
     public void setSize(Dimension size) {
         this.w = (int) ((double) w * (size.getWidth() / (double) sw));
         this.h = (int) ((double) h * (size.getHeight()/ (double) sh));
@@ -100,5 +100,5 @@ public class Transform {
         this.y = (int) ((double) y * (size.getHeight() / (double) sh));
         this.sw = size.width;
         this.sh = size.height;
-    } 
+    }
 }

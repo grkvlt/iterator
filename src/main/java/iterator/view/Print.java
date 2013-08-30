@@ -30,7 +30,7 @@ public class Print {
 
         bus.register(this);
     }
-    
+
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;

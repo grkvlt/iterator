@@ -35,7 +35,7 @@ public class AppleSupport implements OpenFilesHandler, AboutHandler, Preferences
         this.bus = bus;
         this.controller = controller;
     }
-    
+
     public void setup() {
         Application app = Application.getApplication();
         app.setOpenFileHandler(this);

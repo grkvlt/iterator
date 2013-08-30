@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 by Andrew Kennedy; All Rights Reserved
+ * Copyright 2012-2013 by Andrew Kennedy; All Rights Reserved
  */
 package iterator;
 
@@ -99,7 +99,7 @@ public class Explorer extends JFrame implements KeyListener {
 
     private boolean fullScreen = false;
     private boolean colour = false;
-    
+
     private Platform platform = Platform.getPlatform();
     private BufferedImage icon, splash;
     private Preferences prefs;
@@ -126,11 +126,11 @@ public class Explorer extends JFrame implements KeyListener {
         // Parse arguments
         if (argv.length != 0) {
             for (int i = 0; i < argv.length; i++) {
-	            if (argv[i].equalsIgnoreCase(FULLSCREEN_OPTION)) {
-	                fullScreen = true;
-	            } else if (argv[i].equalsIgnoreCase(COLOUR_OPTION)) {
-	                colour = true;
-	            } else throw new IllegalArgumentException();
+                if (argv[i].equalsIgnoreCase(FULLSCREEN_OPTION)) {
+                    fullScreen = true;
+                } else if (argv[i].equalsIgnoreCase(COLOUR_OPTION)) {
+                    colour = true;
+                } else throw new IllegalArgumentException();
             }
         }
 
@@ -138,7 +138,7 @@ public class Explorer extends JFrame implements KeyListener {
         if (fullScreen) {
             setUndecorated(true);
             setResizable(false);
-	        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+            Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
             Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
             setBounds(insets.left, insets.top, screen.width - (insets.left + insets.right), screen.height - (insets.top + insets.bottom));
         }
@@ -149,8 +149,8 @@ public class Explorer extends JFrame implements KeyListener {
 
         // Load resources
         try {
-	        icon = ImageIO.read(Resources.getResource("icon.png"));
-	        splash = ImageIO.read(Resources.getResource("splash.png"));
+            icon = ImageIO.read(Resources.getResource("icon.png"));
+            splash = ImageIO.read(Resources.getResource("splash.png"));
         } catch (IOException ioe) {
             Throwables.propagate(ioe);
         }
@@ -167,11 +167,11 @@ public class Explorer extends JFrame implements KeyListener {
         // Setup platform specifics
         if (platform == Platform.OSX) {
             try {
-	            Class<?> support = Class.forName("iterator.AppleSupport");
-	            Constructor<?> ctor = support.getConstructor(EventBus.class, Explorer.class);
-	            Method setup = support.getDeclaredMethod("setup");
-	            Object apple = ctor.newInstance(bus, this);
-	            setup.invoke(apple);
+                Class<?> support = Class.forName("iterator.AppleSupport");
+                Constructor<?> ctor = support.getConstructor(EventBus.class, Explorer.class);
+                Method setup = support.getDeclaredMethod("setup");
+                Object apple = ctor.newInstance(bus, this);
+                setup.invoke(apple);
             } catch (InvocationTargetException ite) {
                 LOG.error("Error while configuring OSX support: %s", ite.getCause().getMessage());
                 System.exit(1);
@@ -214,7 +214,7 @@ public class Explorer extends JFrame implements KeyListener {
                 if (result == JFileChooser.APPROVE_OPTION) {
                     IFS loaded = load(chooser.getSelectedFile());
                     loaded.setSize(getSize());
-	                Explorer.this.bus.post(loaded);
+                    Explorer.this.bus.post(loaded);
                 }
             }
         });
@@ -225,11 +225,11 @@ public class Explorer extends JFrame implements KeyListener {
             public void actionPerformed(ActionEvent e) {
                 if (ifs.getName() == null) {
                     saveAs.doClick();
-	            } else {
-	                File saveAs = new File(ifs.getName() + ".xml");
-	                save(saveAs);
-		            save.setEnabled(false);
-	            }
+                } else {
+                    File saveAs = new File(ifs.getName() + ".xml");
+                    save(saveAs);
+                    save.setEnabled(false);
+                }
             }
         });
         save.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -247,7 +247,7 @@ public class Explorer extends JFrame implements KeyListener {
                     File saveAs = chooser.getSelectedFile();
                     ifs.setName(saveAs.getName().replace(".xml", ""));
                     save(saveAs);
-	                Explorer.this.bus.post(ifs);
+                    bus.post(ifs);
                 }
             }
         });
@@ -260,7 +260,7 @@ public class Explorer extends JFrame implements KeyListener {
                 JFileChooser chooser = new JFileChooser();
                 chooser.setFileFilter(filter);
                 chooser.setSelectedFile(new File((ifs.getName() == null ? IFS.UNTITLED : ifs.getName()) + ".png"));
-		        int result = chooser.showSaveDialog(null);
+                int result = chooser.showSaveDialog(null);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     viewer.save(chooser.getSelectedFile());
                 }
@@ -281,14 +281,14 @@ public class Explorer extends JFrame implements KeyListener {
                 public void actionPerformed(ActionEvent e) {
                 }
             });
-	        JMenuItem quit = new JMenuItem(new AbstractAction("Quit") {
-	            @Override
-	            public void actionPerformed(ActionEvent e) {
-	                System.exit(0);
-	            }
-	        });
-	        quit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-	        file.add(quit);
+            JMenuItem quit = new JMenuItem(new AbstractAction("Quit") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    System.exit(0);
+                }
+            });
+            quit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+            file.add(quit);
         }
         menuBar.add(file);
 
@@ -346,27 +346,27 @@ public class Explorer extends JFrame implements KeyListener {
         setContentPane(content);
 
         if (!fullScreen) {
-	        Dimension minimum = new Dimension(SIZE, SIZE);
+            Dimension minimum = new Dimension(SIZE, SIZE);
             editor.setMinimumSize(minimum);
             editor.setSize(minimum);
             viewer.setMinimumSize(minimum);
             viewer.setSize(minimum);
             pack();
             final int top = getInsets().top + (fullScreen ? 0 :  menuBar.getHeight());
-	        Dimension size = new Dimension(SIZE, SIZE + top);
-	        setSize(size);
-	        setPreferredSize(size);
-	        setMinimumSize(size);
-	        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-	        setLocation((screen.width / 2) - (size.width / 2), (screen.height / 2) - (size.height / 2));
-	        addComponentListener(new ComponentAdapter() {
-	            @Override
-				public void componentResized(ComponentEvent e) {
-	                Dimension s = getSize();
-	                int side = Math.min(s.width, s.height - top);
-	                setSize(side,  side + top);
-	                Explorer.this.bus.post(new Dimension(side, side));
-	            }
+            Dimension size = new Dimension(SIZE, SIZE + top);
+            setSize(size);
+            setPreferredSize(size);
+            setMinimumSize(size);
+            Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+            setLocation((screen.width / 2) - (size.width / 2), (screen.height / 2) - (size.height / 2));
+            addComponentListener(new ComponentAdapter() {
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    Dimension s = getSize();
+                    int side = Math.min(s.width, s.height - top);
+                    setSize(side,  side + top);
+                    bus.post(new Dimension(side, side));
+                }
             });
         }
 
@@ -387,10 +387,10 @@ public class Explorer extends JFrame implements KeyListener {
         cards.show(view, name);
         current = name;
         if (name.equals(VIEWER)) {
-	        export.setEnabled(true);
-	        viewer.start();
+            export.setEnabled(true);
+            viewer.start();
         } else {
-	        export.setEnabled(false);
+            export.setEnabled(false);
             viewer.stop();
         }
     }
@@ -407,34 +407,31 @@ public class Explorer extends JFrame implements KeyListener {
         repaint();
      }
 
-    public void save(File file) {
-       try {
-          JAXBContext context = JAXBContext.newInstance(IFS.class);
-          Marshaller marshaller = context.createMarshaller();
-          marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-          FileWriter writer = new FileWriter(file);
-          marshaller.marshal(ifs, writer);
-          Closeables.closeQuietly(writer);
-       } catch (Exception e) {
-          throw Throwables.propagate(e);
-       }
-    }
+     public void save(File file) {
+         try (FileWriter writer = new FileWriter(file)) {
+             JAXBContext context = JAXBContext.newInstance(IFS.class);
+             Marshaller marshaller = context.createMarshaller();
+             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+             marshaller.marshal(ifs, writer);
+             Closeables.close(writer, true);
+         } catch (Exception e) {
+             throw Throwables.propagate(e);
+         }
+     }
 
-    public IFS load(File file) {
-       try {
-          JAXBContext context = JAXBContext.newInstance(IFS.class);
-          FileReader reader = new FileReader(file);
-          Unmarshaller unmarshaller = context.createUnmarshaller();
-          IFS ifs = (IFS) unmarshaller.unmarshal(reader);
-          Closeables.closeQuietly(reader);
-          return ifs;
-       } catch (Exception e) {
-          throw Throwables.propagate(e);
-       }
-    }
-    
+     public IFS load(File file) {
+         try (FileReader reader = new FileReader(file)) {
+             JAXBContext context = JAXBContext.newInstance(IFS.class);
+             Unmarshaller unmarshaller = context.createUnmarshaller();
+             IFS ifs = (IFS) unmarshaller.unmarshal(reader);
+             return ifs;
+         } catch (Exception e) {
+             throw Throwables.propagate(e);
+         }
+     }
+
     public boolean isFullScreen() { return fullScreen; }
-    
+
     public boolean isColour() { return colour; }
 
     /** Small grid spacing. */
@@ -505,8 +502,8 @@ public class Explorer extends JFrame implements KeyListener {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-		        Explorer explorer = new Explorer(argv);
-		        explorer.start();
+                Explorer explorer = new Explorer(argv);
+                explorer.start();
             }
         });
     }

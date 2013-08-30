@@ -29,7 +29,7 @@ public class Preferences extends JDialog {
 
         bus.register(this);
     }
-    
+
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;

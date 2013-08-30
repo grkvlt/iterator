@@ -73,7 +73,7 @@ public class Splash extends JPanel implements ActionListener {
 
     public void showDialog() {
         parent.setVisible(true);
-	    Timer timer = new Timer(5000, this);
+        Timer timer = new Timer(5000, this);
         timer.setRepeats(false);
         timer.start();
     }

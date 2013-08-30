@@ -24,15 +24,15 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
- * IFS. 
+ * IFS.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "IFS")
 public class IFS {
     public static final Logger LOG = LoggerFactory.getLogger(IFS.class);
-    
+
     public static final String UNTITLED = "Untitled";
-    
+
     private static final Comparator<Transform> Z_ORDER = new Comparator<Transform>() {
         @Override
         public int compare(Transform left, Transform right) {
@@ -42,7 +42,7 @@ public class IFS {
                     .result();
         }
     };
-    
+
     @XmlAttribute
     private String name;
     @XmlElementWrapper(name = "Transforms")
@@ -54,7 +54,7 @@ public class IFS {
             t.setSize(size);
         }
     }
-    
+
     public IFS() { }
 
     public String getName() {
@@ -87,8 +87,8 @@ public class IFS {
         int id = Iterables.size(transforms) + 1;
         int zIndex = 0;
         if (!transforms.isEmpty()) {
-	        Transform last = Iterables.getLast(transforms);
-	        zIndex = last.getZIndex() + 1;
+            Transform last = Iterables.getLast(transforms);
+            zIndex = last.getZIndex() + 1;
         }
         Transform transform = new Transform(id, zIndex, size);
         addTransform(transform);
