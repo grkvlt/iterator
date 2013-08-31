@@ -32,6 +32,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileReader;
@@ -60,9 +61,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -80,8 +78,6 @@ import com.google.common.io.Resources;
 public class Explorer extends JFrame implements KeyListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -2003170067188344917L;
-
-    public static final Logger LOG = LoggerFactory.getLogger(Explorer.class);
 
     public static enum Platform {
         LINUX,
@@ -205,10 +201,10 @@ public class Explorer extends JFrame implements KeyListener {
                 Object apple = ctor.newInstance(bus, this);
                 setup.invoke(apple);
             } catch (InvocationTargetException ite) {
-                LOG.error("Error while configuring OSX support: %s", ite.getCause().getMessage());
+                System.err.printf("Error while configuring OSX support: %s\n", ite.getCause().getMessage());
                 System.exit(1);
             } catch (Exception e) {
-                LOG.warn("Unable to configure OSX support: %s", e.getMessage());
+                System.err.printf("Unable to configure OSX support: %s\n", e.getMessage());
             }
         }
     }

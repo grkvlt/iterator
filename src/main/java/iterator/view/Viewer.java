@@ -44,9 +44,6 @@ import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
@@ -60,12 +57,6 @@ import com.google.common.eventbus.Subscribe;
 public class Viewer extends JPanel implements ActionListener, KeyListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1;
-
-    public static final Logger LOG = LoggerFactory.getLogger(Viewer.class);
-
-    public static final Color[] COLORS = new Color[] {
-        Color.GREEN, Color.BLUE, Color.RED, Color.CYAN, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.BLACK, Color.YELLOW
-    };
 
     private final Explorer controller;
 

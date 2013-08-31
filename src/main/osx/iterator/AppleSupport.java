@@ -19,9 +19,6 @@ import iterator.model.IFS;
 
 import java.io.File;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.apple.eawt.AboutHandler;
 import com.apple.eawt.AppEvent.AboutEvent;
 import com.apple.eawt.AppEvent.OpenFilesEvent;
@@ -38,8 +35,6 @@ import com.google.common.eventbus.EventBus;
  */
 @SuppressWarnings("restriction")
 public class AppleSupport implements OpenFilesHandler, AboutHandler, PreferencesHandler {
-    public static final Logger LOG = LoggerFactory.getLogger(AppleSupport.class);
-
     private final EventBus bus;
     private final Explorer controller;
 

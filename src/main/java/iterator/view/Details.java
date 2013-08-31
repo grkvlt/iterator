@@ -23,9 +23,6 @@ import javax.swing.JTextPane;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Throwables;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
@@ -36,8 +33,6 @@ import com.google.common.eventbus.Subscribe;
 public class Details extends JTextPane {
     /** serialVersionUID */
     private static final long serialVersionUID = -1;
-
-    public static final Logger LOG = LoggerFactory.getLogger(Details.class);
 
     private IFS ifs;
 

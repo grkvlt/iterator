@@ -23,17 +23,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Transform Model.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Transform")
 public class Transform {
-    public static final Logger LOG = LoggerFactory.getLogger(Transform.class);
-
     @XmlAttribute
     private int id;
     @XmlAttribute
