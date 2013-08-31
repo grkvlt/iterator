@@ -45,11 +45,20 @@ public class IFS {
 
     public static final String UNTITLED = "Untitled";
 
-    private static final Comparator<Transform> Z_ORDER = new Comparator<Transform>() {
+    public static final Comparator<Transform> Z_ORDER = new Comparator<Transform>() {
         @Override
         public int compare(Transform left, Transform right) {
             return ComparisonChain.start()
                     .compare(left.getZIndex(), right.getZIndex())
+                    .compare(left.getId(), right.getId())
+                    .result();
+        }
+    };
+
+    public static final Comparator<Transform> IDENTITY = new Comparator<Transform>() {
+        @Override
+        public int compare(Transform left, Transform right) {
+            return ComparisonChain.start()
                     .compare(left.getId(), right.getId())
                     .result();
         }
@@ -103,7 +112,6 @@ public class IFS {
             zIndex = last.getZIndex() + 1;
         }
         Transform transform = new Transform(id, zIndex, size);
-        addTransform(transform);
         return transform;
     }
 }

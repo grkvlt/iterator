@@ -98,6 +98,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
                 copy.w = selected.w;
                 copy.h = selected.h;
                 copy.r = selected.r;
+                ifs.addTransform(copy);
                 selected = copy;
                 Editor.this.bus.post(ifs);
             }
@@ -139,6 +140,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
     }
 
     public Transform getSelected() { return selected; }
+
+    public Point getStart() { return start; }
+
+    public Point getEnd() { return end; }
 
     @Subscribe
     public void update(IFS ifs) {
@@ -192,7 +197,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
             if (!ifs.getTransforms().isEmpty()) {
                 Viewer viewer = controller.getViewer();
                 viewer.reset();
-                viewer.iterate(150000);
+                int n = ifs.getTransforms().size();
+                viewer.iterate(50000 + (int) (50000d * Math.log10(n)));
                 g.setComposite(AlphaComposite.SrcOver);
                 g.drawImage(viewer.getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
             }
@@ -398,6 +404,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
                 selected.y = y;
                 selected.w = w;
                 selected.h = h;
+                ifs.addTransform(selected);
                 bus.post(ifs);
             } else if (selected != null  && start != null && end != null) {
                 ifs.addTransform(selected);

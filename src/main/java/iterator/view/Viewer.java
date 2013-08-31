@@ -19,10 +19,12 @@ import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -34,6 +36,8 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -46,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
@@ -100,6 +105,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
     }
 
     public void reset() {
+        if (getWidth() <= 0 && getHeight() <= 0) return;
         image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
         g.setColor(isVisible() ? Color.WHITE : new Color(1f, 1f, 1f, 0f));
@@ -124,20 +130,50 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
+        int rule = Integer.getInteger(Explorer.EXPLORER_PROPERTY + ".rule", AlphaComposite.SRC_OVER);
+        float alpha = Float.parseFloat(System.getProperty(Explorer.EXPLORER_PROPERTY + ".alpha", "0.8"));
+        g.setComposite(AlphaComposite.getInstance(rule, alpha));
+
+        List<Transform> transforms = ifs.getTransforms();
         Transform selected = controller.getEditor().getSelected();
-        if (ifs.getTransforms().contains(selected)) { selected = null; }
+        Transform ants = null;
+
+        Point start = controller.getEditor().getStart();
+        Point end = controller.getEditor().getEnd();
+        if (selected == null && start != null && end != null) {
+            int x = Math.min(start.x, end.x);
+            int y = Math.min(start.y, end.y);
+            int w = Math.max(start.x, end.x) - x;
+            int h = Math.max(start.y, end.y) - y;
+
+            int grid = controller.getMinGrid();
+            w = Math.max(grid, w);
+            h = Math.max(grid, h);
+
+            ants = ifs.newTransform(getSize());
+            ants.x = x;
+            ants.y = y;
+            ants.w = w;
+            ants.h = h;
+        }
+
+        if (transforms.contains(selected)) { selected = null; }
+        transforms = Lists.newArrayList(Iterables.concat(transforms, Optional.fromNullable(selected).asSet(), Optional.fromNullable(ants).asSet()));
+        Collections.sort(transforms, IFS.IDENTITY);
+
         for (int i = 0; i < n; i++) {
-            int j = random.nextInt(ifs.getTransforms().size() + (selected == null ? 0 : 1));
-            Transform t = Iterables.get(Iterables.concat(ifs.getTransforms(), Optional.fromNullable(selected).asSet()), j);
-            Color c = controller.isColour() ? COLORS[j % COLORS.length] : Color.BLACK;
-            g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), isVisible() ? 4 : 16));
+            int j = random.nextInt(transforms.size());
+            Transform t = transforms.get(j);
+            Color c = controller.isColour() ? Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f) : Color.BLACK;
+            g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), isVisible() ? transforms.size() : 16));
             double[] src = new double[] { x, y };
             double[] dst = new double[2];
             t.getTransform().transform(src, 0, dst, 0, 1);
             x = dst[0]; y = dst[1];
-            Rectangle rect = new Rectangle((int) Math.floor(x + 0.5d), (int) Math.floor(y + 0.5d), 2, 2);
+            Rectangle rect = new Rectangle((int) Math.floor(x + 0.5d), (int) Math.floor(y + 0.5d), isVisible() ? 1 : 2, isVisible() ? 1 : 2);
             g.fill(rect);
         }
+
         g.dispose();
     }
 

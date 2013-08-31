@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Queue;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -65,6 +66,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Queues;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.io.Closeables;
@@ -99,6 +101,8 @@ public class Explorer extends JFrame implements KeyListener {
         }
     }
 
+    public static final String EXPLORER_PROPERTY = "explorer";
+
     public static final String EXPLORER = "IFS Explorer";
     public static final String EDITOR = "Editor";
     public static final String VIEWER = "Viewer";
@@ -131,6 +135,7 @@ public class Explorer extends JFrame implements KeyListener {
     private JMenuItem export, save, saveAs;
 
     private EventBus bus;
+    private Queue<Runnable> tasks = Queues.newArrayDeque();
 
     public Explorer(String...argv) {
         super(EXPLORER);
@@ -142,9 +147,28 @@ public class Explorer extends JFrame implements KeyListener {
                     fullScreen = true;
                 } else if (argv[i].equalsIgnoreCase(COLOUR_OPTION)) {
                     colour = true;
-                } else throw new IllegalArgumentException();
+                } else if (i == argv.length - 1) { // Last argument
+                    final File file = new File(argv[i]);
+                    if (file.canRead()) {
+                        tasks.add(new Runnable() {
+                            public void run() {
+                                IFS loaded = load(file);
+                                loaded.setSize(getSize());
+                                bus.post(loaded);
+                            }
+                        });
+                    } else {
+                        throw new IllegalArgumentException("Cannot load " + argv[i]);
+                    }
+                } else {
+                    throw new IllegalArgumentException("Cannot parse " + argv[i]);
+                }
             }
         }
+
+        // Setup event bus
+        bus = new EventBus(EXPLORER);
+        bus.register(this);
 
         // Setup full-screen mode if required
         if (fullScreen) {
@@ -154,10 +178,6 @@ public class Explorer extends JFrame implements KeyListener {
             Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
             setBounds(insets.left, insets.top, screen.width - (insets.left + insets.right), screen.height - (insets.top + insets.bottom));
         }
-
-        // Setup event bus
-        bus = new EventBus(EXPLORER);
-        bus.register(this);
 
         // Load resources
         try {
@@ -211,7 +231,7 @@ public class Explorer extends JFrame implements KeyListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 IFS untitled = new IFS();
-                Explorer.this.bus.post(untitled);
+                bus.post(untitled);
             }
         });
         newIfs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -226,7 +246,7 @@ public class Explorer extends JFrame implements KeyListener {
                 if (result == JFileChooser.APPROVE_OPTION) {
                     IFS loaded = load(chooser.getSelectedFile());
                     loaded.setSize(getSize());
-                    Explorer.this.bus.post(loaded);
+                    bus.post(loaded);
                 }
             }
         });
@@ -391,6 +411,10 @@ public class Explorer extends JFrame implements KeyListener {
 
         IFS untitled = new IFS();
         bus.post(untitled);
+
+        while (tasks.size() > 0) {
+            SwingUtilities.invokeLater(tasks.poll());
+        }
 
         setVisible(true);
     }
