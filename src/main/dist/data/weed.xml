@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<IFS name="weed">
+    <Transforms>
+        <Transform id="1" zIndex="0" weight="1.0" x="150" y="150" w="300" h="450" r="0.0" sw="600" sh="600"/>
+        <Transform id="2" zIndex="1" weight="1.0" x="250" y="50" w="100" h="200" r="0.0" sw="600" sh="600"/>
+        <Transform id="3" zIndex="2" weight="1.0" x="44" y="104" w="188" h="214" r="-0.5191461142465229" sw="600" sh="600"/>
+        <Transform id="4" zIndex="3" weight="1.0" x="400" y="160" w="192" h="236" r="0.5191461142465229" sw="600" sh="600"/>
+    </Transforms>
+</IFS>

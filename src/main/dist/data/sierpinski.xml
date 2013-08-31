@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<IFS name="sierpinski">
+    <Transforms>
+        <Transform id="1" zIndex="0" weight="1.0" x="0" y="300" w="300" h="300" r="0.0" sw="600" sh="600"/>
+        <Transform id="2" zIndex="1" weight="1.0" x="300" y="300" w="300" h="300" r="0.0" sw="600" sh="600"/>
+        <Transform id="3" zIndex="2" weight="1.0" x="140" y="0" w="300" h="300" r="0.0" sw="600" sh="600"/>
+    </Transforms>
+</IFS>

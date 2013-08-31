@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<IFS name="devils-staircase">
+    <Transforms>
+        <Transform id="1" zIndex="0" weight="1.0" x="0" y="300" w="200" h="300" r="0.0" sw="600" sh="600"/>
+        <Transform id="2" zIndex="1" weight="1.0" x="200" y="300" w="200" h="300" r="0.0" sw="600" sh="600"/>
+        <Transform id="3" zIndex="2" weight="1.0" x="400" y="300" w="200" h="300" r="0.0" sw="600" sh="600"/>
+        <Transform id="4" zIndex="3" weight="1.0" x="400" y="0" w="200" h="300" r="0.0" sw="600" sh="600"/>
+        <Transform id="5" zIndex="4" weight="1.0" x="400" y="600" w="200" h="300" r="3.141592653589793" sw="600" sh="600"/>
+        <Transform id="6" zIndex="5" weight="1.0" x="600" y="600" w="200" h="300" r="3.141592653589793" sw="600" sh="600"/>
+    </Transforms>
+</IFS>

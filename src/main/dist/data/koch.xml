@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<IFS name="koch">
+    <Transforms>
+        <Transform id="1" zIndex="0" weight="1.0" x="0" y="400" w="200" h="200" r="0.0" sw="600" sh="600"/>
+        <Transform id="4" zIndex="3" weight="1.0" x="400" y="400" w="200" h="200" r="0.0" sw="600" sh="600"/>
+        <Transform id="3" zIndex="4" weight="1.0" x="20" y="500" w="200" h="200" r="-1.0552473193359175" sw="600" sh="600"/>
+        <Transform id="4" zIndex="5" weight="1.0" x="470" y="330" w="200" h="200" r="1.0636978224025597" sw="600" sh="600"/>
+    </Transforms>
+</IFS>
