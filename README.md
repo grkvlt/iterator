@@ -13,10 +13,18 @@ Iterated Function System Explorer.
 
 ### TODO
 
-- Properties editor for Transform
-- Printing
+- Properties editor for Transformcl
+ - Matrix coefficients _or_ rotation/displacement/scale values
+- Printing support
 - Preferences dialog
 - Better details view
+- Weighting for transforms
+- Better operating system integration
+ - Native full-screen mode
+ - Support native windowing system features
+- Add skew transform
+- Better UI for rotations
+- Improve documentation
 
 ----
 Copyright 2013 by [Andrew Kennedy](mailto:andrew.international+iterator@gmail.com)
