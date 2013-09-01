@@ -125,7 +125,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         float alpha = Float.parseFloat(System.getProperty(Explorer.EXPLORER_PROPERTY + ".alpha", "0.8"));
         g.setComposite(AlphaComposite.getInstance(rule, alpha));
 
-        List<Transform> transforms = ifs.getTransforms();
         Transform selected = controller.getEditor().getSelected();
         Transform ants = null;
 
@@ -148,8 +147,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
             ants.h = h;
         }
 
-        if (transforms.contains(selected)) { selected = null; }
-        transforms = Lists.newArrayList(Iterables.concat(transforms, Optional.fromNullable(selected).asSet(), Optional.fromNullable(ants).asSet()));
+        if (ifs.contains(selected)) { selected = null; }
+        List<Transform> transforms = Lists.newArrayList(Iterables.concat(ifs, Optional.fromNullable(selected).asSet(), Optional.fromNullable(ants).asSet()));
         Collections.sort(transforms, IFS.IDENTITY);
 
         for (int i = 0; i < n; i++) {
@@ -171,7 +170,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
     /** @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent) */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (ifs != null && !ifs.getTransforms().isEmpty() && image != null) {
+        if (ifs != null && !ifs.isEmpty() && image != null) {
             iterate(10000);
             repaint();
         }

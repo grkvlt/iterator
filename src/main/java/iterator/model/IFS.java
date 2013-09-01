@@ -28,10 +28,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.ForwardingList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -40,9 +38,7 @@ import com.google.common.collect.Lists;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "IFS")
-public class IFS {
-    public static final Logger LOG = LoggerFactory.getLogger(IFS.class);
-
+public class IFS extends ForwardingList<Transform> {
     public static final String UNTITLED = "Untitled";
 
     public static final Comparator<Transform> Z_ORDER = new Comparator<Transform>() {
@@ -113,5 +109,10 @@ public class IFS {
         }
         Transform transform = new Transform(id, zIndex, size);
         return transform;
+    }
+
+    @Override
+    protected List<Transform> delegate() {
+        return transforms;
     }
 }

@@ -64,12 +64,12 @@ public class Details extends JTextPane {
         try {
             html.append("<html><h1>Iterated Function System</h1>");
             html.append(String.format("<h2 id=\"name\">%s</h2>", ifs.getName() == null ? IFS.UNTITLED : ifs.getName()));
-            if (ifs.getTransforms().isEmpty()) {
+            if (ifs.isEmpty()) {
                 html.append("<h2>No Transforms</h2>");
             } else {
                 html.append("<h2>Transforms</h2>");
                 html.append("<table id=\"transforms\">");
-                for (Transform t : ifs.getTransforms()) {
+                for (Transform t : ifs) {
                     double[] matrix = new double[6];
                     t.getTransform().getMatrix(matrix);
                     String data = String.format("<tr class=\"transform\"><td class=\"id\">%02d</td>" +

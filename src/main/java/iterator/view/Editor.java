@@ -120,14 +120,14 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         transform.add(new AbstractAction("Move to Front") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                selected.setZIndex(Iterables.getLast(ifs.getTransforms()).getZIndex() + 1);
+                selected.setZIndex(Iterables.getLast(ifs).getZIndex() + 1);
                 Editor.this.bus.post(ifs);
             }
         });
         transform.add(new AbstractAction("Move to Back") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                selected.setZIndex(Iterables.get(ifs.getTransforms(), 0).getZIndex() - 1);
+                selected.setZIndex(Iterables.get(ifs, 0).getZIndex() - 1);
                 Editor.this.bus.post(ifs);
             }
         });
@@ -153,7 +153,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         resize = null;
         move = null;
         rotate = null;
-        if (!ifs.getTransforms().contains(selected)) {
+        if (!ifs.contains(selected)) {
             selected = null;
         }
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -174,7 +174,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         paintGrid(g);
 
         if (ifs != null) {
-            for (Transform t : ifs.getTransforms()) {
+            for (Transform t : ifs) {
                 if (!t.equals(selected)) {
                     paintTransform(t, false, g);
                 }
@@ -194,10 +194,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
                 g.draw(ants);
             }
 
-            if (!ifs.getTransforms().isEmpty()) {
+            if (!ifs.isEmpty()) {
                 Viewer viewer = controller.getViewer();
                 viewer.reset();
-                int n = ifs.getTransforms().size();
+                int n = ifs.size();
                 viewer.iterate(50000 + (int) (50000d * Math.log10(n)));
                 g.setComposite(AlphaComposite.SrcOver);
                 g.drawImage(viewer.getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
@@ -287,7 +287,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
     }
 
     public Transform getTransformAt(Point point) {
-        for (Transform t : Lists.reverse(ifs.getTransforms())) {
+        for (Transform t : Lists.reverse(ifs)) {
             Shape box = t.getTransform().createTransformedShape(new Rectangle(0, 0, getWidth(), getHeight()));
             if (box.contains(point)) {
                 return t;
@@ -326,7 +326,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         Transform clicked = getTransformAt(e.getPoint());
         if (SwingUtilities.isLeftMouseButton(e)) {
             resize = null;
-            for (Transform t : ifs.getTransforms()) {
+            for (Transform t : ifs) {
                 if (isResize(t, e.getPoint())) {
                     resize = t;
                     break;
@@ -512,7 +512,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
             if (getTransformAt(e.getPoint()) != null) {
                 setCursor(new Cursor(Cursor.HAND_CURSOR));
             } else {
-                for (Transform t : ifs.getTransforms()) {
+                for (Transform t : ifs) {
                     Cursor corner = getCorner(t, e.getPoint());
                     if (corner != null) {
                         setCursor(corner);

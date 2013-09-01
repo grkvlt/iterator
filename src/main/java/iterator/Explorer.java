@@ -432,7 +432,7 @@ public class Explorer extends JFrame implements KeyListener {
         this.ifs = ifs;
         String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, ifs.getName() == null ? IFS.UNTITLED : ifs.getName());
         setTitle(name);
-        if (!ifs.getTransforms().isEmpty()) {
+        if (!ifs.isEmpty()) {
             save.setEnabled(true);
             saveAs.setEnabled(true);
         }
