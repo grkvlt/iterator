@@ -64,22 +64,27 @@ public class Splash extends JPanel implements ActionListener {
         parent.getContentPane().add(this);
     }
 
-    @Override
-    public void paint(Graphics graphics) {
-        Graphics2D g = (Graphics2D) graphics.create();
+    public static void paintSplash(Graphics2D g, BufferedImage image, int width, int height) {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         float[] scales = { 1f, 1f, 1f, 0.5f };
         float[] offsets = new float[4];
         BufferedImageOp filter = new RescaleOp(scales, offsets, null);
-        g.drawImage(filter.filter(splash, null), 0, 0, null);
+        g.drawImage(filter.filter(image, null), 0, 0, null);
         g.setColor(Color.BLACK);
-        g.setFont(new Font("Calibri", Font.BOLD, 72));
-        g.drawString("IFS Explorer", 10, 75);
+        g.setFont(new Font("Calibri", Font.BOLD, 80));
+        g.drawString("IFS Explorer", 10, 65);
+        g.setFont(new Font("Calibri", Font.BOLD, 25));
+        g.drawString("Version 1.0.4-SNAPSHOT", 10, 100);
         g.setFont(new Font("Calibri", Font.BOLD, 13));
-        g.drawString("Version 1.0.3-SNAPSHOT", 10, 90);
-        g.drawString("Copyright 2012-2013 by Andrew Kennedy", 10, getHeight() - 10);
+        g.drawString("Copyright 2012-2013 by Andrew Kennedy", 10, height - 15);
         g.setFont(new Font("Consolas", Font.BOLD, 12));
-        g.drawString("http://grkvlt.github.com/iterator", 260, getHeight() - 10);
+        g.drawString("http://grkvlt.github.com/iterator", 260, height - 15);
+    }
+
+    @Override
+    public void paint(Graphics graphics) {
+        Graphics2D g = (Graphics2D) graphics.create();
+        paintSplash(g, splash, getWidth(), getHeight());
         g.dispose();
     }
 

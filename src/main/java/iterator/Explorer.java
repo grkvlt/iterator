@@ -186,6 +186,8 @@ public class Explorer extends JFrame implements KeyListener {
 
         // Load splash screen
         splashScreen = new Splash(bus, this);
+        splashScreen.repaint();
+        splashScreen.setVisible(true);
         splashScreen.showDialog();
 
         // Load dialogs
