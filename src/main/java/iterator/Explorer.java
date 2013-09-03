@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Locale;
 import java.util.Queue;
 
 import javax.imageio.ImageIO;
@@ -81,19 +82,21 @@ public class Explorer extends JFrame implements KeyListener {
 
     public static enum Platform {
         LINUX,
-        OSX,
+        MAC_OS_X,
         WINDOWS,
         UNKNOWN;
 
-        private static final String OS_NAME = "os.name";
+        private static final String OS_NAME_PROPERTY = "os.name";
 
         public static Platform getPlatform() {
-            String osName = Strings.nullToEmpty(System.getProperty(OS_NAME)).toLowerCase();
-            if (osName.equals("linux")) return LINUX;
-            if (osName.equals("mac os x")) return OSX;
-            if (osName.startsWith("windows")) return WINDOWS;
-            // TODO other operating systems
-            return UNKNOWN;
+            String osName = Strings.nullToEmpty(System.getProperty(OS_NAME_PROPERTY)).toUpperCase(Locale.UK).replace(' ', '_');
+            try {
+                // TODO Check behaviour on Windows variants
+                return Platform.valueOf(osName);
+            } catch (IllegalArgumentException iee) {
+                // TODO Add other operating systems
+                return UNKNOWN;
+            }
         }
     }
 
@@ -195,7 +198,7 @@ public class Explorer extends JFrame implements KeyListener {
         about = new About(bus, this);
 
         // Setup platform specifics
-        if (platform == Platform.OSX) {
+        if (platform == Platform.MAC_OS_X) {
             try {
                 Class<?> support = Class.forName("iterator.AppleSupport");
                 Constructor<?> ctor = support.getConstructor(EventBus.class, Explorer.class);
@@ -217,7 +220,7 @@ public class Explorer extends JFrame implements KeyListener {
 
         menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
-        if (platform != Platform.OSX) {
+        if (platform != Platform.MAC_OS_X) {
             file.add(new AbstractAction("About...") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -305,7 +308,7 @@ public class Explorer extends JFrame implements KeyListener {
         });
         print.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         file.add(print);
-        if (platform != Platform.OSX) {
+        if (platform != Platform.MAC_OS_X) {
             file.add(new AbstractAction("Preferences...") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
