@@ -32,7 +32,7 @@ import com.google.common.eventbus.Subscribe;
  */
 public class Details extends JTextPane {
     /** serialVersionUID */
-    private static final long serialVersionUID = -1;
+    private static final long serialVersionUID = -1279626785145420083L;
 
     private IFS ifs;
 

@@ -34,7 +34,7 @@ import com.google.common.eventbus.EventBus;
  */
 public class About extends JPanel implements MouseListener {
     /** serialVersionUID */
-    private static final long serialVersionUID = -1;
+    private static final long serialVersionUID = -1378560167379537595L;
 
     private JDialog about;
     private BufferedImage splash;

@@ -27,11 +27,14 @@ import com.google.common.eventbus.Subscribe;
  */
 public class Preferences extends JDialog {
     /** serialVersionUID */
-    private static final long serialVersionUID = -1;
+    private static final long serialVersionUID = 1944045163019228290L;
 
+    @SuppressWarnings("unused")
     private final EventBus bus;
+    @SuppressWarnings("unused")
     private final Explorer controller;
 
+    @SuppressWarnings("unused")
     private IFS ifs;
 
     public Preferences(EventBus bus, Explorer controller) {

@@ -39,7 +39,7 @@ import com.google.common.eventbus.EventBus;
  */
 public class Splash extends JPanel implements ActionListener {
     /** serialVersionUID */
-    private static final long serialVersionUID = -1;
+    private static final long serialVersionUID = -1028745784181961863L;
 
     private JFrame parent;
     private BufferedImage splash;

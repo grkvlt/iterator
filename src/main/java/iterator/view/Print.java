@@ -23,11 +23,16 @@ import com.google.common.eventbus.Subscribe;
 
 /**
  * Printing.
+ *
+ * TODO Add native printing support
  */
 public class Print {
+    @SuppressWarnings("unused")
     private final EventBus bus;
+    @SuppressWarnings("unused")
     private final Explorer controller;
 
+    @SuppressWarnings("unused")
     private IFS ifs;
 
     public Print(EventBus bus, Explorer controller) {
