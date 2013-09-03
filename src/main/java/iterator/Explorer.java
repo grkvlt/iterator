@@ -176,6 +176,15 @@ public class Explorer extends JFrame implements KeyListener {
             }
         }
 
+        // Load image resources
+        try {
+            icon = ImageIO.read(Resources.getResource("icon.png"));
+            splash = ImageIO.read(Resources.getResource("splash.png"));
+        } catch (IOException ioe) {
+            Throwables.propagate(ioe);
+        }
+        setIconImage(icon);
+
         // Setup event bus
         bus = new EventBus(EXPLORER);
         bus.register(this);
@@ -188,15 +197,6 @@ public class Explorer extends JFrame implements KeyListener {
             Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
             setBounds(insets.left, insets.top, screen.width - (insets.left + insets.right), screen.height - (insets.top + insets.bottom));
         }
-
-        // Load resources
-        try {
-            icon = ImageIO.read(Resources.getResource("icon.png"));
-            splash = ImageIO.read(Resources.getResource("splash.png"));
-        } catch (IOException ioe) {
-            Throwables.propagate(ioe);
-        }
-        setIconImage(icon);
 
         // Load splash screen
         splashScreen = new Splash(bus, this);

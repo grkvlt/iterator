@@ -15,9 +15,9 @@
 BIN=$(dirname $0)
 PARENT=$(echo "${BIN}/.." | sed -e "s/\/bin\/..//")
 LIB="${PARENT}/lib"
-JAVA_OPTS="${JAVA_OPTS} -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true"
+JAVA_OPTS="${JAVA_OPTS} -splash:${LIB}/splash.png -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true"
 
 ##
 # Exexcute Java
 ##
-java -cp ".:${LIB}/*" ${JAVA_OPTS} iterator.Explorer $*
+java -cp ".:${LIB}/*" ${JAVA_OPTS} iterator.Explorer "$@"

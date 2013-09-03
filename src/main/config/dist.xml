@@ -45,10 +45,10 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}</directory>
+            <directory>${project.basedir}/src/main/resources</directory>
             <outputDirectory>/lib</outputDirectory>
             <includes>
-                <include>*.jar</include>
+                <include>*.png</include>
             </includes>
         </fileSet>
     </fileSets>

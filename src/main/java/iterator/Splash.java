@@ -41,6 +41,8 @@ public class Splash extends JPanel implements ActionListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1028745784181961863L;
 
+    public static final int SPLASH_TIMEOUT_MS = 3000;
+
     private JFrame parent;
     private BufferedImage splash;
 
@@ -90,7 +92,7 @@ public class Splash extends JPanel implements ActionListener {
 
     public void showDialog() {
         parent.setVisible(true);
-        Timer timer = new Timer(5000, this);
+        Timer timer = new Timer(SPLASH_TIMEOUT_MS, this);
         timer.setRepeats(false);
         timer.start();
     }
