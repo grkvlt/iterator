@@ -54,6 +54,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -129,6 +130,7 @@ public class Explorer extends JFrame implements KeyListener {
     private Editor editor;
     private Viewer viewer;
     private Details details;
+    private JScrollPane scroll;
     private JPanel view;
     private CardLayout cards;
     private String current;
@@ -377,12 +379,14 @@ public class Explorer extends JFrame implements KeyListener {
         editor = new Editor(bus, this);
         viewer = new Viewer(bus, this);
         details = new Details(bus, this);
+        scroll = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setViewportView(details);
 
         cards = new CardLayout();
         view = new JPanel(cards);
         view.add(editor, EDITOR);
         view.add(viewer, VIEWER);
-        view.add(details, DETAILS);
+        view.add(scroll, DETAILS);
         content.add(view, BorderLayout.CENTER);
         show(EDITOR);
         showEditor.setSelected(true);
@@ -494,6 +498,8 @@ public class Explorer extends JFrame implements KeyListener {
     public BufferedImage getIcon() { return icon; }
 
     public BufferedImage getSplash() { return splash; }
+
+    public JScrollPane getScroll() { return scroll; }
 
     public Viewer getViewer() { return viewer; }
 

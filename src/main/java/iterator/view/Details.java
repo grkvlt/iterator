@@ -19,11 +19,14 @@ import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
 
+import java.awt.Dimension;
+
 import javax.swing.JTextPane;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
-import com.google.common.base.Throwables;
+import com.google.common.base.CaseFormat;
+import com.google.common.base.Optional;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
@@ -34,22 +37,46 @@ public class Details extends JTextPane {
     /** serialVersionUID */
     private static final long serialVersionUID = -1279626785145420083L;
 
+    private final Explorer controller;
+
     private IFS ifs;
+
+    private static final String HTML_MIME_TYPE = "text/html";
+    private static final String INITIAL_CONTENT_HTML = "<html><h1 id=\"title\">Iterated Function System</h1><html>";
+
+    private static final String[] CSS_RULES = new String[] {
+        "h1 { font-family: Calibri, sans-serif; font-style: bold; font-size: 30px; margin-left: 10px; }",
+        "h2 { font-family: Calibri, sans-serif; font-style: bold; font-size: 20px; margin-left: 10px; }",
+        ".id { font-family: Calibri, sans-serif; font-style: bold; font-size: 13px; padding-top: 24px; }",
+        ".matrixr1 { font-family: Cambria, serif; font-style: italic; font-size: 11px; padding: 20px 10px -5px 10px; }",
+        ".matrixr2 { font-family: Cambria, serif; font-style: italic; font-size: 11px; padding: -5px 10px -5px 10px; }",
+        ".brackets { font-family: Cambria, serif; font-weight: 100; font-size: 28px; padding: 14px -5px -5px 0px; }",
+        ".ifs { margin-left: 20px; border: 0px; }",
+    };
 
     public Details(EventBus bus, Explorer controller) {
         super();
 
-        setContentType("text/html");
-        setText("<html><h1 id=\"title\">Iterated Function System</h1><html>");
-        HTMLEditorKit kit = (HTMLEditorKit) getEditorKitForContentType("text/html");
-        StyleSheet css = kit.getStyleSheet();
-        css.addRule("h1 { font-family: Calibri, sans-serif; font-style: bold; font-size: 30px; margin-left: 10px; }");
-        css.addRule("h2 { font-family: Calibri, sans-serif; font-style: bold; font-size: 20px; margin-left: 10px; }");
-        css.addRule(".id { font-family: Calibri, sans-serif; font-style: bold; font-size: 10px; }");
-        css.addRule(".matrix { font-family: Cambria, serif; font-style: italic; font-size: 10px; margin-left: 40px; }");
-        css.addRule("#transforms { margin-left: 20px; border: 0px; }");
+        this.controller = controller;
 
+        setContentType(HTML_MIME_TYPE);
+        setText(INITIAL_CONTENT_HTML);
+        HTMLEditorKit kit = (HTMLEditorKit) getEditorKitForContentType(HTML_MIME_TYPE);
+        StyleSheet css = kit.getStyleSheet();
+        for (String rule : CSS_RULES) {
+            css.addRule(rule);
+        }
+ 
         bus.register(this);
+    }
+
+    @Subscribe
+    public void size(Dimension size) {
+        setSize(size.width, getHeight());
+
+        controller.getScroll().getViewport().setViewSize(size);
+
+        setDetails();
     }
 
     @Subscribe
@@ -61,30 +88,51 @@ public class Details extends JTextPane {
 
     public void setDetails() {
         StringBuilder html = new StringBuilder();
-        try {
-            html.append("<html><h1>Iterated Function System</h1>");
-            html.append(String.format("<h2 id=\"name\">%s</h2>", ifs.getName() == null ? IFS.UNTITLED : ifs.getName()));
-            if (ifs.isEmpty()) {
-                html.append("<h2>No Transforms</h2>");
-            } else {
-                html.append("<h2>Transforms</h2>");
-                html.append("<table id=\"transforms\">");
-                for (Transform t : ifs) {
-                    double[] matrix = new double[6];
-                    t.getTransform().getMatrix(matrix);
-                    String data = String.format("<tr class=\"transform\"><td class=\"id\">%02d</td>" +
-                            "<td class=\"matrix\">[ %f, %f, %f ]<br />[ %f, %f, %f ]</td>" +
-                            "</tr>",
-                            t.getId(), matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
-                    html.append(data);
-                }
+        html.append("<html>");
+        String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
+        html.append(String.format("<a name=\"top\"></a><h1 id=\"title\">IFS - %s</h1>", name));
+        if (ifs.isEmpty()) {
+            html.append("<h2>Empty</h2>");
+        } else {
+            int i = 0;
+            int columns = (int) Math.floor((float) getWidth() / 350f);
+            html.append("<table>");
+            for (Transform t : ifs) {
+                if (i % columns == 0 && i != 0) { html.append("</tr>"); }
+                if (i % columns == 0) { html.append("<tr>"); }
+                html.append("<td>");
+                html.append("<table class=\"ifs\" width=\"250px\">");
+                double[] matrix = new double[6];
+                t.getTransform().getMatrix(matrix);
+                String data = String.format(
+                        "<tr class=\"transform\">" +
+                        "<td class=\"id\" rowspan=\"2\">%02d</td>" +
+                        "<td class=\"brackets\" rowspan=\"2\">[</td>" +
+                        "<td class=\"matrixr1\" align=\"right\">%.3f</td>" +
+                        "<td class=\"matrixr1\" align=\"right\">%.3f</td>" +
+                        "<td class=\"matrixr1\" align=\"right\">%.3f</td>" +
+                        "<td class=\"brackets\" rowspan=\"2\">]</td>" +
+                        "</tr>" +
+                        "<tr class=\"transform\">" +
+                        "<td class=\"matrixr2\" align=\"right\">%.3f</td>" +
+                        "<td class=\"matrixr2\" align=\"right\">%.3f</td>" +
+                        "<td class=\"matrixr2\" align=\"right\">%.3f</td>" +
+                        "</tr>",
+                        t.getId(), matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+                html.append(data);
                 html.append("</table>");
+                html.append("</td>");
+                i++;
             }
-            html.append("</html>");
-            setText(html.toString());
-        } catch (Exception e) {
-            Throwables.propagate(e);
+            html.append("</tr>");
+            html.append("</table>");
         }
+        html.append("</html>");
+
+        setText(html.toString());
+
         repaint();
+
+        scrollToReference("top");
     }
 }
