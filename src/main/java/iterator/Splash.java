@@ -76,7 +76,7 @@ public class Splash extends JPanel implements ActionListener {
         g.setFont(new Font("Calibri", Font.BOLD, 72));
         g.drawString("IFS Explorer", 10, 75);
         g.setFont(new Font("Calibri", Font.BOLD, 13));
-        g.drawString("Version 1.0.3-SNAPSHOT", 10, 90);
+        g.drawString("Version 1.0.3", 10, 90);
         g.drawString("Copyright 2012-2013 by Andrew Kennedy", 10, getHeight() - 10);
         g.setFont(new Font("Consolas", Font.BOLD, 12));
         g.drawString("http://grkvlt.github.com/iterator", 260, getHeight() - 10);
