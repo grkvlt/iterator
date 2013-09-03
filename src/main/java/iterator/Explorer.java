@@ -86,8 +86,6 @@ public class Explorer extends JFrame implements KeyListener {
         WINDOWS,
         UNKNOWN;
 
-        private static final String OS_NAME_PROPERTY = "os.name";
-
         public static Platform getPlatform() {
             String osName = Strings.nullToEmpty(System.getProperty(OS_NAME_PROPERTY)).toUpperCase(Locale.UK).replace(' ', '_');
             try {
@@ -100,6 +98,8 @@ public class Explorer extends JFrame implements KeyListener {
         }
     }
 
+
+    public static final String OS_NAME_PROPERTY = "os.name";
     public static final String EXPLORER_PROPERTY = "explorer";
 
     public static final String EXPLORER = "IFS Explorer";
@@ -109,8 +109,10 @@ public class Explorer extends JFrame implements KeyListener {
 
     public static final Integer SIZE = 600;
 
-    public static final String FULLSCREEN_OPTION = "-F";
-    public static final String COLOUR_OPTION = "-C";
+    public static final String FULLSCREEN_OPTION = "-f";
+    public static final String FULLSCREEN_OPTION_LONG = "--fullscreen";
+    public static final String COLOUR_OPTION = "-c";
+    public static final String COLOUR_OPTION_LONG = "--colour";
 
     private boolean fullScreen = false;
     private boolean colour = false;
@@ -142,13 +144,22 @@ public class Explorer extends JFrame implements KeyListener {
         // Parse arguments
         if (argv.length != 0) {
             for (int i = 0; i < argv.length; i++) {
-                if (argv[i].equalsIgnoreCase(FULLSCREEN_OPTION)) {
-                    fullScreen = true;
-                } else if (argv[i].equalsIgnoreCase(COLOUR_OPTION)) {
-                    colour = true;
-                } else if (i == argv.length - 1) { // Last argument
+                if (argv[i].charAt(0) == '-') {
+                    // Argument is a program option
+                    if (argv[i].equalsIgnoreCase(FULLSCREEN_OPTION) ||
+                            argv[i].equalsIgnoreCase(FULLSCREEN_OPTION_LONG)) {
+                        fullScreen = true;
+                    } else if (argv[i].equalsIgnoreCase(COLOUR_OPTION) ||
+                            argv[i].equalsIgnoreCase(COLOUR_OPTION_LONG)) {
+                        colour = true;
+                    }  else {
+                        throw new IllegalArgumentException("Cannot parse option: " + argv[i]);
+                    }
+                } else if (i == argv.length - 1) {
+                    // Last argument is a file
                     final File file = new File(argv[i]);
                     if (file.canRead()) {
+                        // Add a task to load the file
                         tasks.add(new Runnable() {
                             public void run() {
                                 IFS loaded = load(file);
@@ -157,10 +168,10 @@ public class Explorer extends JFrame implements KeyListener {
                             }
                         });
                     } else {
-                        throw new IllegalArgumentException("Cannot load " + argv[i]);
+                        throw new IllegalArgumentException("Cannot load file: " + argv[i]);
                     }
                 } else {
-                    throw new IllegalArgumentException("Cannot parse " + argv[i]);
+                    throw new IllegalArgumentException("Unknown argument: " + argv[i]);
                 }
             }
         }
