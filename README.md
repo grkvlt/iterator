@@ -1,4 +1,4 @@
-IFS Explorer 1.0.3
+IFS Explorer 1.0.4
 ==================
 
 Iterated Function System Explorer.
@@ -9,11 +9,11 @@ Iterated Function System Explorer.
 
 - Java 1.7.0 Runtime Environment
 - Windows, Linux or OSX Operating System
-- Maven and JDK to build
+- Maven and 1.7.0 JDK to build
 
 ### TODO
 
-- Properties editor for Transformcl
+- Properties editor for Transform
  - Matrix coefficients _or_ rotation/displacement/scale values
 - Printing support
 - Preferences dialog
@@ -25,6 +25,8 @@ Iterated Function System Explorer.
 - Add skew transform
 - Better UI for rotations
 - Improve documentation
+- JNLP Web Start mechanism
+- JavaFX UI
 
 ----
 Copyright 2013 by [Andrew Kennedy](mailto:andrew.international+iterator@gmail.com)
