@@ -151,6 +151,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         List<Transform> transforms = Lists.newArrayList(Iterables.concat(ifs, Optional.fromNullable(selected).asSet(), Optional.fromNullable(ants).asSet()));
         Collections.sort(transforms, IFS.IDENTITY);
 
+        int r = isVisible() ? 1 : controller.isColour() ? 3 : 2;
         for (int i = 0; i < n; i++) {
             int j = random.nextInt(transforms.size());
             Transform t = transforms.get(j);
@@ -160,7 +161,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
             double[] dst = new double[2];
             t.getTransform().transform(src, 0, dst, 0, 1);
             x = dst[0]; y = dst[1];
-            Rectangle rect = new Rectangle((int) Math.floor(x + 0.5d), (int) Math.floor(y + 0.5d), isVisible() ? 1 : 2, isVisible() ? 1 : 2);
+            Rectangle rect = new Rectangle((int) Math.floor(x + 0.5d), (int) Math.floor(y + 0.5d), r, r);
             g.fill(rect);
         }
 
