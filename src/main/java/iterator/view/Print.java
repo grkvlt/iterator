@@ -36,7 +36,6 @@ public class Print {
     private IFS ifs;
 
     public Print(EventBus bus, Explorer controller) {
-        super();
         this.bus = bus;
         this.controller = controller;
 

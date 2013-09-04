@@ -64,6 +64,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import com.google.common.base.CaseFormat;
+import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Queues;
@@ -287,7 +288,7 @@ public class Explorer extends JFrame implements KeyListener {
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("XML Files", "xml");
                 JFileChooser chooser = new JFileChooser();
                 chooser.setFileFilter(filter);
-                chooser.setSelectedFile(new File((ifs.getName() == null ? IFS.UNTITLED : ifs.getName()) + ".xml"));
+                chooser.setSelectedFile(new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".xml"));
                 int result = chooser.showSaveDialog(null);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     File saveAs = chooser.getSelectedFile();
@@ -305,7 +306,7 @@ public class Explorer extends JFrame implements KeyListener {
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("PNG Image Files", "png");
                 JFileChooser chooser = new JFileChooser();
                 chooser.setFileFilter(filter);
-                chooser.setSelectedFile(new File((ifs.getName() == null ? IFS.UNTITLED : ifs.getName()) + ".png"));
+                chooser.setSelectedFile(new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED)+ ".png"));
                 int result = chooser.showSaveDialog(null);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     viewer.save(chooser.getSelectedFile());
@@ -450,7 +451,7 @@ public class Explorer extends JFrame implements KeyListener {
     @Subscribe
     public void update(IFS ifs) {
         this.ifs = ifs;
-        String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, ifs.getName() == null ? IFS.UNTITLED : ifs.getName());
+        String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
         setTitle(name);
         if (!ifs.isEmpty()) {
             save.setEnabled(true);
