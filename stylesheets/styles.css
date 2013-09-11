@@ -43,6 +43,9 @@ a {
   font-weight:400;
   text-decoration:none;
 }
+ol a {
+  font-weight:600;
+}
 
 a small {
   font-size:11px;
@@ -258,6 +261,19 @@ footer {
     padding:0.4in;
     font-size:12pt;
     color:#444;
+  }
+  a, a code {
+    color:#446;
+  }
+  ol a {
+    color:#444;
+    font-weight:600;
+  }
+  ol a[href]:after{
+    font-weight:200;
+    word-wrap:normal;
+    font-style:italic;
+    content: "; " attr(href);
   }
   .badge {
     display:none;
