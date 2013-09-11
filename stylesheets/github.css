@@ -62,3 +62,7 @@
     font-weight: normal;
     font-style: normal
 } 
+
+@media print {
+    .button { display: none; }
+}
