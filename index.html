@@ -92,7 +92,8 @@ C&gt; .\bin\explorer.cmd [-f] [-c] [-p] [<em>ifs.xml</em>]</code></pre>
           The configuration properties listed should be added to the <code>JAVA_OPTS</code>
           variable bwfore running the program, as ilustrated below.
         </p>
-        <pre style="margin-left: 25px; width: 455px;"><code>$ export JAVA_OPTS="-Dexplorer.palette=wave -Dexplorer.seed=1234"
+        <pre style="margin-left: 25px; width: 455px;"><code>$ export JAVA_OPTS="-Dexplorer.palette.file=wave \
+&gt; -Dexplorer.palette.seed=1234"
 $ ./bin/explorer.sh --colour --palette ./data/spikes.xml</code></pre>
         <h3>Usage</h3>
         <p>
