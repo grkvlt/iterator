@@ -34,8 +34,6 @@ public class Transform {
     @XmlAttribute
     private int zIndex;
     @XmlAttribute
-    private double weight;
-    @XmlAttribute
     public int x;
     @XmlAttribute
     public int y;
@@ -58,7 +56,6 @@ public class Transform {
     public Transform(int id, int zIndex, Dimension size) {
         this.id = id;
         this.zIndex = zIndex;
-        this.weight = 1f;
         this.sw = size.width;
         this.sh = size.height;
         this.x = 0;
@@ -92,12 +89,8 @@ public class Transform {
         this.zIndex = zIndex;
     }
 
-    public double getWeight() {
-        return this.weight;
-    }
-
-    public void setWeight(double weight) {
-        this.weight = weight;
+    public double getDeterminant() {
+        return this.getTransform().getDeterminant();
     }
 
     public void setSize(Dimension size) {

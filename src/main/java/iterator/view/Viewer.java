@@ -154,11 +154,15 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         if (ifs.contains(selected)) { selected = null; }
         List<Transform> transforms = Lists.newArrayList(Iterables.concat(ifs, Optional.fromNullable(selected).asSet(), Optional.fromNullable(ants).asSet()));
         Collections.sort(transforms, IFS.IDENTITY);
+        double weight = 0.0d;
+        for (Transform t : transforms) weight += t.getDeterminant();
+
 
         int r = isVisible() ? 1 : controller.isColour() ? 3 : 2;
         for (int i = 0; i < n; i++) {
             int j = random.nextInt(transforms.size());
             Transform t = transforms.get(j);
+            if (t.getDeterminant() < random.nextDouble() * weight) continue;
             Color c = controller.isColour() ?
                     controller.hasPalette() ?
                             controller.getColours().get(j % 255) :
