@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
@@ -219,9 +218,7 @@ public class Explorer extends JFrame implements KeyListener {
         }
 
         // Load splash screen
-        splashScreen = new Splash(bus, this);
-        splashScreen.repaint();
-        splashScreen.setVisible(true);
+        splashScreen = new Splash(splash);
         splashScreen.showDialog();
 
         // Load dialogs

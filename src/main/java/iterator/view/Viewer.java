@@ -39,6 +39,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
@@ -56,13 +58,14 @@ import com.google.common.eventbus.Subscribe;
  */
 public class Viewer extends JPanel implements ActionListener, KeyListener {
     /** serialVersionUID */
-    private static final long serialVersionUID = -1;
+    private static final long serialVersionUID = -3294847597249688714L;
 
     private final Explorer controller;
 
     private IFS ifs;
     private BufferedImage image;
     private Timer timer  = new Timer(10, this);
+    private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
     private double x, y;
     private Random random = new Random();
     private float scale = 1.0f;
@@ -179,8 +182,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (ifs != null && !ifs.isEmpty() && image != null) {
-            iterate(10000);
-            repaint();
+            executor.submit(new Runnable() {
+                public void run() {
+                    iterate(20000);
+                    repaint();
+                }
+            });
         }
     }
 

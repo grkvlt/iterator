@@ -26,13 +26,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
+import java.awt.image.ImageObserver;
 import java.awt.image.RescaleOp;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
-
-import com.google.common.eventbus.EventBus;
 
 /**
  * Splash screen.
@@ -46,11 +45,12 @@ public class Splash extends JPanel implements ActionListener {
     private JFrame parent;
     private BufferedImage splash;
 
-    public Splash(EventBus bus, Explorer controller) {
+    public Splash(BufferedImage image) {
         super();
 
+        this.splash = image;
+
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-        splash = controller.getSplash();
 
         parent = new JFrame();
         parent.setUndecorated(true);
@@ -92,6 +92,8 @@ public class Splash extends JPanel implements ActionListener {
 
     public void showDialog() {
         parent.setVisible(true);
+        parent.imageUpdate(splash, ImageObserver.ALLBITS, 0, 0, getWidth(), getHeight());
+        parent.repaint();
         Timer timer = new Timer(SPLASH_TIMEOUT_MS, this);
         timer.setRepeats(false);
         timer.start();
