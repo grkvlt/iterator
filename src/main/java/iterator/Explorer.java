@@ -134,6 +134,7 @@ public class Explorer extends JFrame implements KeyListener {
 
     private IFS ifs;
     private List<Color> colours;
+    private int paletteSize;
 
     private JMenuBar menuBar;
     private Editor editor;
@@ -246,14 +247,19 @@ public class Explorer extends JFrame implements KeyListener {
         return colours;
     }
 
+    public int getPaletteSize() {
+        return paletteSize;
+    }
+
     public void loadColours() {
         String file = System.getProperty(EXPLORER_PROPERTY + ".palette", "abstract");
         Long seed = Long.getLong(EXPLORER_PROPERTY + ".seed", 0l);
+        paletteSize = Integer.getInteger(EXPLORER_PROPERTY + ".palette.size", 64);
         try {
             BufferedImage image = ImageIO.read(Resources.getResource("palette/" + file + ".png"));
             colours = Lists.newArrayList();
             Random random = new Random(seed);
-            while (colours.size() < 256) {
+            while (colours.size() < paletteSize) {
                 int x = random.nextInt(image.getWidth());
                 int y = random.nextInt(image.getHeight());
                 Color c = new Color(image.getRGB(x, y));
@@ -528,13 +534,13 @@ public class Explorer extends JFrame implements KeyListener {
     public boolean hasPalette() { return palette && colours != null; }
 
     /** Small grid spacing. */
-    public int getMinGrid() { return 10; }
+    public int getMinGrid() { return Integer.getInteger(EXPLORER_PROPERTY + ".grid.min", 10); }
 
     /** Large grid spacing. */
-    public int getMaxGrid() { return 50; }
+    public int getMaxGrid() { return Integer.getInteger(EXPLORER_PROPERTY + ".grid.max", 50); }
 
     /** Snap to grid distance. */
-    public int getSnapGrid() { return 10; }
+    public int getSnapGrid() { return Integer.getInteger(EXPLORER_PROPERTY + ".grid.snap", 5); }
 
     public BufferedImage getIcon() { return icon; }
 

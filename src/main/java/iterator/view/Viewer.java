@@ -157,7 +157,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         double weight = 0.0d;
         for (Transform t : transforms) weight += t.getDeterminant();
 
-
         int r = isVisible() ? 1 : controller.isColour() ? 3 : 2;
         for (int i = 0; i < n; i++) {
             int j = random.nextInt(transforms.size());
@@ -166,7 +165,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
             Color c = Color.BLACK;
             if (controller.isColour()) {
                 if (controller.hasPalette()) {
-                    c = controller.getColours().get(j % 255);
+                    c = controller.getColours().get(j % controller.getPaletteSize());
                 } else {
                     c = Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f);
                 }
