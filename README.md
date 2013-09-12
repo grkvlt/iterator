@@ -17,8 +17,6 @@ Iterated Function System Explorer.
  - Matrix coefficients _or_ rotation/displacement/scale values
 - Printing support
 - Preferences dialog
-- Better details view
-- Weighting for transforms
 - Better operating system integration
  - Native full-screen mode
  - Support native windowing system features
