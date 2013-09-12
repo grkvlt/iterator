@@ -199,8 +199,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
             if (!ifs.isEmpty()) {
                 Viewer viewer = controller.getViewer();
                 viewer.reset();
-                int n = ifs.size();
-                viewer.iterate(50000 + (int) (50000d * Math.log10(n)));
+                int n = ifs.size() + ((selected == null && start != null && end != null) ? 1 : 0);
+                viewer.iterate(50000 + (int) Math.min(250000, 5000 * n * Math.log(n)));
                 g.setComposite(AlphaComposite.SrcOver);
                 g.drawImage(viewer.getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
             }
@@ -215,9 +215,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
 
         // Fill the rectangle
         if (highlight) {
-            g.setPaint(new Color(Color.BLUE.getRed(), Color.BLUE.getGreen(), Color.BLUE.getBlue(), 32));
+            g.setPaint(new Color(Color.BLUE.getRed(), Color.BLUE.getGreen(), Color.BLUE.getBlue(), 16));
         } else {
-            g.setPaint(new Color(Color.GRAY.getRed(), Color.GRAY.getGreen(), Color.GRAY.getBlue(), 32));
+            g.setPaint(new Color(Color.GRAY.getRed(), Color.GRAY.getGreen(), Color.GRAY.getBlue(), 8));
         }
         g.fill(rect);
 
@@ -238,7 +238,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         for (int i = 0; i < 4; i++) {
             Point center = new Point();
             t.getTransform().transform(new Point(cornerX[i], cornerY[i]), center);
-            Rectangle corner = new Rectangle(center.x - 5, center.y - 5, 10, 10);
+            Rectangle corner = new Rectangle(center.x - 4, center.y - 4, 8, 8);
             g.fill(corner);
         }
 

@@ -119,7 +119,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         }
     }
 
-    public void iterate(int n) {
+    public void iterate(int k) {
         Graphics2D g = image.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
@@ -157,8 +157,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         double weight = 0.0d;
         for (Transform t : transforms) weight += t.getDeterminant();
 
-        int r = isVisible() ? 1 : controller.isColour() ? 3 : 2;
-        for (int i = 0; i < n; i++) {
+        int n = transforms.size();
+        int r = isVisible() ? 1 : 2;
+        int a = isVisible() ? 8 : (int) Math.min(128d, Math.pow(n,  1.6) * 8d);
+        for (int i = 0; i < k; i++) {
             int j = random.nextInt(transforms.size());
             Transform t = transforms.get(j);
             if (t.getDeterminant() < random.nextDouble() * weight) continue;
@@ -170,7 +172,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
                     c = Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f);
                 }
             }
-            g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), 16));
+            g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), a));
             double dst[] = t.applyTransform(x, y);
             x = dst[0]; y = dst[1];
             double px = ((x - (getWidth() / 2d)) * scale) + (getWidth() / 2d);
