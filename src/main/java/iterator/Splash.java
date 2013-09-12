@@ -75,11 +75,11 @@ public class Splash extends JPanel implements ActionListener {
         g.setFont(new Font("Calibri", Font.BOLD, 80));
         g.drawString("IFS Explorer", 10, 65);
         g.setFont(new Font("Calibri", Font.BOLD, 25));
-        g.drawString("Version 1.0.4-SNAPSHOT", 10, 100);
+        g.drawString("Version 1.0.4", 10, 100);
         g.setFont(new Font("Calibri", Font.BOLD, 13));
         g.drawString("Copyright 2012-2013 by Andrew Kennedy", 10, height - 15);
         g.setFont(new Font("Consolas", Font.BOLD, 12));
-        g.drawString("http://grkvlt.github.com/iterator", 260, height - 15);
+        g.drawString("http://grkvlt.github.com/iterator/", 260, height - 15);
     }
 
     @Override
