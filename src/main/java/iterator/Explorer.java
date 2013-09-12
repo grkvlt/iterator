@@ -250,8 +250,8 @@ public class Explorer extends JFrame implements KeyListener {
     }
 
     public void loadColours() {
-        String file = System.getProperty(EXPLORER_PROPERTY + ".palette", "abstract");
-        Long seed = Long.getLong(EXPLORER_PROPERTY + ".seed", 0l);
+        String file = System.getProperty(EXPLORER_PROPERTY + ".palette.file", "abstract");
+        Long seed = Long.getLong(EXPLORER_PROPERTY + ".palette.seed", 0l);
         paletteSize = Integer.getInteger(EXPLORER_PROPERTY + ".palette.size", 64);
         try {
             BufferedImage image = ImageIO.read(Resources.getResource("palette/" + file + ".png"));
