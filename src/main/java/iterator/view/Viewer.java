@@ -156,8 +156,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         for (int i = 0; i < n; i++) {
             int j = random.nextInt(transforms.size());
             Transform t = transforms.get(j);
-            Color c = controller.isColour() ? Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f) : Color.BLACK;
-            g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), isVisible() ? transforms.size() : 16));
+            Color c = controller.isColour() ?
+                    controller.hasPalette() ?
+                            controller.getColours().get(j % 255) :
+                            Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f) :
+                    Color.BLACK;
+            g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), 16));
             double[] src = new double[] { x, y };
             double[] dst = new double[2];
             t.getTransform().transform(src, 0, dst, 0, 1);

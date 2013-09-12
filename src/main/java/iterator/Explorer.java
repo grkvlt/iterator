@@ -22,6 +22,7 @@ import iterator.view.Viewer;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Toolkit;
@@ -41,8 +42,11 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -67,6 +71,7 @@ import com.google.common.base.CaseFormat;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
@@ -115,9 +120,12 @@ public class Explorer extends JFrame implements KeyListener {
     public static final String FULLSCREEN_OPTION_LONG = "--fullscreen";
     public static final String COLOUR_OPTION = "-c";
     public static final String COLOUR_OPTION_LONG = "--colour";
+    public static final String PALETTE_OPTION = "-p";
+    public static final String PALETTE_OPTION_LONG = "--palette";
 
     private boolean fullScreen = false;
     private boolean colour = false;
+    private boolean palette = false;
 
     private Platform platform = Platform.getPlatform();
     private BufferedImage icon, splash;
@@ -126,6 +134,7 @@ public class Explorer extends JFrame implements KeyListener {
     private Splash splashScreen;
 
     private IFS ifs;
+    private List<Color> colours;
 
     private JMenuBar menuBar;
     private Editor editor;
@@ -155,6 +164,9 @@ public class Explorer extends JFrame implements KeyListener {
                     } else if (argv[i].equalsIgnoreCase(COLOUR_OPTION) ||
                             argv[i].equalsIgnoreCase(COLOUR_OPTION_LONG)) {
                         colour = true;
+                    } else if (argv[i].equalsIgnoreCase(PALETTE_OPTION) ||
+                            argv[i].equalsIgnoreCase(PALETTE_OPTION_LONG)) {
+                        palette = true;
                     }  else {
                         throw new IllegalArgumentException("Cannot parse option: " + argv[i]);
                     }
@@ -187,6 +199,11 @@ public class Explorer extends JFrame implements KeyListener {
             Throwables.propagate(ioe);
         }
         setIconImage(icon);
+
+        // Load colour palette
+        if (palette) {
+            loadColours();
+        }
 
         // Setup event bus
         bus = new EventBus(EXPLORER);
@@ -225,6 +242,30 @@ public class Explorer extends JFrame implements KeyListener {
             } catch (Exception e) {
                 System.err.printf("Unable to configure OSX support: %s\n", e.getMessage());
             }
+        }
+    }
+
+    public List<Color> getColours() {
+        return colours;
+    }
+
+    public void loadColours() {
+        String file = System.getProperty(EXPLORER_PROPERTY + ".palette", "abstract");
+        Long seed = Long.getLong(EXPLORER_PROPERTY + ".seed", 0l);
+        try {
+            BufferedImage image = ImageIO.read(Resources.getResource("palette/" + file + ".png"));
+            colours = Lists.newArrayList();
+            Random random = new Random(seed);
+            while (colours.size() < 256) {
+                int x = random.nextInt(image.getWidth());
+                int y = random.nextInt(image.getHeight());
+                Color c = new Color(image.getRGB(x, y));
+                if (!colours.contains(c)) {
+                    colours.add(c);
+                }
+            }
+        } catch (IOException ioe) {
+            Throwables.propagate(ioe);
         }
     }
 
@@ -486,6 +527,8 @@ public class Explorer extends JFrame implements KeyListener {
     public boolean isFullScreen() { return fullScreen; }
 
     public boolean isColour() { return colour; }
+
+    public boolean hasPalette() { return palette && colours != null; }
 
     /** Small grid spacing. */
     public int getMinGrid() { return 10; }
