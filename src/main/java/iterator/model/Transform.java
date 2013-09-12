@@ -101,4 +101,12 @@ public class Transform {
         this.sw = size.width;
         this.sh = size.height;
     }
+
+    public double[] applyTransform(double xin, double yin) {
+        AffineTransform transform = getTransform();
+        double src[] = new double[] { xin, yin };
+        double dst[] = new double[2];
+        transform.transform(src, 0, dst, 0, 1);
+        return dst;
+    }
 }
