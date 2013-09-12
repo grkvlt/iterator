@@ -65,6 +65,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
     private Timer timer  = new Timer(10, this);
     private double x, y;
     private Random random = new Random();
+    private float scale = 1.0f;
 
     public Viewer(EventBus bus, Explorer controller) {
         super();
@@ -104,6 +105,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         g.dispose();
         x = random.nextInt(getWidth());
         y = random.nextInt(getHeight());
+        scale = 1.0f;
     }
 
     public void save(File file) {
@@ -127,7 +129,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
 
         Transform selected = controller.getEditor().getSelected();
         Transform ants = null;
-
         Point start = controller.getEditor().getStart();
         Point end = controller.getEditor().getEnd();
         if (selected == null && start != null && end != null) {
@@ -161,7 +162,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
             double[] dst = new double[2];
             t.getTransform().transform(src, 0, dst, 0, 1);
             x = dst[0]; y = dst[1];
-            Rectangle rect = new Rectangle((int) Math.floor(x + 0.5d), (int) Math.floor(y + 0.5d), r, r);
+            double px = ((x - (getWidth() / 2d)) * scale) + (getWidth() / 2d);
+            double py = ((y - (getHeight() / 2d)) * scale) + (getHeight() / 2d);
+            Rectangle rect = new Rectangle((int) Math.floor(px + 0.5d), (int) Math.floor(py + 0.5d), r, r);
             g.fill(rect);
         }
 
@@ -199,6 +202,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
                 timer.stop();
             } else {
                 timer.start();
+            }
+        } else if (e.getKeyCode() == KeyEvent.VK_Z && isVisible()) {
+            float old = scale;
+            reset();
+            if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
+                scale = old / 2.0f;
+            } else {
+                scale = old * 2.0f;
             }
         }
     }
