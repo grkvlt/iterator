@@ -15,6 +15,7 @@
  */
 package iterator;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -26,11 +27,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
-import java.awt.image.ImageObserver;
 import java.awt.image.RescaleOp;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JWindow;
 import javax.swing.Timer;
 
 /**
@@ -42,28 +42,27 @@ public class Splash extends JPanel implements ActionListener {
 
     public static final int SPLASH_TIMEOUT_MS = 3000;
 
-    private JFrame parent;
+    private JWindow parent;
     private BufferedImage splash;
 
-    public Splash(BufferedImage image) {
+    public Splash() {
         super();
 
-        this.splash = image;
+        splash = Explorer.loadImage("splash.png");
+
+        parent = new JWindow();
+        parent.getContentPane().setLayout(new BorderLayout());
+        parent.getContentPane().add(this, BorderLayout.CENTER);
+        parent.pack();
 
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-
-        parent = new JFrame();
-        parent.setUndecorated(true);
-        parent.setAlwaysOnTop(true);
-        parent.setResizable(false);
-
         Dimension size = new Dimension(splash.getWidth(), splash.getHeight());
+
         parent.setSize(size);
         parent.setPreferredSize(size);
         parent.setMinimumSize(size);
         parent.setLocation((screen.width / 2) - (size.width / 2), (screen.height / 2) - (size.height / 2));
-
-        parent.getContentPane().add(this);
+        parent.setAlwaysOnTop(true);
     }
 
     public static void paintSplash(Graphics2D g, BufferedImage image, int width, int height) {
@@ -71,7 +70,7 @@ public class Splash extends JPanel implements ActionListener {
         float[] scales = { 1f, 1f, 1f, 0.5f };
         float[] offsets = new float[4];
         BufferedImageOp filter = new RescaleOp(scales, offsets, null);
-        g.drawImage(filter.filter(image, null), 0, 0, null);
+        g.drawImage(image, filter, 0, 0);
         g.setColor(Color.BLACK);
         g.setFont(new Font("Calibri", Font.BOLD, 80));
         g.drawString("IFS Explorer", 10, 65);
@@ -90,18 +89,18 @@ public class Splash extends JPanel implements ActionListener {
         g.dispose();
     }
 
-    public void showDialog() {
-        parent.setVisible(true);
-        parent.imageUpdate(splash, ImageObserver.ALLBITS, 0, 0, getWidth(), getHeight());
-        parent.repaint();
-        Timer timer = new Timer(SPLASH_TIMEOUT_MS, this);
-        timer.setRepeats(false);
-        timer.start();
-    }
-
     /** @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent) */
     @Override
     public void actionPerformed(ActionEvent e) {
         parent.setVisible(false);
     }
+
+    public void showDialog() {
+        parent.setVisible(true);
+
+        Timer timer = new Timer(SPLASH_TIMEOUT_MS, this);
+        timer.setRepeats(false);
+        timer.start();
+    }
+
 }

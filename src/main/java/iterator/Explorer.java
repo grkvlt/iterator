@@ -127,10 +127,9 @@ public class Explorer extends JFrame implements KeyListener {
     private boolean palette = false;
 
     private Platform platform = Platform.getPlatform();
-    private BufferedImage icon, splash;
+    private BufferedImage icon;
     private Preferences prefs;
     private About about;
-    private Splash splashScreen;
 
     private IFS ifs;
     private List<Color> colours;
@@ -191,13 +190,8 @@ public class Explorer extends JFrame implements KeyListener {
             }
         }
 
-        // Load image resources
-        try {
-            icon = ImageIO.read(Resources.getResource("icon.png"));
-            splash = ImageIO.read(Resources.getResource("splash.png"));
-        } catch (IOException ioe) {
-            Throwables.propagate(ioe);
-        }
+        // Load icon resources
+        icon = loadImage("icon.png");
         setIconImage(icon);
 
         // Load colour palette
@@ -218,10 +212,6 @@ public class Explorer extends JFrame implements KeyListener {
             setBounds(insets.left, insets.top, screen.width - (insets.left + insets.right), screen.height - (insets.top + insets.bottom));
         }
 
-        // Load splash screen
-        splashScreen = new Splash(splash);
-        splashScreen.showDialog();
-
         // Load dialogs
         prefs = new Preferences(bus, this);
         about = new About(bus, this);
@@ -240,6 +230,14 @@ public class Explorer extends JFrame implements KeyListener {
             } catch (Exception e) {
                 System.err.printf("Unable to configure OSX support: %s\n", e.getMessage());
             }
+        }
+    }
+
+    public static BufferedImage loadImage(String name) {
+        try {
+            return ImageIO.read(Resources.getResource(name));
+        } catch (IOException ioe) {
+            throw Throwables.propagate(ioe);
         }
     }
 
@@ -544,8 +542,6 @@ public class Explorer extends JFrame implements KeyListener {
 
     public BufferedImage getIcon() { return icon; }
 
-    public BufferedImage getSplash() { return splash; }
-
     public JScrollPane getScroll() { return scroll; }
 
     public Viewer getViewer() { return viewer; }
@@ -600,12 +596,18 @@ public class Explorer extends JFrame implements KeyListener {
      * Explorer
      */
     public static void main(final String...argv) throws Exception {
+        // Load splash screen first
+        Splash splashScreen = new Splash();
+        splashScreen.showDialog();
+
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                // Start application
                 Explorer explorer = new Explorer(argv);
                 explorer.start();
             }
         });
     }
+
 }

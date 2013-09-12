@@ -42,15 +42,16 @@ public class About extends JPanel implements MouseListener {
     public About(EventBus bus, Explorer controller) {
         super();
 
-        splash = controller.getSplash();
+        splash = Explorer.loadImage("splash.png");
         setSize(splash.getWidth(), splash.getHeight());
 
         about = new JDialog(controller, "About IFS Explorer", ModalityType.APPLICATION_MODAL);
         about.setLayout(new BorderLayout());
         about.add(this, BorderLayout.CENTER);
-
         about.pack();
+
         Dimension size = new Dimension(splash.getWidth(), splash.getHeight() + about.getInsets().top);
+
         about.setSize(size);
         about.setPreferredSize(size);
         about.setMinimumSize(size);
