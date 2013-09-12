@@ -1,4 +1,4 @@
-IFS Explorer 1.0.4
+IFS Explorer 1.0.5
 ==================
 
 Iterated Function System Explorer.
