@@ -72,7 +72,7 @@
         <p>
           Enable colour rendering with the <code>-c</code> or <code>--colour</code> flag.
           This will use a fixed list of colours for the transforms. To use a colour palette
-          taken from a sample image specify <code>-p</code> or <code--palette</code>. The image
+          taken from a sample image specify <code>-p</code> or <code>--palette</code>. The image
           used can be specified in the <code>explorer.palette</code> system property and
           can be <em>abstract</em>, <code>wave</code> or <code>car</code>.
         </p>
@@ -83,9 +83,10 @@ C&gt; .\bin\explorer.cmd [-f] [-c] [-p] [<em>ifs.xml</em>]</code></pre>
         <ul>
           <li><code>explorer.grid.min</code> - Minimum grid spacing - <em>10</em></li>
           <li><code>explorer.grid.max</code> - Maximum grid spacing - <em>50</em></li>
-          <li><code>explorer.grid.snap</code> - Grid snap spacing- <em>5</em></li>
-          <li><code>explorer.palette</code> - Colour palette image source - <em>abstract</em></li>
-          <li><code>explorer.seed</code> - Random seed used for choosing colours - <em>0</em></li>
+          <li><code>explorer.grid.snap</code> - Snap-to-grid spacing- <em>5</em></li>
+          <li><code>explorer.palette.file</code> - Colour palette image source - <em>abstract</em></li>
+          <li><code>explorer.palette.size</code> - Number of colours in palette - <em>64</em></li>
+          <li><code>explorer.palette.seed</code> - Random seed used for choosing colours - <em>0</em></li>
         </ul>
         <p>
           The configuration properties listed should be added to the <code>JAVA_OPTS</code>
@@ -97,11 +98,11 @@ $ ./bin/explorer.sh --colour --palette ./data/spikes.xml</code></pre>
         <p>
           A series of example XML data files for IFS transforms are provided
           in the <code>data</code> directory of the distribution. Some of these can be
-          found in the <em>The Computational Beauty of Nature</em> book, details of
-          which are available in the <em>References</em> section. To load these examples,
-          specify the path to the file as the last argument on the command-line.
-          Sample images for these transforms have also been provided, be sure to use
-          the <code>.xml</code> file, not the <code>.png</code>.
+          found in the <em>The Computational Beauty of Nature</em> and <em>Superfractals</em>
+          books, details of which are available in the <em>References</em> section.
+          To load these examples, specify the path to the file as the last argument
+          on the command-line. Sample images for these transforms have also been provided,
+          so be sure to use the <code>.xml</code> file, not the <code>.png</code>.
         </p>
         <p>
           Once the program starts, it will diplay an empty grid in the
@@ -141,8 +142,6 @@ $ ./bin/explorer.sh --colour --palette ./data/spikes.xml</code></pre>
             rotation/displacement/scale values</li>
           <li>Printing</li>
           <li>Preferences dialog</li>
-          <li>Better details view</li>
-          <li>Weighting for transforms</li>
           <li>Better operating system integration</li>
             <li style="margin-left: 20px;">Native full-screen mode</li>
             <li style="margin-left: 20px;">Support native windowing system features</li>
