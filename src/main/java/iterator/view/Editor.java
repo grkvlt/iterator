@@ -185,7 +185,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
 
             if (selected == null && start != null && end != null) {
                 g.setPaint(Color.BLACK);
-                g.setStroke(new BasicStroke(3f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
+                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
                 int x = Math.min(start.x, end.x);
                 int y = Math.min(start.y, end.y);
                 int w = Math.max(start.x, end.x) - x;
@@ -222,14 +222,14 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         // Draw the outline
         g.setPaint(Color.BLACK);
         if (highlight) {
-            g.setStroke(new BasicStroke(3f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 10f, 10f }, 0f));
+            g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 10f, 10f }, 0f));
         } else {
-            g.setStroke(new BasicStroke(3f));
+            g.setStroke(new BasicStroke(2f));
         }
         g.draw(rect);
 
         // Draw the resize handles
-        g.setStroke(new BasicStroke(3f));
+        g.setStroke(new BasicStroke(2f));
         g.setPaint(Color.BLACK);
         int[] cornerX = new int[] { 0, 0, getWidth(), getWidth() };
         int[] cornerY = new int[] { 0, getHeight(), getHeight(), 0 };
