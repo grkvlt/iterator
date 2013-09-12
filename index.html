@@ -67,9 +67,33 @@
           distributions. These can be <a href="https://github.com/grkvlt/iterator/releases/1.0.3">downloaded from
           GitHub</a> as either <code>.tar.gz</code> or <code>.zip</code> archives. Then run the relevant
           script for your operating system, using the optional flags <code>-f</code> or
-          <code>--fullscreen</code> to specify full-screen mode and <code>-c</code> or
-          <code>--colour</code> to enable the experimental colour rendering mode.
+          <code>--fullscreen</code> to specify full-screen mode.
         </p>
+        <p>
+          Enable colour rendering with the <code>-c</code> or <code>--colour</code> flag.
+          This will use a fixed list of colours for the transforms. To use a colour palette
+          taken from a sample image specify <code>-p</code> or <code--palette</code>. The image
+          used can be specified in the <code>explorer.palette</code> system property and
+          can be <em>abstract</em>, <code>wave</code> or <code>car</code>.
+        </p>
+        <pre style="margin-left: 25px; width: 455px;"><code>$ ./bin/explorer.sh [-f] [-c] [-p] [<em>ifs.xml</em>]
+$ ./bin/explorer.command [-f] [-c] [-p] [<em>ifs.xml</em>]
+C&gt; .\bin\explorer.cmd [-f] [-c] [-p] [<em>ifs.xml</em>]</code></pre>
+        <h3>Configuration</h3>
+        <ul>
+          <li><code>explorer.grid.min</code> - Minimum grid spacing - <em>10</em></li>
+          <li><code>explorer.grid.max</code> - Maximum grid spacing - <em>50</em></li>
+          <li><code>explorer.grid.snap</code> - Grid snap spacing- <em>5</em></li>
+          <li><code>explorer.palette</code> - Colour palette image source - <em>abstract</em></li>
+          <li><code>explorer.seed</code> - Random seed used for choosing colours - <em>0</em></li>
+        </ul>
+        <p>
+          The configuration properties listed should be added to the <code>JAVA_OPTS</code>
+          variable bwfore running the program, as ilustrated below.
+        </p>
+        <pre style="margin-left: 25px; width: 455px;"><code>$ export JAVA_OPTS="-Dexplorer.palette=wave -Dexplorer.seed=1234"
+$ ./bin/explorer.sh --colour --palette ./data/spikes.xml</code></pre>
+        <h3>Usage</h3>
         <p>
           A series of example XML data files for IFS transforms are provided
           in the <code>data</code> directory of the distribution. Some of these can be
@@ -79,9 +103,6 @@
           Sample images for these transforms have also been provided, be sure to use
           the <code>.xml</code> file, not the <code>.png</code>.
         </p>
-        <pre style="margin-left: 25px; width: 455px;"><code>$ ./bin/explorer.sh [-f|--fullscreen] [-c|--colour] [<em>ifs.xml</em>]
-$ ./bin/explorer.command [-f|--fullscreen] [-c|--colour] [<em>ifs.xml</em>]
-C&gt; .\bin\explorer.cmd [-f|--fullscreen] [-c|--colour] [<em>ifs.xml</em>]</code></pre>
         <p>
           Once the program starts, it will diplay an empty grid in the
           <strong>Editor</strong> mode. The menus provide access to standard
@@ -100,10 +121,18 @@ C&gt; .\bin\explorer.cmd [-f|--fullscreen] [-c|--colour] [<em>ifs.xml</em>]</cod
           and rotated (with <em>Shift</em> held down) as desired. In this
           mode, the <em>Delete</em> or <em>Backspace</em> key will delete the
           selected transform and the <em>Left</em> or <em>Right</em> arrow
-          keys will rotate it by ninety degrees. When in <strong>Viewer</strong>
-          mode the <em>Space</em> key will pause or continue the rendering
-          process. The <strong>Details</strong> mode shows the actual affine
-          transform matrix coefficients for each transform.
+          keys will rotate it by ninety degrees.
+        </p>
+        <p>
+          When in <strong>Viewer</strong> mode the <em>Space</em> key will pause
+          and continue the rendering process. To zoom into the fractal press
+          <em>z</em> and use <em>Z</em> to zoom out. Note that when zoomed
+          in at high magnification the iterative process can take a very long
+          time until the rendered fractal becomes visible.
+        </p>
+        <p>
+          The <strong>Details</strong> mode shows the actual affine transforms
+          and their matrix coefficients for the system as a scrollable list.
         </p>
         <h3>TODO</h3>
         <ul>
@@ -129,6 +158,8 @@ C&gt; .\bin\explorer.cmd [-f|--fullscreen] [-c|--colour] [<em>ifs.xml</em>]</cod
           <li><a href="http://en.wikipedia.org/wiki/Affine_transformation">Affine Transform</a>; <em>Wikipedia</em></li>
           <li><a href="http://www-users.cs.umn.edu/%7Ebstanton/pdf/p271-demko.pdf">Construction of fractal objects with iterated function systems</a>;
             <em>Demko, Stephen and Hodges, Laurie and Naylor, Bruce; SIGGRAPH Computer Graphics, Volume 19, Number 3, 1985</em></li>
+          <li><a href="http://www.amazon.co.uk/SuperFractals-Michael-Fielding-Barnsley/dp/0521844932">Superfractals: patterns of Nature</a>;
+            <em>Barnsley, Michael F; Cambridge University Press; 7 Sep 2006; ISBN 978-0521844932</em></li>
           <li><a href="http://www.amazon.co.uk/The-Computational-Beauty-Nature-Explorations/dp/0262561271">The Computational Beauty of Nature: Computer Explorations of Fractals, Chaos, Complex Systems and Adaptation</a>;
             <em>Flake, Gary W; MIT Press; 1 Mar 2000; ISBN 978-0262561273</em></li>
         </ol>
