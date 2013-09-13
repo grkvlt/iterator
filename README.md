@@ -21,7 +21,11 @@ Iterated Function System Explorer.
  - Native full-screen mode
  - Support native windowing system features
 - Add skew transform
-- Better UI for rotations
+- Better UI
+ - Rotate using handles only
+ - Click to select zoom area
+ - Preserve aspect ratio on resize option
+- Fix issue with save path on files
 - Improve documentation
 - JNLP Web Start mechanism
 - JavaFX UI
