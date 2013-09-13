@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -82,7 +83,7 @@ import com.google.common.io.Resources;
  *
  * @author andrew.international@gmail.com
  */
-public class Explorer extends JFrame implements KeyListener {
+public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHandler {
     /** serialVersionUID */
     private static final long serialVersionUID = -2003170067188344917L;
 
@@ -151,6 +152,7 @@ public class Explorer extends JFrame implements KeyListener {
 
     public Explorer(String...argv) {
         super(EXPLORER);
+        Thread.setDefaultUncaughtExceptionHandler(this);
 
         // Parse arguments
         if (argv.length != 0) {
@@ -590,6 +592,13 @@ public class Explorer extends JFrame implements KeyListener {
     /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
     @Override
     public void keyReleased(KeyEvent e) {
+    }
+
+    /** @see java.lang.Thread.UncaughtExceptionHandler#uncaughtException(Thread, Throwable) */
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        System.err.printf("Thread %s (%d) caused %s: %s\n", t.getName(), t.getId(), e.getClass().getName(), e.getMessage());
+        System.exit(1);
     }
 
     /**
