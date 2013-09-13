@@ -186,7 +186,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         if (ifs != null && !ifs.isEmpty() && image != null) {
             executor.submit(new Runnable() {
                 public void run() {
-                    iterate(20000);
+                    iterate(50_000);
                     repaint();
                 }
             });

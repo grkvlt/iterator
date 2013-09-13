@@ -200,7 +200,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
                 Viewer viewer = controller.getViewer();
                 viewer.reset();
                 int n = ifs.size() + ((selected == null && start != null && end != null) ? 1 : 0);
-                viewer.iterate(50000 + (int) Math.min(250000, 5000 * n * Math.log(n)));
+                viewer.iterate(50_000 + (int) Math.min(250_000, 5_000 * n * Math.log(n)));
                 g.setComposite(AlphaComposite.SrcOver);
                 g.drawImage(viewer.getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
             }
@@ -217,7 +217,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         if (highlight) {
             g.setPaint(new Color(Color.BLUE.getRed(), Color.BLUE.getGreen(), Color.BLUE.getBlue(), 16));
         } else {
-            g.setPaint(new Color(Color.GRAY.getRed(), Color.GRAY.getGreen(), Color.GRAY.getBlue(), 8));
+            g.setPaint(new Color(Color.GRAY.getRed(), Color.GRAY.getGreen(), Color.GRAY.getBlue(), 16));
         }
         g.fill(rect);
 

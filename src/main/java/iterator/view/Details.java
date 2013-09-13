@@ -62,6 +62,7 @@ public class Details extends JTextPane {
 
         this.controller = controller;
 
+        setEditable(false);
         setContentType(HTML_MIME_TYPE);
         setText(INITIAL_CONTENT_HTML);
         HTMLEditorKit kit = (HTMLEditorKit) getEditorKitForContentType(HTML_MIME_TYPE);
