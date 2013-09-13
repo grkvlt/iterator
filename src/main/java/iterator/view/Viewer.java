@@ -154,8 +154,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         if (ifs.contains(selected)) { selected = null; }
         List<Transform> transforms = Lists.newArrayList(Iterables.concat(ifs, Optional.fromNullable(selected).asSet(), Optional.fromNullable(ants).asSet()));
         Collections.sort(transforms, IFS.IDENTITY);
-        double weight = 0.0d;
-        for (Transform t : transforms) weight += t.getDeterminant();
+        double weight = ifs.getWeight() + (selected != null ? selected.getDeterminant() : 0d) + (ants != null ? ants.getDeterminant() : 0d);
 
         int n = transforms.size();
         int r = isVisible() ? 1 : 2;
