@@ -29,6 +29,8 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.geom.AffineTransform;
@@ -56,7 +58,7 @@ import com.google.common.eventbus.Subscribe;
 /**
  * Rendered IFS viewer.
  */
-public class Viewer extends JPanel implements ActionListener, KeyListener {
+public class Viewer extends JPanel implements ActionListener, KeyListener, ComponentListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -3294847597249688714L;
 
@@ -64,7 +66,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
 
     private IFS ifs;
     private BufferedImage image;
-    private Timer timer  = new Timer(10, this);
+    private Timer timer;
     private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
     private double x, y;
     private Random random = new Random();
@@ -74,6 +76,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         super();
 
         this.controller = controller;
+
+        timer = new Timer(10, this);
+        timer.setCoalesce(true);
+        timer.setInitialDelay(0);
+
+        addComponentListener(this);
 
         bus.register(this);
     }
@@ -186,7 +194,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         if (ifs != null && !ifs.isEmpty() && image != null) {
             executor.submit(new Runnable() {
                 public void run() {
-                    iterate(50_000);
+                    iterate(30_000);
                     repaint();
                 }
             });
@@ -199,7 +207,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
     }
 
     public void stop() {
-        timer.stop();
+        if (timer.isRunning()) {
+            timer.stop();
+        }
     }
 
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
@@ -230,5 +240,22 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
     /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
     @Override
     public void keyReleased(KeyEvent e) {
+    }
+
+    @Override
+    public void componentResized(ComponentEvent e) {
+    }
+
+    @Override
+    public void componentMoved(ComponentEvent e) {
+    }
+
+    @Override
+    public void componentShown(ComponentEvent e) {
+    }
+
+    @Override
+    public void componentHidden(ComponentEvent e) {
+       stop();
     }
 }
