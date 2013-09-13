@@ -105,16 +105,24 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
     }
 
-
     public static final String OS_NAME_PROPERTY = "os.name";
+
     public static final String EXPLORER_PROPERTY = "explorer";
+    public static final String PALETTE_PROPERTY = EXPLORER_PROPERTY + ".palette";
+    public static final String GRID_PROPERTY =  EXPLORER_PROPERTY + ".grid";
+    public static final String WINDOW_PROPERTY =  EXPLORER_PROPERTY + ".window";
+    public static final String DEFAULT_PALETTE_FILE = "abstract";
+    public static final Integer DEFAULT_PALETTE_SIZE = 64;
+    public static final Long DEFAULT_PALETTE_SEED = 0L;
+    public static final Integer DEFAULT_GRID_MIN = 10;
+    public static final Integer DEFAULT_GRID_MAX = 50;
+    public static final Integer DEFAULT_GRID_SNAP = 5;
+    public static final Integer DEFAULT_WINDOW_SIZE = 600;
 
     public static final String EXPLORER = "IFS Explorer";
     public static final String EDITOR = "Editor";
     public static final String VIEWER = "Viewer";
     public static final String DETAILS = "Details";
-
-    public static final Integer SIZE = 600;
 
     public static final String FULLSCREEN_OPTION = "-f";
     public static final String FULLSCREEN_OPTION_LONG = "--fullscreen";
@@ -135,6 +143,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private IFS ifs;
     private List<Color> colours;
     private int paletteSize;
+    private Dimension size;
 
     private JMenuBar menuBar;
     private Editor editor;
@@ -191,6 +200,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 }
             }
         }
+
+        // Get window size configuration
+        int w = Integer.getInteger(WINDOW_PROPERTY + ".width", DEFAULT_WINDOW_SIZE);
+        int h = Integer.getInteger(WINDOW_PROPERTY + ".height", DEFAULT_WINDOW_SIZE);
+        size = new Dimension(w, h);
 
         // Load icon resources
         icon = loadImage("icon.png");
@@ -252,9 +266,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void loadColours() {
-        String file = System.getProperty(EXPLORER_PROPERTY + ".palette.file", "abstract");
-        Long seed = Long.getLong(EXPLORER_PROPERTY + ".palette.seed", 0l);
-        paletteSize = Integer.getInteger(EXPLORER_PROPERTY + ".palette.size", 64);
+        String file = System.getProperty(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE);
+        Long seed = Long.getLong(PALETTE_PROPERTY + ".seed", DEFAULT_PALETTE_SEED);
+        paletteSize = Integer.getInteger(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE);
         try {
             BufferedImage image = ImageIO.read(Resources.getResource("palette/" + file + ".png"));
             colours = Lists.newArrayList();
@@ -439,19 +453,18 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         setContentPane(content);
 
         if (!fullScreen) {
-            Dimension minimum = new Dimension(SIZE, SIZE);
-            editor.setMinimumSize(minimum);
-            editor.setSize(minimum);
-            viewer.setMinimumSize(minimum);
-            viewer.setSize(minimum);
+            editor.setMinimumSize(size);
+            editor.setSize(size);
+            viewer.setMinimumSize(size);
+            viewer.setSize(size);
             pack();
-            final int top = getInsets().top + (fullScreen ? 0 :  menuBar.getHeight());
-            Dimension size = new Dimension(SIZE, SIZE + top);
-            setSize(size);
-            setPreferredSize(size);
-            setMinimumSize(size);
+            final int top = getInsets().top + menuBar.getHeight();
+            Dimension actual = new Dimension(size.width, size.height + top);
+            setSize(actual);
+            setPreferredSize(actual);
+            setMinimumSize(actual);
             Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-            setLocation((screen.width / 2) - (size.width / 2), (screen.height / 2) - (size.height / 2));
+            setLocation((screen.width / 2) - (actual.width / 2), (screen.height / 2) - (actual.height / 2));
             addComponentListener(new ComponentAdapter() {
                 @Override
                 public void componentResized(ComponentEvent e) {
@@ -493,7 +506,12 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     @Subscribe
-    public void update(IFS ifs) {
+    public void resized(Dimension resized) {
+        size = resized.getSize();
+    }
+
+    @Subscribe
+    public void updated(IFS ifs) {
         this.ifs = ifs;
         String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
         setTitle(name);
@@ -534,13 +552,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public boolean hasPalette() { return palette && colours != null; }
 
     /** Small grid spacing. */
-    public int getMinGrid() { return Integer.getInteger(EXPLORER_PROPERTY + ".grid.min", 10); }
+    public int getMinGrid() { return Integer.getInteger(GRID_PROPERTY + ".min", DEFAULT_GRID_MIN); }
 
     /** Large grid spacing. */
-    public int getMaxGrid() { return Integer.getInteger(EXPLORER_PROPERTY + ".grid.max", 50); }
+    public int getMaxGrid() { return Integer.getInteger(GRID_PROPERTY + ".max", DEFAULT_GRID_MAX); }
 
     /** Snap to grid distance. */
-    public int getSnapGrid() { return Integer.getInteger(EXPLORER_PROPERTY + ".grid.snap", 5); }
+    public int getSnapGrid() { return Integer.getInteger(GRID_PROPERTY + ".snap", DEFAULT_GRID_SNAP); }
 
     public BufferedImage getIcon() { return icon; }
 

@@ -125,10 +125,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener {
         g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-
-        int rule = Integer.getInteger(Explorer.EXPLORER_PROPERTY + ".rule", AlphaComposite.SRC_OVER);
-        float alpha = Float.parseFloat(System.getProperty(Explorer.EXPLORER_PROPERTY + ".alpha", "0.8"));
-        g.setComposite(AlphaComposite.getInstance(rule, alpha));
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
 
         Transform selected = controller.getEditor().getSelected();
         Transform ants = null;
