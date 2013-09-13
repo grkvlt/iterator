@@ -118,6 +118,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public static final Integer DEFAULT_GRID_MAX = 50;
     public static final Integer DEFAULT_GRID_SNAP = 5;
     public static final Integer DEFAULT_WINDOW_SIZE = 600;
+    public static final Integer MIN_WINDOW_SIZE = 400; // Details view requires 350px
 
     public static final String EXPLORER = "IFS Explorer";
     public static final String EDITOR = "Editor";
@@ -143,7 +144,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private IFS ifs;
     private List<Color> colours;
     private int paletteSize;
-    private Dimension size;
+    private Dimension size, min = new Dimension(MIN_WINDOW_SIZE, MIN_WINDOW_SIZE);
 
     private JMenuBar menuBar;
     private Editor editor;
@@ -202,8 +203,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
 
         // Get window size configuration
-        int w = Integer.getInteger(WINDOW_PROPERTY + ".width", DEFAULT_WINDOW_SIZE);
-        int h = Integer.getInteger(WINDOW_PROPERTY + ".height", DEFAULT_WINDOW_SIZE);
+        int w = Math.max(MIN_WINDOW_SIZE, Integer.getInteger(WINDOW_PROPERTY + ".width", DEFAULT_WINDOW_SIZE));
+        int h = Math.max(MIN_WINDOW_SIZE, Integer.getInteger(WINDOW_PROPERTY + ".height", DEFAULT_WINDOW_SIZE));
         size = new Dimension(w, h);
 
         // Load icon resources
@@ -453,23 +454,23 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         setContentPane(content);
 
         if (!fullScreen) {
-            editor.setMinimumSize(size);
+            editor.setMinimumSize(min);
             editor.setSize(size);
-            viewer.setMinimumSize(size);
+            viewer.setMinimumSize(min);
             viewer.setSize(size);
             pack();
             final int top = getInsets().top + menuBar.getHeight();
             Dimension actual = new Dimension(size.width, size.height + top);
             setSize(actual);
             setPreferredSize(actual);
-            setMinimumSize(actual);
+            setMinimumSize(new Dimension(min.width, min.height + top));
             Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
             setLocation((screen.width / 2) - (actual.width / 2), (screen.height / 2) - (actual.height / 2));
             addComponentListener(new ComponentAdapter() {
                 @Override
                 public void componentResized(ComponentEvent e) {
-                    Dimension s = getSize();
-                    int side = Math.min(s.width, s.height - top);
+                    Dimension suggested = getSize();
+                    int side = Math.max(MIN_WINDOW_SIZE, Math.min(suggested.width, suggested.height - top));
                     setSize(side,  side + top);
                     bus.post(new Dimension(side, side));
                 }
