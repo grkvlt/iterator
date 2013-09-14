@@ -87,6 +87,8 @@
           <li><code>explorer.palette.file</code> - Colour palette image source - <em>abstract</em></li>
           <li><code>explorer.palette.size</code> - Number of colours in palette - <em>64</em></li>
           <li><code>explorer.palette.seed</code> - Random seed used for choosing colours - <em>0</em></li>
+          <li><code>explorer.window.width</code> - Width of main window - <em>600</em></li>
+          <li><code>explorer.window.height</code> - Height of main window - <em>600</em></li>
         </ul>
         <p>
           The configuration properties listed should be added to the <code>JAVA_OPTS</code>
@@ -111,6 +113,13 @@
           operations, including the ability to switch modes. The keyboard can
           also be used to toggle between modes using the <em>Tab</em> key.
         </p>
+        <p>
+          A live view of the generated IFS is displayed at low resolution to
+          give an idea of the eventual rendered image of the fractal. This
+          capability is unique among IFS generating applications, and allows
+          much more creativity and hels reach the desired final image much
+          more quickly.
+        </p>
         <div style="margin-left: 25px;">
           <img src="images/editor-screenshot.png" alt="Editor" title="Editor" border="1" width="485">
         </div>
@@ -127,10 +136,11 @@
         </p>
         <p>
           When in <strong>Viewer</strong> mode the <em>Space</em> key will pause
-          and continue the rendering process. To zoom into the fractal press
-          <em>z</em> and use <em>Z</em> to zoom out. Note that when zoomed
-          in at high magnification the iterative process can take a very long
-          time until the rendered fractal becomes visible.
+          and continue the rendering process. To zoom into the fractal select a
+          specific area using the left mouse button, or use the <em>z</em> and <em>Z</em>
+          keys to to zoom in and out of the centre of the image by a factor of two.
+          Note that when zoomed in at high magnification the iterative process can
+          take a very long time until the rendered fractal becomes visible.
         </p>
         <p>
           The <strong>Details</strong> mode shows the actual affine transforms
@@ -166,12 +176,9 @@
       </section>
       <footer>
         <small>
-          <a href="https://github.com/grkvlt/iterator">IFS Explorer</a> is Copyright 2012-2013 by <a href="mailto:andrew.international+iterator@gmail.com">Andrew Kennedy</a><br/>
+          <a href="https://github.com/grkvlt/iterator">IFS Explorer</a> is Copyright 2012-2013 by <a
+          href="mailto:andrew.international+iterator@gmail.com">Andrew Kennedy</a> &mdash;
           Licensed under the <a rel="license" href="http://www.apache.org/licenses/LICENSE-2.0">Apache Software License, Version 2.0</a><br/>
-          <a href="http://travis-ci.org/grkvlt/iterator"><img
-          src="https://secure.travis-ci.org/grkvlt/iterator.png?branch=master" alt="Build Status" style="vertical-align: -20%;" class="badge"></a> Continuous Integration with <a href="http://travis-ci.org">Travis CI</a><br/>
-          Site maintained by <b><a href="https://github.com/grkvlt">grkvlt</a></b> &mdash; View <b><a href="https://github.com/grkvlt/iterator">grkvlt/iterator</a></b> on GitHub<br/>
-          Hosted on GitHub Pages &mdash; Theme by <b><a href="https://github.com/orderedlist">orderedlist</a></b>
         </small>
       </footer>
     </div>
