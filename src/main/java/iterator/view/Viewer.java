@@ -20,6 +20,7 @@ import iterator.model.IFS;
 import iterator.model.Transform;
 
 import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -33,6 +34,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -46,7 +48,9 @@ import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.event.MouseInputListener;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
@@ -58,7 +62,7 @@ import com.google.common.eventbus.Subscribe;
 /**
  * Rendered IFS viewer.
  */
-public class Viewer extends JPanel implements ActionListener, KeyListener, ComponentListener {
+public class Viewer extends JPanel implements ActionListener, KeyListener, ComponentListener, MouseInputListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -3294847597249688714L;
 
@@ -71,6 +75,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private double x, y;
     private Random random = new Random();
     private float scale = 1.0f;
+    private Point centre;
+    private Rectangle zoom;
 
     public Viewer(EventBus bus, Explorer controller) {
         super();
@@ -81,6 +87,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         timer.setCoalesce(true);
         timer.setInitialDelay(0);
 
+        addMouseListener(this);
+        addMouseMotionListener(this);
         addComponentListener(this);
 
         bus.register(this);
@@ -97,6 +105,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Subscribe
     public void size(Dimension size) {
         reset();
+        centre = new Point(getWidth() / 2, getHeight() / 2);
     }
 
     @Override
@@ -104,6 +113,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         Graphics2D g = (Graphics2D) graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.drawImage(image, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
+
+        if (zoom != null) {
+            g.setPaint(Color.BLACK);
+            g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
+            g.draw(zoom);
+        }
+
         g.dispose();
     }
 
@@ -179,8 +195,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), a));
             double dst[] = t.applyTransform(x, y);
             x = dst[0]; y = dst[1];
-            double px = ((x - (getWidth() / 2d)) * scale) + (getWidth() / 2d);
-            double py = ((y - (getHeight() / 2d)) * scale) + (getHeight() / 2d);
+            double px = ((x - centre.x) * scale) + centre.x;
+            double py = ((y - centre.y) * scale) + centre.y;
             Rectangle rect = new Rectangle((int) Math.floor(px + 0.5d), (int) Math.floor(py + 0.5d), r, r);
             g.fill(rect);
         }
@@ -194,7 +210,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         if (ifs != null && !ifs.isEmpty() && image != null) {
             executor.submit(new Runnable() {
                 public void run() {
-                    iterate(30_000);
+                    iterate(25_000);
                     repaint();
                 }
             });
@@ -240,6 +256,65 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
     @Override
     public void keyReleased(KeyEvent e) {
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        if (SwingUtilities.isLeftMouseButton(e)) {
+            zoom = new Rectangle(e.getX(), e.getY(), 0, 0);
+            repaint();
+        }
+    }
+
+    /** @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent) */
+    @Override public void mouseDragged(MouseEvent e) {
+        if (zoom != null) {
+            Point one = e.getPoint();
+            Point two = new Point(zoom.x, zoom.y);
+            int x1 = Math.min(one.x, two.x);
+            int x2 = Math.max(one.x, two.x);
+            int y1 = Math.min(one.y, two.y);
+            int y2 = Math.max(one.y, two.y);
+            int side = Math.min(x2 - x1,  y2 - y1);
+            zoom = new Rectangle(x1, y1, side, side);
+            repaint();
+        }
+    }
+
+    /** @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent) */
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (SwingUtilities.isLeftMouseButton(e)) {
+            if (zoom != null) {
+                float old = scale;
+                Point delta = new Point((zoom.x + (zoom.width / 2)) - centre.x, (zoom.y + (zoom.height / 2)) - centre.y);
+                centre = new Point(centre.x + (int) (delta.x / scale), centre.y + (int) (delta.y / scale));
+                reset();
+                timer.start();
+                scale = old * (getWidth() / zoom.width);
+                zoom = null;
+            }
+        }
+    }
+
+    /** @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent) */
+    @Override
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    /** @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent) */
+    @Override
+    public void mouseExited(MouseEvent e) {
+    }
+
+    /** @see java.awt.event.MouseMotionListener#mouseMoved(java.awt.event.MouseEvent) */
+    @Override
+    public void mouseMoved(MouseEvent e) {
+    }
+
+    /** @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent) */
+    @Override
+    public void mouseClicked(MouseEvent e) {
     }
 
     @Override
