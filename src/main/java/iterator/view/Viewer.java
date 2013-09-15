@@ -23,6 +23,7 @@ import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -35,6 +36,8 @@ import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
@@ -71,6 +74,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private BufferedImage image;
     private Timer timer;
     private double x, y;
+    private int count;
     private Random random = new Random();
     private float scale = 1.0f;
     private Point2D centre;
@@ -119,11 +123,37 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         }
 
         if (Explorer.DEBUG) {
-            g.setPaint(Color.RED);
-            g.drawRect((int) centre.getX() - 1, (int) centre.getY() - 1, 2, 2);
+            Color red = new Color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue(), 128);
+            g.setPaint(red);
+
+            g.setStroke(new BasicStroke(2f));
+            g.drawLine((int) centre.getX() - 5, (int) centre.getY(), (int) centre.getX() + 5, (int) centre.getY());
+            g.drawLine((int) centre.getX(), (int) centre.getY() - 5, (int) centre.getX(), (int) centre.getY() + 5);
+
+            Font font =new Font("Calibri", Font.BOLD, 20);
+            FontRenderContext frc = g.getFontRenderContext();
+            TextLayout scaleText = new TextLayout(String.format("%.3f", scale), font, frc);
+            TextLayout countText = new TextLayout(String.format("%,d", 1000 * (count / 1000)), font, frc);
+            scaleText.draw(g, getWidth() - 10f - (float) scaleText.getBounds().getWidth(), getHeight() - 30f);
+            countText.draw(g, getWidth() - 10f - (float) countText.getBounds().getWidth(), getHeight() - 10f);
+
+            paintGrid(g);
         }
 
         g.dispose();
+    }
+
+    public void paintGrid(Graphics2D g) {
+        Color grid = new Color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue(), 32);
+        g.setPaint(grid);
+        g.setStroke(new BasicStroke(1f));
+        int max = controller.getMaxGrid();
+        for (int x = 0; x < getWidth(); x += max) {
+            g.drawLine(x, 0, x, getHeight());
+        }
+        for (int y = 0; y < getHeight(); y += max) {
+            g.drawLine(0, y, getWidth(), y);
+        }
     }
 
     public void reset() {
@@ -137,6 +167,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         y = random.nextInt(getHeight());
         scale = 1.0f;
         centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
+        count = 0;
     }
 
     public void save(File file) {
@@ -201,8 +232,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             x = dst[0]; y = dst[1];
             double px = ((x - centre.getX()) * scale) + centre.getX();
             double py = ((y - centre.getY()) * scale) + centre.getY();
-            Rectangle rect = new Rectangle((int) Math.floor(px + 0.5d), (int) Math.floor(py + 0.5d), r, r);
-            g.fill(rect);
+            if (px > 0d && py > 0d && px < getWidth() && py < getWidth()) {
+                Rectangle rect = new Rectangle((int) Math.floor(px + 0.5d), (int) Math.floor(py + 0.5d), r, r);
+                g.fill(rect);
+            }
+            count++;
         }
 
         g.dispose();
@@ -212,9 +246,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Override
     public void actionPerformed(ActionEvent e) {
         if (ifs != null && !ifs.isEmpty() && image != null) {
-                    iterate(25_000);
-                    repaint();
-                }
+            iterate(25_000);
+            repaint();
+        }
     }
 
     public void start() {
@@ -245,6 +279,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         } else if (e.getKeyCode() == KeyEvent.VK_Z && isVisible()) {
             float old = scale;
             Point2D last = centre;
+
+            timer.stop();
             reset();
             if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
                 scale = old / 2.0f;
@@ -252,6 +288,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 scale = old * 2.0f;
             }
             centre = last;
+            timer.start();
         }
     }
 
@@ -293,15 +330,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
                 timer.stop();
                 reset();
-
                 Point2D delta = new Point2D.Double((zoom.x + (zoom.width / 2)) - last.getX(), (zoom.y + (zoom.height / 2)) - last.getY());
                 centre = new Point2D.Double(last.getX() + (delta.getX() / old), last.getY() + (delta.getY() / old));
                 scale = old * ((float) getWidth() / (float) zoom.width);
-                if (Explorer.DEBUG) { 
-                    System.err.println("scale " + scale);
-                }
                 zoom = null;
-
                 timer.start();
             }
         }
