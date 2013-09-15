@@ -147,6 +147,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private List<Color> colours;
     private int paletteSize;
     private Dimension size, min = new Dimension(MIN_WINDOW_SIZE, MIN_WINDOW_SIZE);
+    private File cwd;
 
     private JMenuBar menuBar;
     private Editor editor;
@@ -317,6 +318,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             public void actionPerformed(ActionEvent e) {
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("XML Files", "xml");
                 JFileChooser chooser = new JFileChooser();
+                chooser.setCurrentDirectory(cwd);
                 chooser.setFileFilter(filter);
                 int result = chooser.showOpenDialog(null);
                 if (result == JFileChooser.APPROVE_OPTION) {
@@ -334,7 +336,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 if (ifs.getName() == null) {
                     saveAs.doClick();
                 } else {
-                    File saveAs = new File(ifs.getName() + ".xml");
+                    File saveAs = new File(cwd, ifs.getName() + ".xml");
                     save(saveAs);
                     save.setEnabled(false);
                 }
@@ -348,6 +350,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             public void actionPerformed(ActionEvent e) {
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("XML Files", "xml");
                 JFileChooser chooser = new JFileChooser();
+                chooser.setCurrentDirectory(cwd);
                 chooser.setFileFilter(filter);
                 chooser.setSelectedFile(new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".xml"));
                 int result = chooser.showSaveDialog(null);
@@ -366,11 +369,14 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             public void actionPerformed(ActionEvent e) {
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("PNG Image Files", "png");
                 JFileChooser chooser = new JFileChooser();
+                chooser.setCurrentDirectory(cwd);
                 chooser.setFileFilter(filter);
                 chooser.setSelectedFile(new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED)+ ".png"));
                 int result = chooser.showSaveDialog(null);
                 if (result == JFileChooser.APPROVE_OPTION) {
-                    viewer.save(chooser.getSelectedFile());
+                    File file = chooser.getSelectedFile();
+                    viewer.save(file);
+                    cwd = file.getParentFile();
                 }
             }
         });
@@ -532,6 +538,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
              marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
              marshaller.marshal(ifs, writer);
              Closeables.close(writer, true);
+             cwd = file.getParentFile();
          } catch (Exception e) {
              throw Throwables.propagate(e);
          }
@@ -542,6 +549,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
              JAXBContext context = JAXBContext.newInstance(IFS.class);
              Unmarshaller unmarshaller = context.createUnmarshaller();
              IFS ifs = (IFS) unmarshaller.unmarshal(reader);
+             cwd = file.getParentFile();
              return ifs;
          } catch (Exception e) {
              throw Throwables.propagate(e);
