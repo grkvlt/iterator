@@ -36,6 +36,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -75,7 +76,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private double x, y;
     private Random random = new Random();
     private float scale = 1.0f;
-    private Point centre;
+    private Point2D centre;
     private Rectangle zoom;
 
     public Viewer(EventBus bus, Explorer controller) {
@@ -105,7 +106,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Subscribe
     public void size(Dimension size) {
         reset();
-        centre = new Point(getWidth() / 2, getHeight() / 2);
+        centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
     }
 
     @Override
@@ -138,6 +139,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         x = random.nextInt(getWidth());
         y = random.nextInt(getHeight());
         scale = 1.0f;
+        centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
     }
 
     public void save(File file) {
@@ -200,8 +202,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), a));
             double dst[] = t.applyTransform(x, y);
             x = dst[0]; y = dst[1];
-            double px = ((x - centre.x) * scale) + centre.x;
-            double py = ((y - centre.y) * scale) + centre.y;
+            double px = ((x - centre.getX()) * scale) + centre.getX();
+            double py = ((y - centre.getY()) * scale) + centre.getY();
             Rectangle rect = new Rectangle((int) Math.floor(px + 0.5d), (int) Math.floor(py + 0.5d), r, r);
             g.fill(rect);
         }
@@ -249,12 +251,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             }
         } else if (e.getKeyCode() == KeyEvent.VK_Z && isVisible()) {
             float old = scale;
+            Point2D last = centre;
             reset();
             if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
                 scale = old / 2.0f;
             } else {
                 scale = old * 2.0f;
             }
+            centre = last;
         }
     }
 
@@ -292,12 +296,20 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         if (SwingUtilities.isLeftMouseButton(e)) {
             if (zoom != null) {
                 float old = scale;
-                Point delta = new Point((zoom.x + (zoom.width / 2)) - centre.x, (zoom.y + (zoom.height / 2)) - centre.y);
-                centre = new Point(centre.x + (int) (delta.x / scale), centre.y + (int) (delta.y / scale));
+                Point2D last = centre;
+
+                timer.stop();
                 reset();
-                timer.start();
-                scale = old * (getWidth() / zoom.width);
+
+                Point2D delta = new Point2D.Double((zoom.x + (zoom.width / 2)) - last.getX(), (zoom.y + (zoom.height / 2)) - last.getY());
+                centre = new Point2D.Double(last.getX() + (delta.getX() / old), last.getY() + (delta.getY() / old));
+                scale = old * ((float) getWidth() / (float) zoom.width);
+                if (Explorer.DEBUG) { 
+                    System.err.println("scale " + scale);
+                }
                 zoom = null;
+
+                timer.start();
             }
         }
     }
