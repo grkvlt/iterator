@@ -44,8 +44,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
@@ -72,7 +70,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private IFS ifs;
     private BufferedImage image;
     private Timer timer;
-    private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
     private double x, y;
     private Random random = new Random();
     private float scale = 1.0f;
@@ -84,7 +81,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
         this.controller = controller;
 
-        timer = new Timer(10, this);
+        timer = new Timer(1, this);
         timer.setCoalesce(true);
         timer.setInitialDelay(0);
 
@@ -215,13 +212,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Override
     public void actionPerformed(ActionEvent e) {
         if (ifs != null && !ifs.isEmpty() && image != null) {
-            executor.submit(new Runnable() {
-                public void run() {
                     iterate(25_000);
                     repaint();
                 }
-            });
-        }
     }
 
     public void start() {
