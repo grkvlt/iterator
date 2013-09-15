@@ -120,6 +120,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             g.draw(zoom);
         }
 
+        if (Explorer.DEBUG) {
+            g.setPaint(Color.RED);
+            g.drawRect((int) centre.getX() - 1, (int) centre.getY() - 1, 2, 2);
+        }
+
         g.dispose();
     }
 

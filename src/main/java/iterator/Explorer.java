@@ -120,6 +120,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public static final Integer DEFAULT_WINDOW_SIZE = 600;
     public static final Integer MIN_WINDOW_SIZE = 400; // Details view requires 350px
 
+    public static final Boolean DEBUG = Boolean.getBoolean(EXPLORER_PROPERTY + ".debug");
+
     public static final String EXPLORER = "IFS Explorer";
     public static final String EDITOR = "Editor";
     public static final String VIEWER = "Viewer";
@@ -617,6 +619,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     @Override
     public void uncaughtException(Thread t, Throwable e) {
         System.err.printf("Thread %s (%d) caused %s: %s\n", t.getName(), t.getId(), e.getClass().getName(), e.getMessage());
+        if (Explorer.DEBUG) { 
+            e.printStackTrace(System.err);
+        }
         System.exit(1);
     }
 
