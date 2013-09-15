@@ -67,6 +67,9 @@ public class Splash extends JPanel implements ActionListener {
 
     public static void paintSplash(Graphics2D g, BufferedImage image, int width, int height) {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         float[] scales = { 1f, 1f, 1f, 0.75f };
         float[] offsets = new float[4];
         BufferedImageOp filter = new RescaleOp(scales, offsets, null);
