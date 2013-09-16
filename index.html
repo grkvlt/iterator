@@ -92,8 +92,17 @@
           <li><code>explorer.debug</code> - Enable debugging mode - <em>false</em></li>
         </ul>
         <p>
-          The configuration properties listed should be added to the <code>JAVA_OPTS</code>
-          variable before running the program, as ilustrated below.
+          The configuration options listed can be set in a property file, which can then
+          be loaded by the application. The locations searched for configuration files are
+          the users <code>HOME</code> directory, for a file named <code>.explorer.properties</code>,
+          the current directory for a file named <code>explorer.properties</code> and finally
+          the file specified on the command line using the <code>--config <em>config.properties</em></code>
+          option.
+        </p>
+        <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/explorer.sh --config debug.properties ./data/koch.xml</code></pre>
+        <p>
+          It is also possible to set individual configuartion options as system properties,
+          using the <code>JAVA_OPTS</code> variable.
         </p>
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> export JAVA_OPTS="-Dexplorer.palette.file=wave \
 <b>&gt;</b> -Dexplorer.palette.seed=1234"
@@ -164,7 +173,11 @@
           <a href="images/gallery/maple2.png"><img src="images/gallery/maple2.png" alt="Maple 2" title="Maple 2" border="1" width="93" height="93"></a>
           <a href="images/gallery/random.png"><img src="images/gallery/random.png" alt="Random" title="Random" border="1" width="93" height="93"></a>
           <a href="images/gallery/random2.png"><img src="images/gallery/random2.png" alt="Random Colour" title="Random Colour" border="1" width="93" height="93"></a>
+          <a href="images/gallery/rosette.png"><img src="images/gallery/rosette.png" alt="Rosette" title="Rosette" border="1" width="93" height="93"></a>
+          <a href="images/gallery/rosette2.png"><img src="images/gallery/rosette2.png" alt="Rosette Colour" title="Rosette Colour" border="1" width="93" height="93"></a>
+          <a href="images/gallery/seahorse.png"><img src="images/gallery/seahorse.png" alt="Seahorse" title="Seahorse" border="1" width="93" height="93"></a>
           <a href="images/gallery/shell.png"><img src="images/gallery/shell.png" alt="Shell" title="Shell" border="1" width="93" height="93"></a>
+          <a href="images/gallery/shell2.png"><img src="images/gallery/shell2.png" alt="Shell 2" title="Shell 2" border="1" width="93" height="93"></a>
           <a href="images/gallery/spikes.png"><img src="images/gallery/spikes.png" alt="Spikes" title="Spikes" border="1" width="93" height="93"></a>
           <a href="images/gallery/splotch.png"><img src="images/gallery/splotch.png" alt="Splotch" title="Splotch" border="1" width="93" height="93"></a>
           <a href="images/gallery/star.png"><img src="images/gallery/star.png" alt="Star" title="Star" border="1" width="93" height="93"></a>
@@ -173,6 +186,7 @@
           <a href="images/gallery/triangle.png"><img src="images/gallery/triangle.png" alt="Triangle" title="Triangle" border="1" width="93" height="93"></a>
           <a href="images/gallery/wing.png"><img src="images/gallery/wing.png" alt="Wing" title="Wing" border="1" width="93" height="93"></a>
           <a href="images/gallery/wing2.png"><img src="images/gallery/wing2.png" alt="Wing 2" title="Wing 2" border="1" width="93" height="93"></a>
+          <a href="images/gallery/zoom.png"><img src="images/gallery/zoom.png" alt="Zoom" title="Zoom" border="1" width="93" height="93"></a>
         </div>
         <p style="margin-left: 25px;">
           <em>Collection of example IFS images.</em>
