@@ -40,6 +40,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -144,7 +145,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     }
 
     public void paintGrid(Graphics2D g) {
-        Color grid = new Color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue(), 32);
+        Color grid = new Color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue(), 16);
         g.setPaint(grid);
         g.setStroke(new BasicStroke(1f));
         int max = controller.getMaxGrid();
@@ -230,8 +231,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), a));
             double dst[] = t.applyTransform(x, y);
             x = dst[0]; y = dst[1];
-            double px = ((x - centre.getX()) * scale) + centre.getX();
-            double py = ((y - centre.getY()) * scale) + centre.getY();
+            double px = ((x - centre.getX()) * scale) + (getWidth() / 2d);
+            double py = ((y - centre.getY()) * scale) + (getHeight() / 2d);
             if (px > 0d && py > 0d && px < getWidth() && py < getWidth()) {
                 Rectangle rect = new Rectangle((int) Math.floor(px + 0.5d), (int) Math.floor(py + 0.5d), r, r);
                 g.fill(rect);
@@ -330,9 +331,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
                 timer.stop();
                 reset();
-                Point2D delta = new Point2D.Double((zoom.x + (zoom.width / 2)) - last.getX(), (zoom.y + (zoom.height / 2)) - last.getY());
-                centre = new Point2D.Double(last.getX() + (delta.getX() / old), last.getY() + (delta.getY() / old));
+
+                // Calculate new centre point and scale
+                Point2D origin = new Point2D.Double((last.getX() * old) - (getWidth() / 2d), (last.getY() * old) - (getHeight() / 2d));
                 scale = old * ((float) getWidth() / (float) zoom.width);
+                centre = new Point2D.Double((zoom.x + (zoom.width / 2d) + origin.getX()) / old, (zoom.y + (zoom.height / 2d) + origin.getY()) / old);
+
                 zoom = null;
                 timer.start();
             }
