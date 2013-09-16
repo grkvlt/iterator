@@ -21,7 +21,6 @@ import iterator.model.Transform;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.util.SortedSet;
 
 import javax.swing.JTextPane;
 import javax.swing.text.html.HTMLEditorKit;
@@ -29,7 +28,6 @@ import javax.swing.text.html.StyleSheet;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 

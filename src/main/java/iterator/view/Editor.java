@@ -48,7 +48,6 @@ import javax.swing.event.MouseInputListener;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 

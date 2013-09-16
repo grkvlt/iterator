@@ -122,7 +122,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             g.draw(zoom);
         }
 
-        if (Explorer.DEBUG) {
+        if (controller.isDebug()) {
             Color red = new Color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue(), 128);
             g.setPaint(red);
 

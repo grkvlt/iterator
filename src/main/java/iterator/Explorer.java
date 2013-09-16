@@ -15,6 +15,8 @@
  */
 package iterator;
 
+import static iterator.Config.*;
+
 import iterator.model.IFS;
 import iterator.view.Details;
 import iterator.view.Editor;
@@ -107,20 +109,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public static final String OS_NAME_PROPERTY = "os.name";
 
-    public static final String EXPLORER_PROPERTY = "explorer";
-    public static final String PALETTE_PROPERTY = EXPLORER_PROPERTY + ".palette";
-    public static final String GRID_PROPERTY =  EXPLORER_PROPERTY + ".grid";
-    public static final String WINDOW_PROPERTY =  EXPLORER_PROPERTY + ".window";
-    public static final String DEFAULT_PALETTE_FILE = "abstract";
-    public static final Integer DEFAULT_PALETTE_SIZE = 64;
-    public static final Long DEFAULT_PALETTE_SEED = 0L;
-    public static final Integer DEFAULT_GRID_MIN = 10;
-    public static final Integer DEFAULT_GRID_MAX = 50;
-    public static final Integer DEFAULT_GRID_SNAP = 5;
-    public static final Integer DEFAULT_WINDOW_SIZE = 600;
-    public static final Integer MIN_WINDOW_SIZE = 400; // Details view requires 350px
-
-    public static final Boolean DEBUG = Boolean.getBoolean(EXPLORER_PROPERTY + ".debug");
+    private static final Config config = new Config();
+    private File override;
 
     public static final String EXPLORER = "IFS Explorer";
     public static final String EDITOR = "Editor";
@@ -133,6 +123,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public static final String COLOUR_OPTION_LONG = "--colour";
     public static final String PALETTE_OPTION = "-p";
     public static final String PALETTE_OPTION_LONG = "--palette";
+    public static final String CONFIG_OPTION_LONG = "--config";
 
     private boolean fullScreen = false;
     private boolean colour = false;
@@ -181,7 +172,14 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     } else if (argv[i].equalsIgnoreCase(PALETTE_OPTION) ||
                             argv[i].equalsIgnoreCase(PALETTE_OPTION_LONG)) {
                         palette = true;
-                    }  else {
+                    } else if (argv[i].equalsIgnoreCase(CONFIG_OPTION_LONG)) {
+                        if (argv.length >= i + 1) {
+                            override = new File(argv[++i]);
+                            if (!override.exists()) {
+                                throw new IllegalArgumentException("Configuration file does not exist: " + override);
+                            }
+                        }
+                    } else {
                         throw new IllegalArgumentException("Cannot parse option: " + argv[i]);
                     }
                 } else if (i == argv.length - 1) {
@@ -197,7 +195,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                             }
                         });
                     } else {
-                        throw new IllegalArgumentException("Cannot load file: " + argv[i]);
+                        throw new IllegalArgumentException("Cannot load XML data file: " + argv[i]);
                     }
                 } else {
                     throw new IllegalArgumentException("Unknown argument: " + argv[i]);
@@ -205,9 +203,12 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             }
         }
 
+        // Load configuration
+        config.loadProperties(override);
+
         // Get window size configuration
-        int w = Math.max(MIN_WINDOW_SIZE, Integer.getInteger(WINDOW_PROPERTY + ".width", DEFAULT_WINDOW_SIZE));
-        int h = Math.max(MIN_WINDOW_SIZE, Integer.getInteger(WINDOW_PROPERTY + ".height", DEFAULT_WINDOW_SIZE));
+        int w = Math.max(MIN_WINDOW_SIZE, config.get(WINDOW_PROPERTY + ".width", DEFAULT_WINDOW_SIZE));
+        int h = Math.max(MIN_WINDOW_SIZE, config.get(WINDOW_PROPERTY + ".height", DEFAULT_WINDOW_SIZE));
         size = new Dimension(w, h);
 
         // Load icon resources
@@ -261,6 +262,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
     }
 
+    public boolean isDebug() {
+        return config.get(DEBUG_PROPERTY, Boolean.FALSE);
+    }
+
     public List<Color> getColours() {
         return colours;
     }
@@ -270,9 +275,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void loadColours() {
-        String file = System.getProperty(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE);
-        Long seed = Long.getLong(PALETTE_PROPERTY + ".seed", DEFAULT_PALETTE_SEED);
-        paletteSize = Integer.getInteger(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE);
+        String file = config.get(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE);
+        Long seed = config.get(PALETTE_PROPERTY + ".seed", DEFAULT_PALETTE_SEED);
+        paletteSize = config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE);
         try {
             BufferedImage image = ImageIO.read(Resources.getResource("palette/" + file + ".png"));
             colours = Lists.newArrayList();
@@ -563,13 +568,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public boolean hasPalette() { return palette && colours != null; }
 
     /** Small grid spacing. */
-    public int getMinGrid() { return Integer.getInteger(GRID_PROPERTY + ".min", DEFAULT_GRID_MIN); }
+    public int getMinGrid() { return config.get(GRID_PROPERTY + ".min", DEFAULT_GRID_MIN); }
 
     /** Large grid spacing. */
-    public int getMaxGrid() { return Integer.getInteger(GRID_PROPERTY + ".max", DEFAULT_GRID_MAX); }
+    public int getMaxGrid() { return config.get(GRID_PROPERTY + ".max", DEFAULT_GRID_MAX); }
 
     /** Snap to grid distance. */
-    public int getSnapGrid() { return Integer.getInteger(GRID_PROPERTY + ".snap", DEFAULT_GRID_SNAP); }
+    public int getSnapGrid() { return config.get(GRID_PROPERTY + ".snap", DEFAULT_GRID_SNAP); }
 
     public BufferedImage getIcon() { return icon; }
 
@@ -627,7 +632,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     @Override
     public void uncaughtException(Thread t, Throwable e) {
         System.err.printf("Thread %s (%d) caused %s: %s\n", t.getName(), t.getId(), e.getClass().getName(), e.getMessage());
-        if (Explorer.DEBUG) { 
+        if (isDebug()) { 
             e.printStackTrace(System.err);
         }
         System.exit(1);
