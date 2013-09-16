@@ -115,8 +115,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
     }
 
+    /** @see javax.swing.JComponent#paintComponent(Graphics) */
     @Override
-    public void paintComponent(Graphics graphics) {
+    protected void paintComponent(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.drawImage(image, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
@@ -302,6 +303,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void keyReleased(KeyEvent e) {
     }
 
+    /** @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent) */
     @Override
     public void mousePressed(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e)) {
@@ -371,18 +373,22 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void mouseClicked(MouseEvent e) {
     }
 
+    /** @see java.awt.event.ComponentListener#componentResized(java.awt.event.ComponentEvent) */
     @Override
     public void componentResized(ComponentEvent e) {
     }
 
+    /** @see java.awt.event.ComponentListener#componentMoved(java.awt.event.ComponentEvent) */
     @Override
     public void componentMoved(ComponentEvent e) {
     }
 
+    /** @see java.awt.event.ComponentListener#componentShown(java.awt.event.ComponentEvent) */
     @Override
     public void componentShown(ComponentEvent e) {
     }
 
+    /** @see java.awt.event.ComponentListener#componentHidden(java.awt.event.ComponentEvent) */
     @Override
     public void componentHidden(ComponentEvent e) {
        stop();

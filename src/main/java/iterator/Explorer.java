@@ -49,7 +49,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Locale;
 import java.util.Queue;
 import java.util.Random;
 
@@ -74,7 +73,6 @@ import javax.xml.bind.Unmarshaller;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Optional;
-import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
@@ -243,18 +241,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         } catch (IOException ioe) {
             throw Throwables.propagate(ioe);
         }
-    }
-
-    public boolean isDebug() {
-        return config.get(DEBUG_PROPERTY, Boolean.FALSE);
-    }
-
-    public List<Color> getColours() {
-        return colours;
-    }
-
-    public int getPaletteSize() {
-        return paletteSize;
     }
 
     public void loadColours() {
@@ -553,6 +539,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public boolean isColour() { return colour; }
 
     public boolean hasPalette() { return palette && colours != null; }
+
+    public List<Color> getColours() { return colours; }
+
+    public int getPaletteSize() { return paletteSize; }
+
+    /** Debug information shown. */
+    public boolean isDebug() { return config.get(DEBUG_PROPERTY, Boolean.FALSE); }
 
     /** Small grid spacing. */
     public int getMinGrid() { return config.get(GRID_PROPERTY + ".min", DEFAULT_GRID_MIN); }

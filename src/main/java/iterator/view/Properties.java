@@ -31,6 +31,8 @@ import javax.swing.SwingConstants;
 
 /**
  * Properties dialog.
+ *
+ * TODO implement matrix editor
  */
 public class Properties extends JDialog {
     /** serialVersionUID */

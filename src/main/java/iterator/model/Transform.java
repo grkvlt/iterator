@@ -23,7 +23,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import com.google.common.base.Equivalence;
 import com.google.common.base.Objects;
 
 /**

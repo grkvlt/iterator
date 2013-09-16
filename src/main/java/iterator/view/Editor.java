@@ -175,8 +175,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         bus.post(ifs);
     }
 
+    /** @see javax.swing.JComponent#paintComponent(Graphics) */
     @Override
-    public void paintComponent(Graphics graphics) {
+    protected void paintComponent(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -434,7 +435,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     }
 
     /** @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent) */
-    @Override public void mouseDragged(MouseEvent e) {
+    @Override
+    public void mouseDragged(MouseEvent e) {
         if (start != null) {
             end = snap(e.getPoint());
             if (selected != null && resize != null) {
