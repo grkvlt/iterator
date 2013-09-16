@@ -493,13 +493,15 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     @Subscribe
     public void resized(Dimension resized) {
         size = resized.getSize();
+        if (isDebug()) System.err.println("Resized:\t" + size);
     }
 
     /** @see Subscriber#updated(IFS) */
     @Override
     @Subscribe
-    public void updated(IFS ifs) {
-        this.ifs = ifs;
+    public void updated(IFS updated) {
+        ifs = updated;
+        if (isDebug()) System.err.println("Updated:\t" + ifs);
         String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
         setTitle(name);
         if (!ifs.isEmpty()) {
