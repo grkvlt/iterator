@@ -133,7 +133,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private JMenuItem export, save, saveAs;
 
     private EventBus bus;
-    private Queue<Runnable> tasks = Queues.newArrayDeque();
+    private Runnable postponed;
 
     public Explorer(String...argv) {
         super(EXPLORER);
@@ -168,13 +168,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     final File file = new File(argv[i]);
                     if (file.canRead()) {
                         // Add a task to load the file
-                        tasks.add(new Runnable() {
+                        postponed = new Runnable() {
                             public void run() {
                                 IFS loaded = load(file);
-                                loaded.setSize(getSize());
+                                loaded.setSize(size);
                                 bus.post(loaded);
                             }
-                        });
+                        };
                     } else {
                         throw new IllegalArgumentException("Cannot load XML data file: " + argv[i]);
                     }
@@ -469,8 +469,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         IFS untitled = new IFS();
         bus.post(untitled);
 
-        while (tasks.size() > 0) {
-            SwingUtilities.invokeLater(tasks.poll());
+        // Check for post-startup task
+        if (postponed != null) {
+            SwingUtilities.invokeLater(postponed);
         }
 
         setVisible(true);
