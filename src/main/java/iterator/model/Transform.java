@@ -36,19 +36,19 @@ public class Transform {
     @XmlAttribute
     private int zIndex;
     @XmlAttribute
-    public int x;
+    public double x;
     @XmlAttribute
-    public int y;
+    public double y;
     @XmlAttribute
-    public int w;
+    public double w;
     @XmlAttribute
-    public int h;
+    public double h;
     @XmlAttribute
     public double r;
     @XmlAttribute
-    private int sw;
+    private double sw;
     @XmlAttribute
-    private int sh;
+    private double sh;
 
     @SuppressWarnings("unused")
     private Transform() {
@@ -64,10 +64,10 @@ public class Transform {
         this.zIndex = zIndex;
         this.sw = size.width;
         this.sh = size.height;
-        this.x = 0;
-        this.y = 0;
-        this.w = 0;
-        this.h = 0;
+        this.x = 0d;
+        this.y = 0d;
+        this.w = 0d;
+        this.h = 0d;
         this.r = 0d;
     }
 
@@ -92,10 +92,10 @@ public class Transform {
     }
 
     public void setSize(Dimension size) {
-        this.w = (int) ((double) w * (size.getWidth() / (double) sw));
-        this.h = (int) ((double) h * (size.getHeight()/ (double) sh));
-        this.x = (int) ((double) x * (size.getWidth() / (double) sw));
-        this.y = (int) ((double) y * (size.getHeight() / (double) sh));
+        this.w = (double) w * (size.getWidth() / (double) sw);
+        this.h = (double) h * (size.getHeight()/ (double) sh);
+        this.x = (double) x * (size.getWidth() / (double) sw);
+        this.y = (double) y * (size.getHeight() / (double) sh);
         this.sw = size.width;
         this.sh = size.height;
     }
@@ -104,7 +104,7 @@ public class Transform {
         AffineTransform transform = new AffineTransform();
         transform.translate(x, y);
         transform.rotate(r);
-        transform.scale((double) w / (double) sw, (double) h / (double) sh);
+        transform.scale(w / sw, h / sh);
         return transform;
     }
 

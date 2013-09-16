@@ -440,8 +440,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         if (start != null) {
             end = snap(e.getPoint());
             if (selected != null && resize != null) {
-                int w = resize.w;
-                int h = resize.h;
+                double w = resize.w;
+                double h = resize.h;
                 int dx = end.x - start.x;
                 int dy = end.y - start.y;
 
@@ -458,8 +458,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     Throwables.propagate(e1);
                 }
 
-                int x = resize.x;
-                int y = resize.y;
+                double x = resize.x;
+                double y = resize.y;
 
                 switch(corner.getType()) {
                 case Cursor.NW_RESIZE_CURSOR:
@@ -490,8 +490,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 int dx = end.x - start.x;
                 int dy = end.y - start.y;
 
-                int x = move.x + dx;
-                int y = move.y + dy;
+                double x = move.x + dx;
+                double y = move.y + dy;
 
                 selected = new Transform(selected.getId(), selected.getZIndex(), getSize());
                 selected.x = x;
