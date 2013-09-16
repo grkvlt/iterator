@@ -17,8 +17,8 @@ package iterator.model;
 
 import java.awt.Dimension;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.SortedSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -29,15 +29,16 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.ForwardingSortedSet;
-import com.google.common.collect.Sets;
+import com.google.common.collect.ForwardingList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 
 /**
  * IFS Model.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "IFS")
-public class IFS extends ForwardingSortedSet<Transform> {
+public class IFS extends ForwardingList<Transform> {
     public static final String UNTITLED = "Untitled";
 
     public static final Comparator<Transform> Z_ORDER = new Comparator<Transform>() {
@@ -49,8 +50,6 @@ public class IFS extends ForwardingSortedSet<Transform> {
                     .result();
         }
     };
-
-    public static final Comparator<Transform> REVERSE_Z_ORDER = Collections.reverseOrder(Z_ORDER);
 
     public static final Comparator<Transform> IDENTITY = new Comparator<Transform>() {
         @Override
@@ -65,7 +64,7 @@ public class IFS extends ForwardingSortedSet<Transform> {
     private String name;
     @XmlElementWrapper(name = "Transforms")
     @XmlElement(name = "Transform")
-    private SortedSet<Transform> transforms = Sets.newTreeSet(IDENTITY);
+    private List<Transform> transforms = Lists.newArrayList();
 
     public IFS() { }
 
@@ -81,9 +80,10 @@ public class IFS extends ForwardingSortedSet<Transform> {
     @Override
     public boolean add(Transform element) {
         if (element.getId() < 0) {
-            element.setId(size() + 1);
-            element.setZIndex(isEmpty() ? 0 : last().getZIndex() + 1);
+            element.setId(Ordering.from(IDENTITY).max(this).getId() + 1);
+            element.setZIndex(Ordering.from(Z_ORDER).max(this).getZIndex() + 1);
         }
+
         return super.add(element);
     }
 
@@ -93,10 +93,6 @@ public class IFS extends ForwardingSortedSet<Transform> {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public SortedSet<Transform> getTransforms() {
-        return transforms;
     }
 
     public void setTransforms(Collection<Transform> transforms) {
@@ -117,7 +113,7 @@ public class IFS extends ForwardingSortedSet<Transform> {
     }
 
     @Override
-    protected SortedSet<Transform> delegate() {
+    protected List<Transform> delegate() {
         return transforms;
     }
 }

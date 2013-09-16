@@ -2,8 +2,8 @@
 <IFS name="lines">
     <Transforms>
         <Transform id="1" zIndex="0" weight="1.0" x="80" y="40" w="250" h="370" r="0.0" sw="600" sh="600"/>
-        <Transform id="4" zIndex="3" weight="1.0" x="230" y="50" w="520" h="10" r="0.7980557152315002" sw="600" sh="600"/>
-        <Transform id="5" zIndex="4" weight="1.0" x="100" y="380" w="550" h="10" r="-0.4714599500609072" sw="600" sh="600"/>
+        <Transform id="2" zIndex="3" weight="1.0" x="230" y="50" w="520" h="10" r="0.7980557152315002" sw="600" sh="600"/>
+        <Transform id="3" zIndex="4" weight="1.0" x="100" y="380" w="550" h="10" r="-0.4714599500609072" sw="600" sh="600"/>
         <Transform id="4" zIndex="5" weight="1.0" x="130" y="441" w="434" h="10" r="-1.0265158418489166" sw="600" sh="600"/>
         <Transform id="5" zIndex="6" weight="1.0" x="230" y="80" w="230" h="360" r="0.6556956262415362" sw="600" sh="600"/>
         <Transform id="6" zIndex="7" weight="1.0" x="330" y="-40" w="230" h="360" r="0.6556956262415362" sw="600" sh="600"/>

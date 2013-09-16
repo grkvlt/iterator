@@ -29,6 +29,7 @@ import javax.swing.text.html.StyleSheet;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Optional;
+import com.google.common.collect.Ordering;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
@@ -106,7 +107,7 @@ public class Details extends JTextPane implements Subscriber {
             int i = 0;
             int columns = (int) Math.floor((float) getWidth() / 350f);
             html.append("<table>");
-            for (Transform t : ifs) {
+            for (Transform t : Ordering.from(IFS.IDENTITY).immutableSortedCopy(ifs)) {
                 if (i % columns == 0 && i != 0) { html.append("</tr>"); }
                 if (i % columns == 0) { html.append("<tr>"); }
                 html.append("<td>");

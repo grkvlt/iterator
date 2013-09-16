@@ -39,7 +39,6 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.image.AffineTransformOp;
-import java.util.SortedSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
@@ -48,7 +47,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
@@ -123,16 +122,14 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         transform.add(new AbstractAction("Move to Front") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SortedSet<Transform> zOrder = ImmutableSortedSet.orderedBy(IFS.Z_ORDER).addAll(ifs).build();
-                selected.setZIndex(zOrder.last().getZIndex() + 1);
+                selected.setZIndex(Ordering.from(IFS.Z_ORDER).max(ifs).getZIndex() + 1);
                 Editor.this.bus.post(ifs);
             }
         });
         transform.add(new AbstractAction("Move to Back") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SortedSet<Transform> zOrder = ImmutableSortedSet.orderedBy(IFS.Z_ORDER).addAll(ifs).build();
-                selected.setZIndex(zOrder.first().getZIndex() - 1);
+                selected.setZIndex(Ordering.from(IFS.Z_ORDER).min(ifs).getZIndex() - 1);
                 Editor.this.bus.post(ifs);
             }
         });
@@ -297,8 +294,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     }
 
     public Transform getTransformAt(Point point) {
-        SortedSet<Transform> reverse = ImmutableSortedSet.orderedBy(IFS.REVERSE_Z_ORDER).addAll(ifs).build();
-        for (Transform t : reverse) {
+        for (Transform t : Ordering.from(IFS.Z_ORDER).reverse().immutableSortedCopy(ifs)) {
             Shape box = t.getTransform().createTransformedShape(new Rectangle(0, 0, getWidth(), getHeight()));
             if (box.contains(point)) {
                 return t;
