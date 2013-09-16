@@ -297,7 +297,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 int result = chooser.showOpenDialog(null);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     IFS loaded = load(chooser.getSelectedFile());
-                    loaded.setSize(getSize());
+                    loaded.setSize(size);
                     bus.post(loaded);
                 }
             }
@@ -510,32 +510,31 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             saveAs.setEnabled(true);
         }
         repaint();
-     }
+    }
 
-     public void save(File file) {
-         try (FileWriter writer = new FileWriter(file)) {
-             JAXBContext context = JAXBContext.newInstance(IFS.class);
-             Marshaller marshaller = context.createMarshaller();
-             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-             marshaller.marshal(ifs, writer);
-             Closeables.close(writer, true);
-             cwd = file.getParentFile();
-         } catch (Exception e) {
-             throw Throwables.propagate(e);
-         }
-     }
+    public void save(File file) {
+        try (FileWriter writer = new FileWriter(file)) {
+            JAXBContext context = JAXBContext.newInstance(IFS.class);
+            Marshaller marshaller = context.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.marshal(ifs, writer);
+            cwd = file.getParentFile();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
 
-     public IFS load(File file) {
-         try (FileReader reader = new FileReader(file)) {
-             JAXBContext context = JAXBContext.newInstance(IFS.class);
-             Unmarshaller unmarshaller = context.createUnmarshaller();
-             IFS ifs = (IFS) unmarshaller.unmarshal(reader);
-             cwd = file.getParentFile();
-             return ifs;
-         } catch (Exception e) {
-             throw Throwables.propagate(e);
-         }
-     }
+    public IFS load(File file) {
+        try (FileReader reader = new FileReader(file)) {
+            JAXBContext context = JAXBContext.newInstance(IFS.class);
+            Unmarshaller unmarshaller = context.createUnmarshaller();
+            IFS ifs = (IFS) unmarshaller.unmarshal(reader);
+            cwd = file.getParentFile();
+            return ifs;
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
 
     public boolean isFullScreen() { return fullScreen; }
 
