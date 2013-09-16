@@ -314,7 +314,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             int x2 = Math.max(one.x, two.x);
             int y1 = Math.min(one.y, two.y);
             int y2 = Math.max(one.y, two.y);
-            int side = Math.min(x2 - x1,  y2 - y1);
+            int side = Math.max(controller.getMinGrid(), Math.min(x2 - x1,  y2 - y1));
             zoom = new Rectangle(x1, y1, side, side);
             repaint();
         }
@@ -333,7 +333,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
                 // Calculate new centre point and scale
                 Point2D origin = new Point2D.Double((last.getX() * old) - (getWidth() / 2d), (last.getY() * old) - (getHeight() / 2d));
-                scale = old * ((float) getWidth() / (float) zoom.width);
+                if (zoom.width == 0 && zoom.height == 0) {
+                    scale = old * 2f;
+                } else {
+                    scale = old * ((float) getWidth() / (float) zoom.width);
+                }
                 centre = new Point2D.Double((zoom.x + (zoom.width / 2d) + origin.getX()) / old, (zoom.y + (zoom.height / 2d) + origin.getY()) / old);
 
                 zoom = null;
