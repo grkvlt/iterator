@@ -66,15 +66,15 @@
           Either build the program using Maven or extract one of the packaged
           distributions. These can be <a href="https://github.com/grkvlt/iterator/releases/1.0.5">downloaded from
           GitHub</a> as either <code>.tar.gz</code> or <code>.zip</code> archives. Then run the relevant
-          script for your operating system, using the optional flags <code>-f</code> or
+          script for your operating system, using the optional flag <code>-f</code> or
           <code>--fullscreen</code> to specify full-screen mode.
         </p>
         <p>
           Enable colour rendering with the <code>-c</code> or <code>--colour</code> flag.
           This will use a fixed list of colours for the transforms. To use a colour palette
-          taken from a sample image specify <code>-p</code> or <code>--palette</code>. The image
-          used can be specified in the <code>explorer.palette</code> system property and
-          can be <em>abstract</em>, <code>wave</code> or <code>car</code>.
+          taken from a sample image, specify <code>-p</code> or <code>--palette</code>. The image
+          used can be set with the <code>explorer.palette.file</code> system property and
+          can be one of <em>abstract</em>, <em>wave</em> or <em>car</em>.
         </p>
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/explorer.sh [-f] [-c] [-p] [<i>ifs.xml</i>]
 <b>$</b> ./bin/explorer.command [-f] [-c] [-p] [<i>ifs.xml</i>]
@@ -93,7 +93,7 @@
         </ul>
         <p>
           The configuration properties listed should be added to the <code>JAVA_OPTS</code>
-          variable bwfore running the program, as ilustrated below.
+          variable before running the program, as ilustrated below.
         </p>
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> export JAVA_OPTS="-Dexplorer.palette.file=wave \
 <b>&gt;</b> -Dexplorer.palette.seed=1234"
@@ -102,9 +102,9 @@
         <p>
           A series of example XML data files for IFS transforms are provided
           in the <code>data</code> directory of the distribution. Some of these can be
-          found in the <em>The Computational Beauty of Nature</em> and <em>Superfractals</em>
-          books, details of which are available in the <em>References</em> section.
-          To load these examples, specify the path to the file as the last argument
+          found in the <strong>The Computational Beauty of Nature</strong> and <strong>Superfractals</strong>
+          books, details of which are given in the <em>References</em> section.
+          To load the examples, specify the path to the file as the last argument
           on the command-line. Sample images for these transforms have also been provided,
           so be sure to use the <code>.xml</code> file, not the <code>.png</code>.
         </p>
@@ -116,10 +116,11 @@
         </p>
         <p>
           A live view of the generated IFS is displayed at low resolution to
-          give an idea of the eventual rendered image of the fractal. This
-          capability is unique among IFS generating applications, and allows
-          much more creativity and hels reach the desired final image much
-          more quickly.
+          give an idea of the eventual rendered image of the fractal. <strong>This
+          capability is unique among IFS generating applications.</strong> It allows
+          much more creativity when designing an IFS. By showing the results
+          of changes to a transform immediately it is possible to reach the
+          desired final image much more quickly.
         </p>
         <div style="margin-left: 25px;">
           <img src="images/editor-screenshot.png" alt="Editor" title="Editor" border="1" width="485">
@@ -140,8 +141,11 @@
           and continue the rendering process. To zoom into the fractal select a
           specific area using the left mouse button, or use the <em>z</em> and <em>Z</em>
           keys to to zoom in and out of the centre of the image by a factor of two.
-          Note that when zoomed in at high magnification the iterative process can
-          take a very long time until the rendered fractal becomes visible.
+        </p>
+        <p>
+          <em><strong>Note</strong> that when zoomed in at high magnification the
+          iterative process can take a very long time until the rendered fractal
+          becomes visible.</em>
         </p>
         <p>
           The <strong>Details</strong> mode shows the actual affine transforms
@@ -185,7 +189,6 @@
             <li style="margin-left: 20px;">Support native windowing system features</li>
           <li>Add skew transform</li>
           <li>Better UI for rotations</li>
-          <li>Improve documentation</li>
           <li>JNLP Web Start mechanism</li>
           <li>JavaFX UI</li>
         </ul>
