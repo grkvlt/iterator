@@ -397,7 +397,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
                 int w = Math.max(start.x, end.x) - x;
                 int h = Math.max(start.y, end.y) - y;
 
-                int grid = controller.getMinGrid();
+                int grid = controller.getSnapGrid();
                 w = Math.max(grid, w);
                 h = Math.max(grid, h);
 
@@ -466,7 +466,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
                     break;
                 }
 
-                int grid = controller.getMinGrid();
+                int grid = controller.getSnapGrid();
                 w = Math.max(grid, w);
                 h = Math.max(grid, h);
 
