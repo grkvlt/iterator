@@ -1,4 +1,4 @@
-IFS Explorer 1.0.5
+IFS Explorer 1.0.6
 ==================
 
 Iterated Function System Explorer.
@@ -24,7 +24,6 @@ Iterated Function System Explorer.
 - Better UI
  - Rotate using handles only
  - Preserve aspect ratio on resize option
-- Improve documentation
 - JNLP Web Start mechanism
 - JavaFX UI
 
