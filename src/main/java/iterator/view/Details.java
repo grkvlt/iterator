@@ -18,6 +18,7 @@ package iterator.view;
 import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
+import iterator.util.Subscriber;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -34,7 +35,7 @@ import com.google.common.eventbus.Subscribe;
 /**
  * Detail display.
  */
-public class Details extends JTextPane {
+public class Details extends JTextPane implements Subscriber {
     /** serialVersionUID */
     private static final long serialVersionUID = -1279626785145420083L;
 
@@ -74,8 +75,10 @@ public class Details extends JTextPane {
         bus.register(this);
     }
 
+    /** @see Subscriber#resized(Dimension) */
+    @Override
     @Subscribe
-    public void size(Dimension size) {
+    public void resized(Dimension size) {
         setSize(size.width, getHeight());
 
         controller.getScroll().getViewport().setViewSize(size);
@@ -83,8 +86,10 @@ public class Details extends JTextPane {
         setDetails();
     }
 
+    /** @see Subscriber#updated(IFS) */
+    @Override
     @Subscribe
-    public void update(IFS ifs) {
+    public void updated(IFS ifs) {
         this.ifs = ifs;
 
         setDetails();

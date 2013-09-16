@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iterator;
+package iterator.util;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 
@@ -34,6 +35,7 @@ import com.google.common.io.Resources;
  * Global cobfiguration values for use in preferences dialog.
  */
 public class Config extends ForwardingSortedMap<String, String> {
+
     public static final String USER_HOME_PROPERTY = "user.home";
 
     public static final String PROPERTIES_FILE = "explorer.properties";

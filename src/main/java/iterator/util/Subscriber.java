@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iterator.view;
+package iterator.util;
 
-import iterator.Explorer;
 import iterator.model.IFS;
-import iterator.util.Subscriber;
 
 import java.awt.Dimension;
 
@@ -25,36 +23,17 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 /**
- * Printing.
+ * {@link EventBus} subscription callbacks.
  *
- * TODO Add native printing support
+ * @see Subscribe
  */
-public class Print implements Subscriber {
-    @SuppressWarnings("unused")
-    private final EventBus bus;
-    @SuppressWarnings("unused")
-    private final Explorer controller;
+public interface Subscriber {
 
-    @SuppressWarnings("unused")
-    private IFS ifs;
+    /** Callback for the IFS changes. */
+    void updated(IFS ifs);
 
-    public Print(EventBus bus, Explorer controller) {
-        this.bus = bus;
-        this.controller = controller;
+    /** Callback for display size changes. */
+    void resized(Dimension size);
 
-        bus.register(this);
-    }
-
-    /** @see Subscriber#updated(IFS) */
-    @Override
-    @Subscribe
-    public void updated(IFS ifs) {
-        this.ifs = ifs;
-    }
-
-    /** @see Subscriber#resized(Dimension) */
-    @Override
-    @Subscribe
-    public void resized(Dimension size) {
-    }
 }
+    

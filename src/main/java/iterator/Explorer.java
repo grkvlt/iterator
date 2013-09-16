@@ -15,9 +15,12 @@
  */
 package iterator;
 
-import static iterator.Config.*;
+import static iterator.util.Config.*;
 
 import iterator.model.IFS;
+import iterator.util.Config;
+import iterator.util.Platform;
+import iterator.util.Subscriber;
 import iterator.view.Details;
 import iterator.view.Editor;
 import iterator.view.Viewer;
@@ -85,29 +88,9 @@ import com.google.common.io.Resources;
  *
  * @author andrew.international@gmail.com
  */
-public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHandler {
+public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHandler, Subscriber {
     /** serialVersionUID */
     private static final long serialVersionUID = -2003170067188344917L;
-
-    public static enum Platform {
-        LINUX,
-        MAC_OS_X,
-        WINDOWS,
-        UNKNOWN;
-
-        public static Platform getPlatform() {
-            String osName = Strings.nullToEmpty(System.getProperty(OS_NAME_PROPERTY)).toUpperCase(Locale.UK).replace(' ', '_');
-            try {
-                // TODO Check behaviour on Windows variants
-                return Platform.valueOf(osName);
-            } catch (IllegalArgumentException iee) {
-                // TODO Add other operating systems
-                return UNKNOWN;
-            }
-        }
-    }
-
-    public static final String OS_NAME_PROPERTY = "os.name";
 
     private static final Config config = new Config();
     private File override;
@@ -519,11 +502,15 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
     }
 
+    /** @see Subscriber#resized(Dimension) */
+    @Override
     @Subscribe
     public void resized(Dimension resized) {
         size = resized.getSize();
     }
 
+    /** @see Subscriber#updated(IFS) */
+    @Override
     @Subscribe
     public void updated(IFS ifs) {
         this.ifs = ifs;

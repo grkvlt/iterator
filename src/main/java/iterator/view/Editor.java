@@ -18,6 +18,7 @@ package iterator.view;
 import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
+import iterator.util.Subscriber;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -54,7 +55,7 @@ import com.google.common.eventbus.Subscribe;
 /**
  * IFS Editor.
  */
-public class Editor extends JPanel implements MouseInputListener, KeyListener {
+public class Editor extends JPanel implements MouseInputListener, KeyListener, Subscriber {
     /** serialVersionUID */
     private static final long serialVersionUID = -1;
 
@@ -149,8 +150,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
 
     public Point getEnd() { return end; }
 
+    /** @see Subscriber#updated(IFS) */
+    @Override
     @Subscribe
-    public void update(IFS ifs) {
+    public void updated(IFS ifs) {
         this.ifs = ifs;
         start = null;
         end = null;
@@ -164,8 +167,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         repaint();
     }
 
+    /** @see Subscriber#resized(Dimension) */
+    @Override
     @Subscribe
-    public void size(Dimension size) {
+    public void resized(Dimension size) {
         ifs.setSize(size);
         bus.post(ifs);
     }

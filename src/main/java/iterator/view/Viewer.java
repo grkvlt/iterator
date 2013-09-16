@@ -18,6 +18,7 @@ package iterator.view;
 import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
+import iterator.util.Subscriber;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -64,7 +65,7 @@ import com.google.common.eventbus.Subscribe;
 /**
  * Rendered IFS viewer.
  */
-public class Viewer extends JPanel implements ActionListener, KeyListener, ComponentListener, MouseInputListener {
+public class Viewer extends JPanel implements ActionListener, KeyListener, ComponentListener, MouseInputListener, Subscriber {
     /** serialVersionUID */
     private static final long serialVersionUID = -3294847597249688714L;
 
@@ -98,14 +99,18 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
     public BufferedImage getImage() { return image; }
 
+    /** @see Subscriber#updated(IFS) */
+    @Override
     @Subscribe
-    public void update(IFS ifs) {
+    public void updated(IFS ifs) {
         this.ifs = ifs;
         reset();
     }
 
+    /** @see Subscriber#resized(Dimension) */
+    @Override
     @Subscribe
-    public void size(Dimension size) {
+    public void resized(Dimension size) {
         reset();
         centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
     }
