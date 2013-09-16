@@ -19,7 +19,7 @@ import java.awt.Dimension;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
+import java.util.SortedSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -29,16 +29,15 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.ForwardingList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ForwardingSortedSet;
+import com.google.common.collect.Sets;
 
 /**
  * IFS Model.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "IFS")
-public class IFS extends ForwardingList<Transform> {
+public class IFS extends ForwardingSortedSet<Transform> {
     public static final String UNTITLED = "Untitled";
 
     public static final Comparator<Transform> Z_ORDER = new Comparator<Transform>() {
@@ -46,10 +45,12 @@ public class IFS extends ForwardingList<Transform> {
         public int compare(Transform left, Transform right) {
             return ComparisonChain.start()
                     .compare(left.getZIndex(), right.getZIndex())
-                    .compare(left.getId(), right.getId())
+                    .compare(left, right, IDENTITY)
                     .result();
         }
     };
+
+    public static final Comparator<Transform> REVERSE_Z_ORDER = Collections.reverseOrder(Z_ORDER);
 
     public static final Comparator<Transform> IDENTITY = new Comparator<Transform>() {
         @Override
@@ -64,15 +65,27 @@ public class IFS extends ForwardingList<Transform> {
     private String name;
     @XmlElementWrapper(name = "Transforms")
     @XmlElement(name = "Transform")
-    private List<Transform> transforms = Lists.newArrayList();
+    private SortedSet<Transform> transforms = Sets.newTreeSet(IDENTITY);
 
-    public void setSize(Dimension size) {
-        for (Transform t : transforms) {
-            t.setSize(size);
+    public IFS() { }
+
+    @Override
+    public boolean contains(Object object) {
+        if (object == null) {
+            return false;
+        } else {
+            return super.contains(object);
         }
     }
 
-    public IFS() { }
+    @Override
+    public boolean add(Transform element) {
+        if (element.getId() < 0) {
+            element.setId(size() + 1);
+            element.setZIndex(isEmpty() ? 0 : last().getZIndex() + 1);
+        }
+        return super.add(element);
+    }
 
     public String getName() {
         return name;
@@ -82,8 +95,7 @@ public class IFS extends ForwardingList<Transform> {
         this.name = name;
     }
 
-    public List<Transform> getTransforms() {
-        Collections.sort(transforms, Z_ORDER);
+    public SortedSet<Transform> getTransforms() {
         return transforms;
     }
 
@@ -92,33 +104,20 @@ public class IFS extends ForwardingList<Transform> {
         this.transforms.addAll(transforms);
     }
 
-    public void addTransform(Transform transform) {
-        this.transforms.add(transform);
-    }
-
-    public void deleteTransform(Transform transform) {
-        this.transforms.remove(transform);
-    }
-
-    public Transform newTransform(Dimension size) {
-        int id = Iterables.size(transforms) + 1;
-        int zIndex = 0;
-        if (!transforms.isEmpty()) {
-            Transform last = Iterables.getLast(transforms);
-            zIndex = last.getZIndex() + 1;
+    public void setSize(Dimension size) {
+        for (Transform t : transforms) {
+            t.setSize(size);
         }
-        Transform transform = new Transform(id, zIndex, size);
-        return transform;
-    }
-
-    @Override
-    protected List<Transform> delegate() {
-        return transforms;
     }
 
     public double getWeight() {
         double weight = 0;
         for (Transform t : transforms) weight += t.getDeterminant();
         return weight;
+    }
+
+    @Override
+    protected SortedSet<Transform> delegate() {
+        return transforms;
     }
 }

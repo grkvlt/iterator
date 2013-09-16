@@ -38,6 +38,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.image.AffineTransformOp;
+import java.util.SortedSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
@@ -46,8 +47,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
@@ -86,7 +87,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         transform.add(new AbstractAction("Delete") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ifs.deleteTransform(selected);
+                ifs.remove(selected);
                 selected = null;
                 Editor.this.bus.post(ifs);
             }
@@ -94,13 +95,13 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         transform.add(new AbstractAction("Duplicate") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Transform copy = ifs.newTransform(getSize());
+                Transform copy = new Transform(getSize());
                 copy.x = selected.x + 50;
                 copy.y = selected.y + 50;
                 copy.w = selected.w;
                 copy.h = selected.h;
                 copy.r = selected.r;
-                ifs.addTransform(copy);
+                ifs.add(copy);
                 selected = copy;
                 Editor.this.bus.post(ifs);
             }
@@ -122,14 +123,16 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
         transform.add(new AbstractAction("Move to Front") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                selected.setZIndex(Iterables.getLast(ifs).getZIndex() + 1);
+                SortedSet<Transform> zOrder = ImmutableSortedSet.orderedBy(IFS.Z_ORDER).addAll(ifs).build();
+                selected.setZIndex(zOrder.last().getZIndex() + 1);
                 Editor.this.bus.post(ifs);
             }
         });
         transform.add(new AbstractAction("Move to Back") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                selected.setZIndex(Iterables.get(ifs, 0).getZIndex() - 1);
+                SortedSet<Transform> zOrder = ImmutableSortedSet.orderedBy(IFS.Z_ORDER).addAll(ifs).build();
+                selected.setZIndex(zOrder.first().getZIndex() - 1);
                 Editor.this.bus.post(ifs);
             }
         });
@@ -289,7 +292,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
     }
 
     public Transform getTransformAt(Point point) {
-        for (Transform t : Lists.reverse(ifs)) {
+        SortedSet<Transform> reverse = ImmutableSortedSet.orderedBy(IFS.REVERSE_Z_ORDER).addAll(ifs).build();
+        for (Transform t : reverse) {
             Shape box = t.getTransform().createTransformedShape(new Rectangle(0, 0, getWidth(), getHeight()));
             if (box.contains(point)) {
                 return t;
@@ -351,19 +355,19 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
                 case Cursor.SW_RESIZE_CURSOR: start = sw; break;
                 case Cursor.SE_RESIZE_CURSOR: start = se; break;
                 }
-                ifs.deleteTransform(resize);
+                ifs.remove(resize);
                 selected = resize;
             } else if (clicked != null) {
                 if (e.isShiftDown()) {
                     selected = clicked;
                     rotate = selected;
-                    ifs.deleteTransform(rotate);
+                    ifs.remove(rotate);
                     start = snap(e.getPoint());
                     setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
                 } else {
                     selected = clicked;
                     move = selected;
-                    ifs.deleteTransform(move);
+                    ifs.remove(move);
                     start = snap(e.getPoint());
                     setCursor(new Cursor(Cursor.MOVE_CURSOR));
                 }
@@ -401,15 +405,15 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
                 w = Math.max(grid, w);
                 h = Math.max(grid, h);
 
-                selected = ifs.newTransform(getSize());
+                selected = new Transform(getSize());
                 selected.x = x;
                 selected.y = y;
                 selected.w = w;
                 selected.h = h;
-                ifs.addTransform(selected);
+                ifs.add(selected);
                 bus.post(ifs);
             } else if (selected != null  && start != null && end != null) {
-                ifs.addTransform(selected);
+                ifs.add(selected);
                 bus.post(ifs);
             }
         }
@@ -538,7 +542,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener {
             switch (e.getKeyCode()) {
             case KeyEvent.VK_DELETE:
             case KeyEvent.VK_BACK_SPACE:
-                ifs.deleteTransform(selected);
+                ifs.remove(selected);
                 selected = null;
                 Editor.this.bus.post(ifs);
                 break;

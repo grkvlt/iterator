@@ -130,7 +130,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             g.drawLine((int) centre.getX() - 5, (int) centre.getY(), (int) centre.getX() + 5, (int) centre.getY());
             g.drawLine((int) centre.getX(), (int) centre.getY() - 5, (int) centre.getX(), (int) centre.getY() + 5);
 
-            Font font =new Font("Calibri", Font.BOLD, 20);
+            Font font = new Font("Calibri", Font.BOLD, 20);
             FontRenderContext frc = g.getFontRenderContext();
             TextLayout scaleText = new TextLayout(String.format("%.1fx", scale), font, frc);
             TextLayout countText = new TextLayout(String.format("%,dK", count).replaceAll("[^0-9K]", " "), font, frc);
@@ -200,7 +200,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             w = Math.max(grid, w);
             h = Math.max(grid, h);
 
-            ants = ifs.newTransform(getSize());
+            ants = new Transform(Integer.MIN_VALUE, 0, getSize());
             ants.x = x;
             ants.y = y;
             ants.w = w;

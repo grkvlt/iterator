@@ -23,6 +23,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.google.common.base.Equivalence;
+import com.google.common.base.Objects;
+
 /**
  * Transform Model.
  */
@@ -53,6 +56,10 @@ public class Transform {
         // JAXB
     }
 
+    public Transform(Dimension size) {
+        this(-1, 0, size);
+    }
+
     public Transform(int id, int zIndex, Dimension size) {
         this.id = id;
         this.zIndex = zIndex;
@@ -71,14 +78,6 @@ public class Transform {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public AffineTransform getTransform() {
-        AffineTransform transform = new AffineTransform();
-        transform.translate(x, y);
-        transform.rotate(r);
-        transform.scale((double) w / (double) sw, (double) h / (double) sh);
-        return transform;
     }
 
     public int getZIndex() {
@@ -102,11 +101,31 @@ public class Transform {
         this.sh = size.height;
     }
 
+    public AffineTransform getTransform() {
+        AffineTransform transform = new AffineTransform();
+        transform.translate(x, y);
+        transform.rotate(r);
+        transform.scale((double) w / (double) sw, (double) h / (double) sh);
+        return transform;
+    }
+
     public double[] applyTransform(double xin, double yin) {
         AffineTransform transform = getTransform();
         double src[] = new double[] { xin, yin };
         double dst[] = new double[2];
         transform.transform(src, 0, dst, 0, 1);
         return dst;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof Transform)) return false;
+        Transform that = (Transform) object;
+        return Objects.equal(id, that.id);
     }
 }
