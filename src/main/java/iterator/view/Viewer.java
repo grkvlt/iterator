@@ -40,7 +40,6 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -75,7 +74,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private BufferedImage image;
     private Timer timer;
     private double x, y;
-    private int count;
+    private long count;
     private Random random = new Random();
     private float scale = 1.0f;
     private Point2D centre;
@@ -134,7 +133,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             Font font =new Font("Calibri", Font.BOLD, 20);
             FontRenderContext frc = g.getFontRenderContext();
             TextLayout scaleText = new TextLayout(String.format("%.1f", scale), font, frc);
-            TextLayout countText = new TextLayout(String.format("%,d", 1000 * (count / 1000)).replaceAll("[^0-9]", " "), font, frc);
+            TextLayout countText = new TextLayout(String.format("%,d 000", count).replaceAll("[^0-9]", " "), font, frc);
             scaleText.draw(g, getWidth() - 10f - (float) scaleText.getBounds().getWidth(), getHeight() - 30f);
             countText.draw(g, getWidth() - 10f - (float) countText.getBounds().getWidth(), getHeight() - 10f);
 
@@ -168,7 +167,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         y = random.nextInt(getHeight());
         scale = 1.0f;
         centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
-        count = 0;
+        count = 0l;
     }
 
     public void save(File file) {
@@ -237,7 +236,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 Rectangle rect = new Rectangle((int) Math.floor(px + 0.5d), (int) Math.floor(py + 0.5d), r, r);
                 g.fill(rect);
             }
-            count++;
+            if (i % 1000 == 0) count++;
         }
 
         g.dispose();
