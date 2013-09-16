@@ -127,4 +127,19 @@ public class Transform {
         Transform that = (Transform) object;
         return Objects.equal(id, that.id);
     }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+                .add("id", id)
+                .add("zIndex", zIndex)
+                .add("sw", sw)
+                .add("sh", sh)
+                .add("x", x)
+                .add("y", y)
+                .add("w", w)
+                .add("h", h)
+                .add("r", r)
+                .toString();
+    }
 }

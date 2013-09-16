@@ -19,7 +19,6 @@ import java.awt.Dimension;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.SortedSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -28,6 +27,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ForwardingList;
 import com.google.common.collect.Lists;
@@ -115,5 +115,14 @@ public class IFS extends ForwardingList<Transform> {
     @Override
     protected List<Transform> delegate() {
         return transforms;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+                .add("name", name)
+                .add("transforms", transforms)
+                .omitNullValues()
+                .toString();
     }
 }
