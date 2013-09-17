@@ -187,6 +187,24 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         // Load configuration
         config.loadProperties(override);
 
+        // Check mode configuration
+        if (config.containsKey(MODE_PROPERTY)) {
+            String mode = config.get(MODE_PROPERTY);
+            if (MODE_COLOUR.equalsIgnoreCase(mode)) {
+                colour = true;
+                palette = false;
+            } else if (MODE_PALETTE.equalsIgnoreCase(mode)) {
+                colour = true;
+                palette = true;
+            } else
+            if (MODE_GRAY.equalsIgnoreCase(mode)) {
+                colour = false;
+                palette = false;
+            } else {
+                throw new IllegalArgumentException("Cannot set mode: " + mode);
+            }
+        }
+
         // Get window size configuration
         int w = Math.max(MIN_WINDOW_SIZE, config.get(WINDOW_PROPERTY + ".width", DEFAULT_WINDOW_SIZE));
         int h = Math.max(MIN_WINDOW_SIZE, config.get(WINDOW_PROPERTY + ".height", DEFAULT_WINDOW_SIZE));
