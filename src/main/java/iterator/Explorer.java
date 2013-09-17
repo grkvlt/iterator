@@ -49,7 +49,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Queue;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -75,10 +74,8 @@ import com.google.common.base.CaseFormat;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Queues;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import com.google.common.io.Closeables;
 import com.google.common.io.Resources;
 
 /**
@@ -152,6 +149,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                         colour = true;
                     } else if (argv[i].equalsIgnoreCase(PALETTE_OPTION) ||
                             argv[i].equalsIgnoreCase(PALETTE_OPTION_LONG)) {
+                        colour = true;
                         palette = true;
                     } else if (argv[i].equalsIgnoreCase(CONFIG_OPTION_LONG)) {
                         if (argv.length >= i + 1) {
