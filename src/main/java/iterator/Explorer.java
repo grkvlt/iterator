@@ -237,6 +237,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             paletteSize = config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE);
             loadColours();
         }
+        printf("Configured %s: %s", colour ? "colour" : "grayscale", palette ? paletteFile : colour ? "hsb" : "black");
 
         // Setup event bus
         bus = new EventBus(EXPLORER);
@@ -536,7 +537,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     @Subscribe
     public void resized(Dimension resized) {
         size = resized.getSize();
-        if (isDebug()) System.err.println("Resized: " + size.width + ", " + size.height);
+        System.err.println("Resized: " + size.width + ", " + size.height);
     }
 
     /** @see Subscriber#updated(IFS) */
@@ -544,7 +545,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     @Subscribe
     public void updated(IFS updated) {
         ifs = updated;
-        if (isDebug()) System.err.println("Updated: " + ifs);
+        System.err.println("Updated: " + ifs);
         String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
         setTitle(name);
         if (!ifs.isEmpty()) {
@@ -663,6 +664,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
     @Override
     public void keyReleased(KeyEvent e) {
+    }
+
+    public void printf(String format, Object...varargs) {
+        String output = String.format(format, varargs);
+        if (!output.endsWith("\n")) output = output.concat("\n");
+        System.err.print(output);
+        System.out.print(output);
     }
 
     /** @see java.lang.Thread.UncaughtExceptionHandler#uncaughtException(Thread, Throwable) */
