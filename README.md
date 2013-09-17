@@ -15,18 +15,19 @@ Iterated Function System Explorer.
 
 - Properties editor for Transform
  - Matrix coefficients _or_ rotation/displacement/scale values
-- Printing support
 - Preferences dialog
-- Better operating system integration
+- Better Operating-System integration
+ - Printing support
  - Native full-screen mode
  - Support native windowing system features
-- Add skew transform
-- Better UI
+- Better editing UI
+ - Add flip, skew, perspective etc. transforms
  - Rotate using handles only
  - Preserve aspect ratio on resize option
-- JNLP Web Start mechanism
+- Embedded Applet
+- JNLP Web Start client
 - JavaFX UI
 
 ----
-Copyright 2012-2013 by [Andrew Donald Kennedy](mailto:andrew.international+iterator@gmail.com)
+Copyright 2012-2013 by [Andrew Donald Kennedy](mailto:andrew.international+iterator@gmail.com) --
 Licensed under the [Apache Software License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
