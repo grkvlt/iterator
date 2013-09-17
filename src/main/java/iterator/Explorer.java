@@ -87,6 +87,20 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     /** serialVersionUID */
     private static final long serialVersionUID = -2003170067188344917L;
 
+    public static final String BANNER =
+            "   ___ _____ ____    _____            _                     \n" +
+            "  |_ _|  ___/ ___|  | ____|_  ___ __ | | ___  _ __ ___ _ __ \n" +
+            "   | || |_  \\___ \\  |  _| \\ \\/ / '_ \\| |/ _ \\| '__/ _ \\ '__|\n" +
+            "   | ||  _|  ___) | | |___ >  <| |_) | | (_) | | |  __/ |   \n" +
+            "  |___|_|   |____/  |_____/_/\\_\\ .__/|_|\\___/|_|  \\___|_|   \n" +
+            "                               |_|                          \n" +
+            "\n" +
+            "    Iterated Function System Explorer Version 1.0.6-SNAPSHOT\n" +
+            "    Copyright 2012-2013 by Andrew Donald Kennedy\n" +
+            "    Licensed under the Apache Software License, Version 2.0\n" +
+            "    https://grkvlt.github.io/iterator/\n" +
+            "\n";
+
     private static final Config config = new Config();
     private File override;
 
@@ -663,6 +677,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
      * Explorer
      */
     public static void main(final String...argv) throws Exception {
+        // Print text banner
+        System.out.printf(BANNER);
+
         // Load splash screen first
         Splash splashScreen = new Splash();
         splashScreen.showDialog();
