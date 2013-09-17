@@ -80,8 +80,8 @@ public class IFS extends ForwardingList<Transform> {
     @Override
     public boolean add(Transform element) {
         if (element.getId() < 0) {
-            element.setId(Ordering.from(IDENTITY).max(this).getId() + 1);
-            element.setZIndex(Ordering.from(Z_ORDER).max(this).getZIndex() + 1);
+            element.setId(isEmpty() ? 1 : Ordering.from(IDENTITY).max(this).getId() + 1);
+            element.setZIndex(isEmpty() ? 0 : Ordering.from(Z_ORDER).max(this).getZIndex() + 1);
         }
 
         return super.add(element);
