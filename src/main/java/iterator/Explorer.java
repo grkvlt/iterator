@@ -95,7 +95,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             "  |___|_|   |____/  |_____/_/\\_\\ .__/|_|\\___/|_|  \\___|_|   \n" +
             "                               |_|                          \n" +
             "\n" +
-            "    Iterated Function System Explorer Version 1.0.6-SNAPSHOT\n" +
+            "    Iterated Function System Explorer Version 1.0.6\n" +
             "    Copyright 2012-2013 by Andrew Donald Kennedy\n" +
             "    Licensed under the Apache Software License, Version 2.0\n" +
             "    https://grkvlt.github.io/iterator/\n" +
