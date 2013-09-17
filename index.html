@@ -70,15 +70,7 @@
           Either build the program using Maven or extract one of the packaged
           distributions. These can be <a href="https://github.com/grkvlt/iterator/releases/1.0.6">downloaded from
           GitHub</a> as either <code>.tar.gz</code> or <code>.zip</code> archives. Then run the relevant
-          script for your operating system, using the optional flag <code>-f</code> or
-          <code>--fullscreen</code> to specify full-screen mode.
-        </p>
-        <p>
-          Enable colour rendering with the <code>-c</code> or <code>--colour</code> flag.
-          This will use a fixed list of colours for the transforms. To use a colour palette
-          taken from a sample image, specify <code>-p</code> or <code>--palette</code>. The image
-          used can be set with the <code>explorer.palette.file</code> system property and
-          can be one of <em>abstract</em>, <em>wave</em> or <em>car</em>.
+          script for your operating system.
         </p>
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/explorer.sh [-f] [-c] [-p] [<i>ifs.xml</i>]
 <b>$</b> ./bin/explorer.command [-f] [-c] [-p] [<i>ifs.xml</i>]
@@ -99,6 +91,19 @@
     Copyright 2012-2013 by Andrew Donald Kennedy
     Licensed under the Apache Software License, Version 2.0
     https://grkvlt.github.io/iterator/</b></code></pre>
+        <p>
+          The program can be controlled by setting properties (see the <em>Configuration</em> section)
+          or by specifying flags as command-line arguments. To place the application
+          into full-screen mode add the <code>-f</code> or <code>--fullscreen</code> flag
+          to the command-line.
+        </p>
+        <p>
+          Enable colour rendering with the <code>-c</code> or <code>--colour</code> flag.
+          This will use a fixed list of colours for the transforms. To use a colour palette
+          taken from a sample image, specify <code>-p</code> or <code>--palette</code>. The image
+          used can be set with the <code>explorer.palette.file</code> system property and
+          can be one of <em>abstract</em>, <em>wave</em> or <em>car</em>.
+        </p>
         <h3>Configuration</h3>
         <ul>
           <li><code>explorer.grid.min</code> - Minimum grid spacing - <em>10</em></li>
@@ -122,8 +127,8 @@
         </p>
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/explorer.sh --config debug.properties ./data/koch.xml</code></pre>
         <p>
-          It is also possible to set individual configuartion options as system properties,
-          using the <code>JAVA_OPTS</code> variable.
+          It is also possible to set individual configuration options as system properties,
+          using the <code>JAVA_OPTS</code> environment variable.
         </p>
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> export JAVA_OPTS="-Dexplorer.palette.file=wave \
 <b>&gt;</b> -Dexplorer.palette.seed=1234"
@@ -181,7 +186,7 @@
           The <strong>Details</strong> mode shows the actual affine transforms
           and their matrix coefficients for the system as a scrollable list.
         </p>
-        <h3>Gallery</h3>
+        <h3>Examples</h3>
         <div style="margin-left: 25px;" id="gallery">
           <a href="images/gallery/arrow.png"><img class="thumb" src="images/gallery/arrow.png" alt="Arrow" title="Arrow" border="1"></a>
           <a href="images/gallery/basin.png"><img class="thumb" src="images/gallery/basin.png" alt="Basin" title="Basin" border="1"></a>
@@ -212,7 +217,7 @@
           <a href="images/gallery/zoom.png"><img class="thumb" src="images/gallery/zoom.png" alt="Zoom" title="Zoom" border="1"></a>
         </div>
         <p style="margin-left: 25px;">
-          <em>IFS gallery, showing the wide range of fractal images that can be produced.</em>
+          <em>Gallery of fractal images produced using IFS Explorer.</em>
         </p>
         <h3>TODO</h3>
         <ul>
