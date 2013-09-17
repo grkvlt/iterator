@@ -165,17 +165,26 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     }
 
     public void reset() {
+        reset(true);
+    }
+
+    public void reset(boolean rescale) {
         if (getWidth() <= 0 && getHeight() <= 0) return;
+
         image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
         g.setColor(isVisible() ? Color.WHITE : new Color(1f, 1f, 1f, 0f));
         g.fillRect(0, 0, getWidth(), getHeight());
         g.dispose();
+
         x = random.nextInt(getWidth());
         y = random.nextInt(getHeight());
-        scale = 1.0f;
-        centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
         count = 0l;
+
+        if (rescale) {
+            scale = 1.0f;
+            centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
+        }
     }
 
     public void save(File file) {
