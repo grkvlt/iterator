@@ -28,5 +28,5 @@ Iterated Function System Explorer.
 - JavaFX UI
 
 ----
-Copyright 2013 by [Andrew Kennedy](mailto:andrew.international+iterator@gmail.com)
-Licensed as [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+Copyright 2012-2013 by [Andrew Donald Kennedy](mailto:andrew.international+iterator@gmail.com)
+Licensed under the [Apache Software License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
