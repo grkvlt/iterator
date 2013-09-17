@@ -27,6 +27,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ForwardingList;
@@ -119,9 +120,17 @@ public class IFS extends ForwardingList<Transform> {
 
     @Override
     public String toString() {
+        StringBuilder data = new StringBuilder("[");
+        if (!isEmpty()) {
+            data.append("\n\t");
+            Joiner.on(",\n\t").appendTo(data, transforms);
+            data.append("\n");
+        }
+        data.append("]");
+
         return Objects.toStringHelper(this)
                 .add("name", name)
-                .add("transforms", transforms)
+                .add("transforms", data.toString())
                 .omitNullValues()
                 .toString();
     }
