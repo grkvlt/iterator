@@ -328,6 +328,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 int result = chooser.showSaveDialog(null);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     File saveAs = chooser.getSelectedFile();
+                    String name = saveAs.getName();
+                    if (!name.toLowerCase().endsWith(".xml")) {
+                        saveAs = new File(saveAs.getParent(), name + ".xml");
+                    }
                     ifs.setName(saveAs.getName().replace(".xml", ""));
                     save(saveAs);
                     bus.post(ifs);
@@ -346,9 +350,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 chooser.setSelectedFile(new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED)+ ".png"));
                 int result = chooser.showSaveDialog(null);
                 if (result == JFileChooser.APPROVE_OPTION) {
-                    File file = chooser.getSelectedFile();
-                    viewer.save(file);
-                    cwd = file.getParentFile();
+                    File export = chooser.getSelectedFile();
+                    String name = export.getName();
+                    if (!name.toLowerCase().endsWith(".png")) {
+                        export = new File(export.getParent(), name + ".png");
+                    }
+                    viewer.save(export);
+                    cwd = export.getParentFile();
                 }
             }
         });
