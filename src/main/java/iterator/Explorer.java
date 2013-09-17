@@ -21,6 +21,7 @@ import iterator.model.IFS;
 import iterator.util.Config;
 import iterator.util.Platform;
 import iterator.util.Subscriber;
+import iterator.util.Version;
 import iterator.view.Details;
 import iterator.view.Editor;
 import iterator.view.Viewer;
@@ -95,12 +96,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             "  |___|_|   |____/  |_____/_/\\_\\ .__/|_|\\___/|_|  \\___|_|   \n" +
             "                               |_|                          \n" +
             "\n" +
-            "    Iterated Function System Explorer Version 1.0.6\n" +
+            "    Iterated Function System Explorer Version %s\n" +
             "    Copyright 2012-2013 by Andrew Donald Kennedy\n" +
             "    Licensed under the Apache Software License, Version 2.0\n" +
             "    https://grkvlt.github.io/iterator/\n" +
             "\n";
 
+    private static final Version version = Version.instance();
     private static final Config config = new Config();
     private File override;
 
@@ -676,11 +678,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     /**
-     * Explorer
+     * Explorer.
      */
     public static void main(final String...argv) throws Exception {
         // Print text banner
-        System.out.printf(BANNER);
+        System.out.printf(BANNER, version.get());
 
         // Load splash screen first
         Splash splashScreen = new Splash();

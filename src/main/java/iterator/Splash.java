@@ -15,6 +15,8 @@
  */
 package iterator;
 
+import iterator.util.Version;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -78,7 +80,7 @@ public class Splash extends JPanel implements ActionListener {
         g.setFont(new Font("Calibri", Font.BOLD, 80));
         g.drawString("IFS Explorer", 10, 65);
         g.setFont(new Font("Calibri", Font.BOLD, 25));
-        g.drawString("Version 1.0.6", 10, 100);
+        g.drawString("Version " + Version.instance().get(), 10, 100);
         g.setFont(new Font("Calibri", Font.BOLD, 13));
         g.drawString("Copyright 2012-2013 by Andrew Kennedy", 10, height - 15);
         g.setFont(new Font("Consolas", Font.BOLD, 12));
