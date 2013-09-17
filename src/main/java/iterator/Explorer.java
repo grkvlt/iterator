@@ -666,7 +666,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     /** @see java.lang.Thread.UncaughtExceptionHandler#uncaughtException(Thread, Throwable) */
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        System.err.printf("Thread %s (%d) caused %s: %s\n", t.getName(), t.getId(), e.getClass().getName(), e.getMessage());
+        String error = String.format("Error: Thread %s (%d) caused %s: %s", t.getName(), t.getId(), e.getClass().getName(), e.getMessage());
+        System.out.println(error);
+        System.err.println(error);
         if (isDebug()) { 
             e.printStackTrace(System.err);
         }
