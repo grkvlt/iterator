@@ -7,7 +7,9 @@
     background-image: linear-gradient(#8add6d, #60b044);
     background-repeat: repeat-x;
     border-color: #5ca941;
-    width: 150px;
+    width: 158px;
+    height: 18px;
+    margin-bottom: -10px;
 }
 .button {
     outline: none;

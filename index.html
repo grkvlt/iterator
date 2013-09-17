@@ -20,14 +20,18 @@
           <li><a href="https://github.com/grkvlt/iterator/archive/1.0.6.tar.gz">Source <strong>Tar Archive</strong></a></li>
           <li><a href="https://github.com/grkvlt/iterator/tree/1.0.6">View Project <strong>On GitHub</strong></a></li>
         </ul>
+        <br />
         <p>
           <a href="https://github.com/grkvlt/iterator/releases/download/1.0.6/iterator-1.0.6-dist.tar.gz"
-            class="button primary"><span class="octicon octicon-arrow-down"></span> iterator-1.0.6-dist.tar.gz</a>
+                class="button primary"><span class="octicon octicon-arrow-down"></span> iterator-1.0.6-dist.tar.gz</a>
         </p>
         <p>
           <a href="https://github.com/grkvlt/iterator/releases/download/1.0.6/iterator-1.0.6-dist.zip"
-            class="button primary"><span class="octicon octicon-arrow-down"></span> iterator-1.0.6-dist.zip</a>
+                class="button primary"><span class="octicon octicon-arrow-down"></span> iterator-1.0.6-dist.zip</a>
         </p>
+        <p>
+          <a href="https://github.com/grkvlt/iterator/releases/download/1.0.6/iterator-1.0.6-jar-with-dependencies.jar"
+                class="button primary"><span class="octicon octicon-arrow-down"></span> iterator-1.0.6-with-dep ...</a>
       </header>
       <section>
         <h1>Iterated Function System Explorer</h1>
@@ -79,6 +83,22 @@
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/explorer.sh [-f] [-c] [-p] [<i>ifs.xml</i>]
 <b>$</b> ./bin/explorer.command [-f] [-c] [-p] [<i>ifs.xml</i>]
 <b>C&gt;</b> .\bin\explorer.cmd [-f] [-c] [-p] [<i>ifs.xml</i>]</code></pre>
+        <p>
+          Alternatively, the <code>iterator-1.0.6-jar-with-dependencies.jar</code> .jar file
+          can simply be downloaded and executed directly, with the <code>java -jar</code> command.
+        </p>
+        <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> java -jar iterator-1.0.6-jar-with-dependencies.jar
+<b>   ___ _____ ____    _____            _
+  |_ _|  ___/ ___|  | ____|_  ___ __ | | ___  _ __ ___ _ __
+   | || |_  \___ \  |  _| \ \/ / '_ \| |/ _ \| '__/ _ \ '__|
+   | ||  _|  ___) | | |___ &gt;  &lt;| |_) | | (_) | | |  __/ |
+  |___|_|   |____/  |_____/_/\_\ .__/|_|\___/|_|  \___|_|
+                               |_|
+
+    Iterated Function System Explorer Version 1.0.6
+    Copyright 2012-2013 by Andrew Donald Kennedy
+    Licensed under the Apache Software License, Version 2.0
+    https://grkvlt.github.io/iterator/</b></code></pre>
         <h3>Configuration</h3>
         <ul>
           <li><code>explorer.grid.min</code> - Minimum grid spacing - <em>10</em></li>
@@ -90,6 +110,7 @@
           <li><code>explorer.window.width</code> - Width of main window - <em>600</em></li>
           <li><code>explorer.window.height</code> - Height of main window - <em>600</em></li>
           <li><code>explorer.debug</code> - Enable debugging mode - <em>false</em></li>
+          <li><code>explorer.mode</code> - Setup colour mode - <em>palette</em></li>
         </ul>
         <p>
           The configuration options listed can be set in a property file, which can then
@@ -197,16 +218,17 @@
         <ul>
           <li>Properties editor for transform</li>
             <li style="margin-left: 20px;">Matrix coefficients <em>or</em> rotation/displacement/scale values</li>
-          <li>Printing</li>
           <li>Preferences dialog</li>
-          <li>Better operating system integration</li>
+          <li>Better Operating-System integration</li>
+            <li style="margin-left: 20px;">Printing</li>
             <li style="margin-left: 20px;">Native full-screen mode</li>
             <li style="margin-left: 20px;">Support native windowing system features</li>
-          <li>Add skew, perspective etc. transforms</li>
-          <li>Better UI</li>
+          <li>Better editing UI</li>
+            <li style="margin-left: 20px;">Add flip, skew, perspective etc. transforms</li>
             <li style="margin-left: 20px;">Rotate using handles only</li>
             <li style="margin-left: 20px;">Preserve aspect ratio on resize option</li>
-          <li>JNLP Web Start mechanism</li>
+          <li>Embedded Applet</li>
+          <li>JNLP Web Start client</li>
           <li>JavaFX UI</li>
         </ul>
         <h3>References</h3>
@@ -224,8 +246,9 @@
       <footer>
         <small>
           <a href="https://github.com/grkvlt/iterator">IFS Explorer</a> is Copyright 2012-2013 by <a
-          href="mailto:andrew.international+iterator@gmail.com">Andrew Kennedy</a> &mdash;
-          Licensed under the <a rel="license" href="http://www.apache.org/licenses/LICENSE-2.0">Apache Software License, Version 2.0</a><br/>
+          href="mailto:andrew.international+iterator@gmail.com">Andrew Donald Kennedy</a> &mdash;
+          Licensed under the <a rel="license" href="http://www.apache.org/licenses/LICENSE-2.0">Apache
+          Software License, Version 2.0</a><br/>
         </small>
       </footer>
     </div>
