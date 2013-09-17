@@ -18,4 +18,4 @@ SET JAVA_OPTS="%JAVA_OPTS% -splash:%LIB%\splash.png"
 REM
 REM Exexcute Java
 REM
-java -cp ".;%LIB%\*" %JAVA_OPTS% iterator.Explorer %*
+java -cp ".;%LIB%\*" %JAVA_OPTS% iterator.Explorer %* 2>> explorer.log
