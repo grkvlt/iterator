@@ -196,8 +196,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             // Output details
             String details = String.format("%d transforms: %.1fx scale at (%.2f, %.2f) with %,dK iterations",
                     ifs.size(), scale, centre.getX(), centre.getY(), count);
-            if (controller.isDebug()) System.out.printf("File %s: %s\n", file.getName(), details);
-            System.err.printf("File %s: %s\n", file.getName(), details);
+            controller.printf("File %s: %s\n", file.getName(), details);
         } catch (IOException e) {
             Throwables.propagate(e);
         }
@@ -367,10 +366,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 centre = new Point2D.Double((zoom.x + (zoom.width / 2d) + origin.getX()) / old, (zoom.y + (zoom.height / 2d) + origin.getY()) / old);
 
                 // Output details
-                String details = String.format("%.2fx scale around (%.1f, %.1f) from click at (%d, %d)",
-                        scale / old, centre.getX(), centre.getY(), (int) (zoom.x + (zoom.width / 2d)), (int) (zoom.y + (zoom.height / 2d)));
-                if (controller.isDebug()) System.out.printf("Zoom: %s\n", details);
-                System.err.printf("Zoom: %s\n", details);
+                String details = String.format("%.1fx scale, centre (%.1f, %.1f) via click at (%d, %d)",
+                        scale, centre.getX(), centre.getY(), (int) (zoom.x + (zoom.width / 2d)), (int) (zoom.y + (zoom.height / 2d)));
+                controller.printf("Zoom %.2f: %s\n", scale / old, details);
 
                 zoom = null;
                 timer.start();
