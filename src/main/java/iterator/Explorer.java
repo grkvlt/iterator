@@ -115,6 +115,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private IFS ifs;
     private List<Color> colours;
     private int paletteSize;
+    private String paletteFile;
+    private long seed;
     private Dimension size, min = new Dimension(MIN_WINDOW_SIZE, MIN_WINDOW_SIZE);
     private File cwd;
 
@@ -196,6 +198,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
         // Load colour palette
         if (palette) {
+            seed = config.get(PALETTE_PROPERTY + ".seed", DEFAULT_PALETTE_SEED);
+            paletteFile = config.get(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE);
+            paletteSize = config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE);
             loadColours();
         }
 
@@ -242,11 +247,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void loadColours() {
-        String file = config.get(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE);
-        Long seed = config.get(PALETTE_PROPERTY + ".seed", DEFAULT_PALETTE_SEED);
-        paletteSize = config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE);
         try {
-            BufferedImage image = ImageIO.read(Resources.getResource("palette/" + file + ".png"));
+            BufferedImage image = ImageIO.read(Resources.getResource("palette/" + paletteFile + ".png"));
             colours = Lists.newArrayList();
             Random random = new Random(seed);
             while (colours.size() < paletteSize) {
@@ -552,6 +554,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public int getPaletteSize() { return paletteSize; }
 
+    public long getSeed() { return seed; }
+
     /** Debug information shown. */
     public boolean isDebug() { return config.get(DEBUG_PROPERTY, Boolean.FALSE); }
 
@@ -607,6 +611,17 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     showEditor.setSelected(true);
                     show(EDITOR);
                 }
+            }
+        } else if (e.getKeyCode() == KeyEvent.VK_S) {
+            if (viewer.isVisible() || details.isVisible()) {
+                if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
+                    seed--;
+                } else {
+                    seed++;
+                }
+                loadColours();
+                viewer.reset(false);
+                details.updated(ifs);
             }
         }
     }
