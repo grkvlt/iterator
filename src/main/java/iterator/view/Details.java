@@ -28,6 +28,7 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
 import com.google.common.base.CaseFormat;
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Optional;
 import com.google.common.collect.Ordering;
 import com.google.common.eventbus.EventBus;
@@ -97,10 +98,12 @@ public class Details extends JTextPane implements Subscriber {
     }
 
     public void setDetails() {
-        StringBuilder html = new StringBuilder();
-        html.append("<html>");
+        StringBuilder html = new StringBuilder("<html>");
         String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
-        html.append(String.format("<a name=\"top\"></a><h1 id=\"title\">IFS - %s</h1>", name));
+        String words = CharMatcher.JAVA_LETTER_OR_DIGIT.negate().replaceFrom(name, ' ');
+        html.append("<a name=\"top\"></a>")
+            .append(String.format("<h1 id=\"title\">IFS %s</h1>", words));
+
         if (ifs.isEmpty()) {
             html.append("<h2>Empty</h2>");
         } else {
@@ -108,10 +111,11 @@ public class Details extends JTextPane implements Subscriber {
             int columns = (int) Math.floor((float) getWidth() / 350f);
             html.append("<table>");
             for (Transform t : Ordering.from(IFS.IDENTITY).immutableSortedCopy(ifs)) {
-                if (i % columns == 0 && i != 0) { html.append("</tr>"); }
-                if (i % columns == 0) { html.append("<tr>"); }
-                html.append("<td>");
-                html.append("<table class=\"ifs\" width=\"250px\">");
+                if (i % columns == 0 && i != 0) html.append("</tr>");
+                if (i % columns == 0) html.append("<tr>");
+                html.append("<td>")
+                    .append("<table class=\"ifs\" width=\"250px\">");
+
                 double[] matrix = new double[6];
                 t.getTransform().getMatrix(matrix);
 
@@ -123,11 +127,10 @@ public class Details extends JTextPane implements Subscriber {
                         c = Color.getHSBColor((float) i / (float) ifs.size(), 0.8f, 0.8f);
                     }
                 }
-                
-                String data = String.format(
+
+                String transform = String.format(
                         "<tr class=\"transform\">" +
-                            "<td class=\"id\">%02d" +
-                            "</td>" +
+                            "<td class=\"id\">%02d</td>" +
                             "<td class=\"bracketl\" rowspan=\"2\">&nbsp;</td>" +
                             "<td class=\"matrixr1\" align=\"right\">%.3f</td>" +
                             "<td class=\"matrixr1\" align=\"right\">%.3f</td>" +
@@ -150,16 +153,17 @@ public class Details extends JTextPane implements Subscriber {
                         controller.isColour() ? "black" : "white",
                         c.getRed(), c.getGreen(), c.getBlue(),
                         matrix[3], matrix[4], matrix[5]);
-                html.append(data);
-                html.append("</table>");
-                html.append("</td>");
+                html.append(transform)
+                    .append("</table>")
+                    .append("</td>");
+
                 i++;
             }
-            html.append("</tr>");
-            html.append("</table>");
+            html.append("</tr>")
+                .append("</table>");
         }
-        html.append("</html>");
 
+        html.append("</html>");
         setText(html.toString());
 
         repaint();
