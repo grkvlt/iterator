@@ -17,6 +17,7 @@ package iterator.model;
 
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -92,12 +93,14 @@ public class Transform {
     }
 
     public void setSize(Dimension size) {
-        this.w = (double) w * (size.getWidth() / (double) sw);
-        this.h = (double) h * (size.getHeight()/ (double) sh);
-        this.x = (double) x * (size.getWidth() / (double) sw);
-        this.y = (double) y * (size.getHeight() / (double) sh);
+        Point2D scale = new Point2D.Double(size.getWidth() / sw, size.getHeight()/ sh);
         this.sw = size.width;
         this.sh = size.height;
+
+        this.w *= scale.getX();
+        this.h *= scale.getY();
+        this.x *= scale.getX();
+        this.y *= scale.getY();
     }
 
     public AffineTransform getTransform() {

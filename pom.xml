@@ -59,8 +59,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <explorer.deploy.codebase>http://localhost/iterator-${project.version}-webstart/</explorer.deploy.codebase>
-
         <explorer.crypto.keystore>${project.build.directory}/keystore</explorer.crypto.keystore>
         <explorer.crypto.alias>iterator</explorer.crypto.alias>
         <explorer.crypto.storepass>password</explorer.crypto.storepass>
@@ -70,9 +68,12 @@
         <explorer.crypto.dname>CN=Andrew Kennedy, OU=XXX, O=XXX, L=Edinburgh, ST=Scotland, C=UK</explorer.crypto.dname>
         <explorer.crypto.validity>3650</explorer.crypto.validity>
 
-        <jquery.js.src>http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js</jquery.js.src>
+        <explorer.deploy.codebase>http://localhost/iterator-${project.version}-webstart/</explorer.deploy.codebase>
 
+        <jquery.version>1.7.2</jquery.version>
         <guava.version>14.0.1</guava.version>
+
+        <jquery.js.src>http://ajax.googleapis.com/ajax/libs/jquery/${jquery.version}/jquery.min.js</jquery.js.src>
     </properties>
 
     <dependencies>

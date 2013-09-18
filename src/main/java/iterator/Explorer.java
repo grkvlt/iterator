@@ -16,7 +16,6 @@
 package iterator;
 
 import static iterator.util.Config.*;
-
 import iterator.model.IFS;
 import iterator.util.Config;
 import iterator.util.Platform;
@@ -265,10 +264,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 Object apple = ctor.newInstance(bus, this);
                 setup.invoke(apple);
             } catch (InvocationTargetException ite) {
-                System.err.printf("Error while configuring OSX support: %s\n", ite.getCause().getMessage());
+                printf("Error while configuring OSX support: %s\n", ite.getCause().getMessage());
                 System.exit(1);
             } catch (Exception e) {
-                System.err.printf("Unable to configure OSX support: %s\n", e.getMessage());
+                printf("Unable to configure OSX support: %s\n", e.getMessage());
             }
         }
     }
@@ -676,9 +675,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     /** @see java.lang.Thread.UncaughtExceptionHandler#uncaughtException(Thread, Throwable) */
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        String error = String.format("Error: Thread %s (%d) caused %s: %s", t.getName(), t.getId(), e.getClass().getName(), e.getMessage());
-        System.out.println(error);
-        System.err.println(error);
+        printf("Error: Thread %s (%d) caused %s: %s", t.getName(), t.getId(), e.getClass().getName(), e.getMessage());
         if (isDebug()) { 
             e.printStackTrace(System.err);
         }

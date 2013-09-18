@@ -66,10 +66,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     
     public void loadProperties(File override) {
         try {
-            // First load system properties
-            config.putAll(Maps.fromProperties(System.getProperties()));
-
-            // Then defaults from classpath
+            // Defaults from classpath
             load(Resources.newReaderSupplier(Resources.getResource(PROPERTIES_FILE), Charsets.UTF_8).getInput());
 
             // Configuration from home directory
@@ -88,6 +85,9 @@ public class Config extends ForwardingSortedMap<String, String> {
             if (override != null) {
                 load(Files.newReaderSupplier(override, Charsets.UTF_8).getInput());
             }
+
+            // Finally load system properties (JAVA_OPTS)
+            config.putAll(Maps.fromProperties(System.getProperties()));
         } catch (IOException ioe) {
             Throwables.propagate(ioe);
         }
