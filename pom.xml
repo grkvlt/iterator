@@ -1,8 +1,23 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2012-2013 by Andrew Kennedy. -->
-<!-- http://www.apache.org/licenses/LICENSE-2.0 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    Copyright 2012-2013 by Andrew Kennedy.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at:
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>iterator</groupId>
     <artifactId>iterator</artifactId>
@@ -44,6 +59,19 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <explorer.deploy.codebase>http://localhost/iterator-${project.version}-webstart/</explorer.deploy.codebase>
+
+        <explorer.crypto.keystore>${project.build.directory}/keystore</explorer.crypto.keystore>
+        <explorer.crypto.alias>iterator</explorer.crypto.alias>
+        <explorer.crypto.storepass>password</explorer.crypto.storepass>
+        <explorer.crypto.keypass>password</explorer.crypto.keypass>
+        <explorer.crypto.keyalg>DSA</explorer.crypto.keyalg>
+        <explorer.crypto.keysize>1024</explorer.crypto.keysize>
+        <explorer.crypto.dname>CN=Andrew Kennedy, OU=XXX, O=XXX, L=Edinburgh, ST=Scotland, C=UK</explorer.crypto.dname>
+        <explorer.crypto.validity>3650</explorer.crypto.validity>
+
+        <jquery.js.src>http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js</jquery.js.src>
+
         <guava.version>14.0.1</guava.version>
     </properties>
 
@@ -61,6 +89,7 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
+
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -70,12 +99,68 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.1</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <Main-Class>iterator.Explorer</Main-Class>
+                            <packageName>iterator</packageName>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>keytool-maven-plugin</artifactId>
+                <version>1.3</version>
+                <executions>
+                     <execution>
+                        <id>empty-keystore</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate-keypair</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>generateKeyPair</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <alias>${explorer.crypto.alias}</alias>
+                     <dname>${explorer.crypto.dname}</dname>
+                     <keypass>${explorer.crypto.keypass}</keypass>
+                     <keysize>${explorer.crypto.keysize}</keysize>
+                     <keyalg>${explorer.crypto.keyalg}</keyalg>
+                     <keystore>${explorer.crypto.keystore}</keystore>
+                     <storepass>${explorer.crypto.storepass}</storepass>
+                     <validity>${explorer.crypto.validity}</validity>
+                 </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.3</version>
                 <executions>
                     <execution>
-                        <id>build-distribution</id>
+                        <id>package-webstart</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assembly</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/config/webstart.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>package-distribution</id>
                         <phase>package</phase>
                         <goals>
                             <goal>assembly</goal>
@@ -87,7 +172,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>make-assembly</id>
+                        <id>package-jar-with-dependencies</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
@@ -107,16 +192,42 @@
                 </executions>
             </plugin>
             <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.1</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <Main-Class>iterator.Explorer</Main-Class>
-                            <packageName>iterator</packageName>
-                        </manifest>
-                    </archive>
-                </configuration>
+                <artifactId>maven-jarsigner-plugin</artifactId>
+                <version>1.2</version>
+                <executions>
+                    <execution>
+                        <id>sign-webstart</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                        <configuration>
+                            <archiveDirectory>
+                                ${project.build.directory}/iterator-${project.version}-webstart/lib
+                            </archiveDirectory>
+                            <keystore>${explorer.crypto.keystore}</keystore>
+                            <alias>${explorer.crypto.alias}</alias>
+                            <storepass>${explorer.crypto.storepass}</storepass>
+                            <keypass>${explorer.crypto.keypass}</keypass>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>sign-jar-with-dependencies</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                ${project.build.directory}/iterator-${project.version}-jar-with-dependencies.jar
+                            </archive>
+                            <keystore>${explorer.crypto.keystore}</keystore>
+                            <alias>${explorer.crypto.alias}</alias>
+                            <storepass>${explorer.crypto.storepass}</storepass>
+                            <keypass>${explorer.crypto.keypass}</keypass>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

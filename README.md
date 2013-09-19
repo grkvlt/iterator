@@ -25,7 +25,6 @@ Iterated Function System Explorer.
  - Rotate using handles only
  - Preserve aspect ratio on resize option
 - Embedded Applet
-- JNLP Web Start client
 - JavaFX UI
 
 ----
