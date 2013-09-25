@@ -38,6 +38,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
 
 import javax.swing.AbstractAction;
@@ -205,8 +206,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 Viewer viewer = controller.getViewer();
                 viewer.reset();
                 int n = ifs.size() + ((selected == null && start != null && end != null) ? 1 : 0);
-                viewer.iterate(50_000 + (int) Math.min(250_000, 5_000 * n * Math.log(n)));
-                g.setComposite(AlphaComposite.SrcOver);
+                viewer.iterate(50_000 + (int) Math.min(250_000, 5_000 * n * Math.log(n)), 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
+                g.setComposite(AlphaComposite.SrcOver.derive(0.8f));
                 g.drawImage(viewer.getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
             }
         }
@@ -236,16 +237,16 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         g.draw(rect);
 
         // Draw the resize handles
-        g.setStroke(new BasicStroke(2f));
-        g.setPaint(Color.BLACK);
-        int[] cornerX = new int[] { 0, 0, getWidth(), getWidth() };
-        int[] cornerY = new int[] { 0, getHeight(), getHeight(), 0 };
-        for (int i = 0; i < 4; i++) {
-            Point center = new Point();
-            t.getTransform().transform(new Point(cornerX[i], cornerY[i]), center);
-            Rectangle corner = new Rectangle(center.x - 4, center.y - 4, 8, 8);
-            g.fill(corner);
-        }
+            g.setStroke(new BasicStroke(2f));
+            g.setPaint(Color.BLACK);
+            int[] cornerX = new int[] { 0, 0, getWidth(), getWidth() };
+            int[] cornerY = new int[] { 0, getHeight(), getHeight(), 0 };
+            for (int i = 0; i < 4; i++) {
+                Point center = new Point();
+                t.getTransform().transform(new Point(cornerX[i], cornerY[i]), center);
+                Rectangle corner = new Rectangle(center.x - 4, center.y - 4, 8, 8);
+                g.fill(corner);
+            }
 
         // Draw the number
         Graphics2D gr = (Graphics2D) g.create();

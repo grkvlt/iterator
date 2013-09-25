@@ -105,14 +105,15 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void updated(IFS ifs) {
         this.ifs = ifs;
         reset();
+        rescale();
     }
 
     /** @see Subscriber#resized(Dimension) */
     @Override
     @Subscribe
     public void resized(Dimension size) {
-        reset();
         centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
+        reset();
     }
 
     /** @see javax.swing.JComponent#paintComponent(Graphics) */
@@ -166,11 +167,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         }
     }
 
-    public void reset() {
-        reset(true);
+    public void rescale() {
+        scale = 1.0f;
+        centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
     }
 
-    public void reset(boolean rescale) {
+    public void reset() {
         if (getWidth() <= 0 && getHeight() <= 0) return;
 
         image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -183,10 +185,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         y = random.nextInt(getHeight());
         count = 0l;
 
-        if (rescale) {
-            scale = 1.0f;
-            centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
-        }
+        if (isVisible()) timer.start();
     }
 
     public void save(File file) {
@@ -202,7 +201,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         }
     }
 
-    public void iterate(int k) {
+    public void iterate(int k, float scale, Point2D centre) {
         Graphics2D g = image.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
@@ -270,14 +269,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Override
     public void actionPerformed(ActionEvent e) {
         if (ifs != null && !ifs.isEmpty() && image != null) {
-            iterate(25_000);
+            iterate(25_000, scale, centre);
             repaint();
         }
     }
 
     public void start() {
         reset();
-        timer.start();
     }
 
     public void stop() {
@@ -294,28 +292,28 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_SPACE && isVisible()) {
-            if (timer.isRunning()) {
-                timer.stop();
-            } else {
-                timer.start();
+        if (isVisible()) {
+            if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                if (timer.isRunning()) {
+                    timer.stop();
+                } else {
+                    timer.start();
+                }
+            } else if (e.getKeyCode() == KeyEvent.VK_MINUS) {
+                scale /= 2.0f;
+                reset();
+            } else if (e.getKeyCode() == KeyEvent.VK_EQUALS) {
+                if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
+                    scale *= 2.0f;
+                } else {
+                    scale = 1.0f;
+                    centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
+                }
+                reset();
             }
-        } else if (e.getKeyCode() == KeyEvent.VK_Z && isVisible()) {
-            float old = scale;
-            Point2D last = centre;
-
-            timer.stop();
-            reset();
-            if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
-                scale = old / 2.0f;
-            } else {
-                scale = old * 2.0f;
-            }
-            centre = last;
-            timer.start();
         }
     }
-
+    
     /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
     @Override
     public void keyReleased(KeyEvent e) {
@@ -350,28 +348,22 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void mouseReleased(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e)) {
             if (zoom != null) {
-                float old = scale;
-                Point2D last = centre;
-
-                timer.stop();
-                reset();
-
                 // Calculate new centre point and scale
-                Point2D origin = new Point2D.Double((last.getX() * old) - (getWidth() / 2d), (last.getY() * old) - (getHeight() / 2d));
+                Point2D origin = new Point2D.Double((centre.getX() * scale) - (getWidth() / 2d), (centre.getY() * scale) - (getHeight() / 2d));
+                centre = new Point2D.Double((zoom.x + (zoom.width / 2d) + origin.getX()) / scale, (zoom.y + (zoom.height / 2d) + origin.getY()) / scale);
                 if (zoom.width == 0 && zoom.height == 0) {
-                    scale = old * 2f;
+                    scale *= 2f;
                 } else {
-                    scale = old * ((float) getWidth() / (float) zoom.width);
+                    scale *= ((float) getWidth() / (float) zoom.width);
                 }
-                centre = new Point2D.Double((zoom.x + (zoom.width / 2d) + origin.getX()) / old, (zoom.y + (zoom.height / 2d) + origin.getY()) / old);
 
                 // Output details
                 String details = String.format("%.1fx scale, centre (%.1f, %.1f) via click at (%d, %d)",
                         scale, centre.getX(), centre.getY(), (int) (zoom.x + (zoom.width / 2d)), (int) (zoom.y + (zoom.height / 2d)));
-                controller.printf("Zoom %.2f: %s\n", scale / old, details);
+                controller.printf("Zoom: %s\n", details);
 
                 zoom = null;
-                timer.start();
+                reset();
             }
         }
     }

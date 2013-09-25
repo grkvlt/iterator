@@ -655,7 +655,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     seed++;
                 }
                 loadColours();
-                viewer.reset(false);
+                viewer.reset();
                 details.updated(ifs);
             }
         }
