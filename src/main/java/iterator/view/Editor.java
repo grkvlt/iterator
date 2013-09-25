@@ -37,6 +37,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
@@ -237,16 +238,23 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         g.draw(rect);
 
         // Draw the resize handles
-            g.setStroke(new BasicStroke(2f));
-            g.setPaint(Color.BLACK);
-            int[] cornerX = new int[] { 0, 0, getWidth(), getWidth() };
-            int[] cornerY = new int[] { 0, getHeight(), getHeight(), 0 };
-            for (int i = 0; i < 4; i++) {
-                Point center = new Point();
-                t.getTransform().transform(new Point(cornerX[i], cornerY[i]), center);
-                Rectangle corner = new Rectangle(center.x - 4, center.y - 4, 8, 8);
-                g.fill(corner);
-            }
+        g.setStroke(new BasicStroke(2f));
+        g.setPaint(Color.BLACK);
+        int[] cornerX = new int[] { 0, 0, getWidth(), getWidth() };
+        int[] cornerY = new int[] { 0, getHeight(), getHeight(), 0 };
+        for (int i = 0; i < 4; i++) {
+            Point center = new Point();
+            t.getTransform().transform(new Point(cornerX[i], cornerY[i]), center);
+            Rectangle corner = new Rectangle(center.x - 4, center.y - 4, 8, 8);
+            g.fill(corner);
+        }
+
+        // And rotate handle
+        int rotateX = getWidth() / 2, rotateY = 0;
+        Point center = new Point();
+        t.getTransform().transform(new Point(rotateX, rotateY), center);
+        Arc2D handle = new Arc2D.Double(center.getX() -4d, center.getY() - 4d, 8d, 8d, 0d, 360d, Arc2D.OPEN);
+        g.draw(handle);
 
         // Draw the number
         Graphics2D gr = (Graphics2D) g.create();
@@ -297,11 +305,19 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     public Transform getTransformAt(Point point) {
         for (Transform t : Ordering.from(IFS.Z_ORDER).reverse().immutableSortedCopy(ifs)) {
             Shape box = t.getTransform().createTransformedShape(new Rectangle(0, 0, getWidth(), getHeight()));
-            if (box.contains(point)) {
+            if (box.contains(point) || isResize(t, point) || isRotate(t, point)) {
                 return t;
             }
         }
         return null;
+    }
+
+    public boolean isRotate(Transform t, Point point) {
+        int rotateX = getWidth() / 2, rotateY = 0;
+        Point center = new Point();
+        t.getTransform().transform(new Point(rotateX, rotateY), center);
+        Arc2D handle = new Arc2D.Double(center.getX() - 4d, center.getY() - 4d, 8d, 8d, 0d, 360d, Arc2D.OPEN);
+        return handle.contains(point);
     }
 
     public boolean isResize(Transform t, Point point) {
@@ -360,7 +376,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 ifs.remove(resize);
                 selected = resize;
             } else if (clicked != null) {
-                if (e.isShiftDown()) {
+                if (isRotate(clicked, e.getPoint())) {
                     selected = clicked;
                     rotate = selected;
                     ifs.remove(rotate);
