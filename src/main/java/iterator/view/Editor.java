@@ -79,7 +79,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         transform.add(new AbstractAction("Properties") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Properties properties = new Properties(getSelected(), Editor.this.controller);
+                Properties properties = new Properties(getSelected(), Editor.this.ifs, Editor.this.bus, Editor.this.controller);
                 properties.showDialog();
             }
         });
