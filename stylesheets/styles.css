@@ -12,17 +12,6 @@ img {
   border: 1px solid black;
 }
 
-#gallery img.thumb {
-  width: 93px;
-  height: 93px;
-}
-
-#gallery img.large {
-  width: 289px;
-  height: 289px;
-  float: left;
-}
-
 h1, h2, h3, h4, h5, h6 {
   color:#222;
   margin:0 0 10px;
@@ -311,10 +300,5 @@ footer {
   .badge {
     display:none;
     visibility:hidden;
-  }
-  #gallery img.large {
-    margin-right: 4px;
-    width: 290px;
-    height: 290px;
   }
 }
