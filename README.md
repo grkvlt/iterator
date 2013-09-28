@@ -13,16 +13,14 @@ Iterated Function System Explorer.
 
 ### TODO
 
-- Properties editor for Transform
- - Matrix coefficients _or_ rotation/displacement/scale values
 - Preferences dialog
 - Better Operating-System integration
  - Printing support
  - Native full-screen mode
  - Support native windowing system features
 - Better editing UI
+ - Edit matrix coefficients
  - Add flip, skew, perspective etc. transforms
- - Rotate using handles only
  - Preserve aspect ratio on resize option
 - Embedded Applet
 - JavaFX UI
