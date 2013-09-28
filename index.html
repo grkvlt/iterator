@@ -172,10 +172,21 @@
           keys will rotate it by ninety degrees.
         </p>
         <p>
+          The context menu displayed by right-clicking on a transform allows
+          the <em>z-index</em> to be raised or lowered, and the selected transform
+          can be moved to the front or back to allow selecting overlapping
+          transforms. A transform can be removed using the <em>Delete</em>
+          menu item, or it's properties can be altered by chooing the
+          <em>Properties</em> option. This will display a dialog allowing the
+          position, size or rotation to be editied.
+        </p>
+        <p>
           When in <strong>Viewer</strong> mode the <em>Space</em> key will pause
           and continue the rendering process. To zoom into the fractal select a
-          specific area using the left mouse button, or use the <em>z</em> and <em>Z</em>
-          keys to to zoom in and out of the centre of the image by a factor of two.
+          specific area by dragging the left mouse button, or use the keyboard
+          <em>+</em> and <em>-</em> keys to to zoom in and out of the centre
+          of the image by a factor of two. The <em>=</em> key will reset the
+          view to the original unmagnified and centered settings.
         </p>
         <p>
           <strong>Note</strong><em> that when zoomed in at high magnification the
@@ -191,20 +202,18 @@
           <img src="images/gallery.png" style="border: 0;" alt="Gallery" title="Gallery" border="0" width="485">
         </div>
         <p style="margin-left: 25px;">
-          <em>Gallery of fractal images produced using IFS Explorer.</em>
+          <em>Gallery of example fractal images.</em>
         </p>
         <h3>TODO</h3>
         <ul>
-          <li>Properties editor for transform</li>
-            <li style="margin-left: 20px;">Matrix coefficients <em>or</em> rotation/displacement/scale values</li>
           <li>Preferences dialog</li>
           <li>Better Operating-System integration</li>
             <li style="margin-left: 20px;">Printing</li>
             <li style="margin-left: 20px;">Native full-screen mode</li>
             <li style="margin-left: 20px;">Support native windowing system features</li>
           <li>Better editing UI</li>
+            <li style="margin-left: 20px;">Edit matrix coefficients</li>
             <li style="margin-left: 20px;">Add flip, skew, perspective etc. transforms</li>
-            <li style="margin-left: 20px;">Rotate using handles only</li>
             <li style="margin-left: 20px;">Preserve aspect ratio on resize option</li>
           <li>Embedded Applet</li>
           <li>JavaFX UI</li>
