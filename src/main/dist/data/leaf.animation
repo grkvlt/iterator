@@ -1,7 +1,27 @@
+#
+# Leaf IFS Animation
+# Copyright 2012-2013 by Andrew Kennedy.
+#
+
 ifs ./data/leaf.xml
 save /tmp/leaf
-frames 500
 delay 1000
-transform 0 r 0 360
-transform 1 r 90 450
-transform 2 r 180 540
+frames 500
+
+segment
+    transform 0 r 0 360
+    transform 1 r 90 450
+    transform 2 r 180 540
+end
+
+segment
+    transform 0 r 0 180
+end
+
+segment
+    transform 0 r 180 270
+end
+
+segment 1000
+    transform 0 r 270 360
+end

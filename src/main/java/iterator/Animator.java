@@ -23,19 +23,23 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import javax.swing.SwingUtilities;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
+import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.io.Files;
-import com.google.common.io.LineProcessor;
 
 /**
  * IFS Animator.
@@ -46,9 +50,10 @@ public class Animator implements Subscriber {
     private EventBus bus;
     private Dimension size;
     private CountDownLatch ready = new CountDownLatch(3);
-    private long frames = 1000l, delay = 500l;
+    private long delay = 500l, frames = 1000l, segment;
     private File config, input, output;
-    private List<Change> changes = Lists.newArrayList();
+    private List<Change> list = Lists.newArrayList();
+    private Map<List<Change>, Long> segments = Maps.newLinkedHashMap();
 
     public Animator(String...argv) throws Exception {
         config = new File(argv[0]);
@@ -65,26 +70,34 @@ public class Animator implements Subscriber {
             throw new IllegalArgumentException("Input file not found: " + input);
         }
 
+        // Start application
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                // Start application
                 explorer = new Explorer();
                 explorer.start();
             }
         });
+ 
+        waitFor(new Supplier<Explorer>() {
+            @Override
+            public Explorer get() { return explorer; }
+        });
+        bus = waitFor(new Supplier<EventBus>() {
+            @Override
+            public EventBus get() { return explorer.getEventBus(); }
+        });
 
-        long spin = 0;
-        while (explorer == null) {
-            if (++spin % 10_000_000 == 0) System.err.print(".");
-        }
-        System.err.println("explorer");
-        while (bus == null) {
-            if (++spin % 10_000_000 == 0) System.err.print(".");
-            bus = explorer.getEventBus();
-        }
-        System.err.println("bus");
         bus.register(this);
+    }
+
+    private <T> T waitFor(Supplier<T> input) {
+        for (int spin = 0; Predicates.isNull().apply(input.get());) {
+            if (++spin % 10_000_000 == 0) System.err.print(".");
+        }
+        T result = input.get();
+        System.err.println(result.getClass().getName());
+        return result;
     }
 
     private class Change {
@@ -92,55 +105,70 @@ public class Animator implements Subscriber {
         public double start, end;
         public char field;
     }
-    
-    private void parse() throws IOException {
-        Files.readLines(config, Charsets.UTF_8, new LineProcessor<Void>() {
-            @Override
-            public boolean processLine(String line) throws IOException {
-                Iterable<String> tokens = Splitter.on(' ').split(line);
-                String type = Iterables.get(tokens, 0);
-                if (type.equalsIgnoreCase("ifs")) {
-                    if (Iterables.size(tokens) != 2) {
-                        throw new IllegalStateException("ifs");
-                    }
-                    input = new File(Iterables.get(tokens, 1).replace("~", System.getProperty("user.home")));
-                } else if (type.equalsIgnoreCase("save")) {
-                    if (Iterables.size(tokens) != 2) {
-                        throw new IllegalStateException("save");
-                    }
-                    output = new File(Iterables.get(tokens, 1).replace("~", System.getProperty("user.home")));
-                } else if (type.equalsIgnoreCase("frames")) {
-                    if (Iterables.size(tokens) != 2) {
-                        throw new IllegalStateException("frames");
-                    }
-                    frames = Long.valueOf(Iterables.get(tokens, 1));
-                } else if (type.equalsIgnoreCase("delay")) {
-                    if (Iterables.size(tokens) != 2) {
-                        throw new IllegalStateException("delay");
-                    }
-                    delay = Long.valueOf(Iterables.get(tokens, 1));
-                } else if (type.equalsIgnoreCase("transform")) {
-                    if (Iterables.size(tokens) != 5) {
-                        throw new IllegalStateException("transform");
-                    }
-                    Change change = new Change();
-                    change.transform = Integer.valueOf(Iterables.get(tokens, 1));
-                    String field = Iterables.get(tokens, 2);
-                    if (field.length() == 1 && CharMatcher.anyOf("xywhr").matches(field.charAt(0))) {
-                        change.field = field.charAt(0);
-                    } else {
-                        throw new IllegalStateException("transform field");
-                    }
-                    change.start = Double.valueOf(Iterables.get(tokens, 3));
-                    change.end = Double.valueOf(Iterables.get(tokens, 4));
-                    changes.add(change);
-                }
-                return true;
-            }
 
-            @Override
-            public Void getResult() { return null; }
-        });
+    private void parse() throws IOException {
+        for (String line : Files.readLines(config, Charsets.UTF_8)) {
+            Iterable<String> tokens = Splitter.on(' ').omitEmptyStrings().trimResults().split(line);
+            if (Iterables.isEmpty(tokens)) continue;
+            String type = Iterables.get(tokens, 0);
+            if (type.equalsIgnoreCase("ifs")) {
+                if (Iterables.size(tokens) != 2) {
+                    throw new IllegalStateException("Parse error at 'ifs': " + line);
+                }
+                input = new File(Iterables.get(tokens, 1).replace("~", System.getProperty("user.home")));
+            } else if (type.equalsIgnoreCase("save")) {
+                if (Iterables.size(tokens) != 2) {
+                    throw new IllegalStateException("Parse error at 'save': " + line);
+                }
+                output = new File(Iterables.get(tokens, 1).replace("~", System.getProperty("user.home")));
+            } else if (type.equalsIgnoreCase("frames")) {
+                if (Iterables.size(tokens) != 2) {
+                    throw new IllegalStateException("Parse error at 'frames': " + line);
+                }
+                frames = Long.valueOf(Iterables.get(tokens, 1));
+            } else if (type.equalsIgnoreCase("delay")) {
+                if (Iterables.size(tokens) != 2) {
+                    throw new IllegalStateException("Parse error at 'delay': " + line);
+                }
+                delay = Long.valueOf(Iterables.get(tokens, 1));
+            } else if (type.equalsIgnoreCase("transform")) {
+                if (Iterables.size(tokens) != 5) {
+                    throw new IllegalStateException("Parse error at 'transform': " + line);
+                }
+                Change change = new Change();
+                change.transform = Integer.valueOf(Iterables.get(tokens, 1));
+                String field = Iterables.get(tokens, 2);
+                if (field.length() == 1 && CharMatcher.anyOf("xywhr").matches(field.charAt(0))) {
+                    change.field = field.charAt(0);
+                } else {
+                    throw new IllegalStateException("Parse error at 'transform' field: " + line);
+                }
+                change.start = Double.valueOf(Iterables.get(tokens, 3));
+                change.end = Double.valueOf(Iterables.get(tokens, 4));
+                list.add(change);
+            } else if (type.equalsIgnoreCase("segment")) {
+                if (Iterables.size(tokens) == 2) {
+                    segment = Long.valueOf(Iterables.get(tokens, 1));
+                } else {
+                    segment = frames;
+                }
+                list.clear();
+            } else if (type.equalsIgnoreCase("end")) {
+                if (Iterables.size(tokens) != 1) {
+                    throw new IllegalStateException("Parse error at 'end': " + line);
+                }
+                segments.put(ImmutableList.copyOf(list), segment);
+            } else if (type.startsWith("#")) {
+                continue;
+            } else {
+                throw new IllegalStateException("Parse error: " + line);
+            }
+        }
+
+        // Deal with single segment case (no 'segment' or 'end' token)
+        if (segments.isEmpty() && list.size() > 0) {
+            segments.put(ImmutableList.copyOf(list), frames);
+        }
     }
 
     @Subscribe
@@ -160,30 +188,35 @@ public class Animator implements Subscriber {
 
         explorer.show(Explorer.VIEWER);
         ifs = explorer.load(input);
+        ifs.setSize(size);
 
-        for (int i = 0; i < frames; i++) {
-            double fraction = (double) i / (double) frames;
-            for (Change change : changes) {
-                Transform transform = ifs.get(change.transform);
-                double delta = (change.end - change.start) * fraction;
-                switch (change.field) {
-                case 'x': transform.x = change.start + delta; break;
-                case 'y': transform.y = change.start + delta; break;
-                case 'w': transform.w = change.start + delta; break;
-                case 'h': transform.h = change.start + delta; break;
-                case 'r': transform.r = Math.toRadians(change.start + delta); break;
+        long frame = 0;
+        for (Map.Entry<List<Change>, Long> segment : segments.entrySet()) {
+            long length = segment.getValue();
+            for (int i = 0; i < length; i++) {
+                double fraction = (double) i / (double) length;
+                for (Change change : segment.getKey()) {
+                    Transform transform = ifs.get(change.transform);
+                    double delta = (change.end - change.start) * fraction;
+                    switch (change.field) {
+                    case 'x': transform.x = change.start + delta; break;
+                    case 'y': transform.y = change.start + delta; break;
+                    case 'w': transform.w = change.start + delta; break;
+                    case 'h': transform.h = change.start + delta; break;
+                    case 'r': transform.r = Math.toRadians(change.start + delta); break;
+                    }
                 }
+                bus.post(ifs);
+                Thread.sleep(delay);
+                explorer.getViewer().save(new File(output, String.format("%04d.png", frame++)));
             }
-            bus.post(ifs);
-            Thread.sleep(delay);
-            explorer.getViewer().save(new File(output, String.format("%04d.png", i)));
         }
 
         System.exit(0);
     }
 
     /**
-     * Explorer.
+     * Animator.
      */
     public static void main(final String...argv) throws Exception {
         Animator animator = new Animator(argv);
