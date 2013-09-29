@@ -50,6 +50,8 @@ public class Transform {
     private double sw;
     @XmlAttribute
     private double sh;
+    @XmlAttribute
+    private double matrix[] = null;
 
     @SuppressWarnings("unused")
     private Transform() {
@@ -88,26 +90,44 @@ public class Transform {
         this.zIndex = zIndex;
     }
 
+    public void setMatrix(double[] matrix) {
+        this.matrix = matrix;
+    }
+
+    public boolean isMatrix() { return matrix != null; }
+
     public double getDeterminant() {
         return this.getTransform().getDeterminant();
     }
 
     public void setSize(Dimension size) {
         Point2D scale = new Point2D.Double(size.getWidth() / sw, size.getHeight()/ sh);
-        this.sw = size.width;
-        this.sh = size.height;
-
-        this.w *= scale.getX();
-        this.h *= scale.getY();
-        this.x *= scale.getX();
-        this.y *= scale.getY();
+        sw = size.width;
+        sh = size.height;
+        
+        if (isMatrix()) {
+            AffineTransform transform = getTransform();
+            transform.scale(scale.getX(), scale.getY());
+            double scaled[] = new double[6];
+            transform.getMatrix(scaled);
+            matrix = scaled;
+        } else {
+            w *= scale.getX();
+            h *= scale.getY();
+            x *= scale.getX();
+            y *= scale.getY();
+        }
     }
 
     public AffineTransform getTransform() {
         AffineTransform transform = new AffineTransform();
-        transform.translate(x, y);
-        transform.rotate(r);
-        transform.scale(w / sw, h / sh);
+        if (isMatrix()) {
+            transform.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+        } else {
+            transform.translate(x, y);
+            transform.rotate(r);
+            transform.scale(w / sw, h / sh);
+        }
         return transform;
     }
 

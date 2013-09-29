@@ -35,16 +35,16 @@ import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
 
 /**
- * Properties dialog.
+ * Matrix dialog.
  */
-public class Properties extends JDialog {
+public class Matrix extends JDialog {
     /** serialVersionUID */
-    private static final long serialVersionUID = -7626627964747215623L;
+    private static final long serialVersionUID = 2515091470183119489L;
 
-    private final Supplier<Double> x, y, w, h, r;
+    private final Supplier<Double> c0, c1, c2, c3, c4, c5;
 
-    public Properties(final Transform transform, final IFS ifs, final EventBus bus, final Explorer controller) {
-        super(controller, "Transform Properties", ModalityType.APPLICATION_MODAL);
+    public Matrix(final Transform transform, final IFS ifs, final EventBus bus, final Explorer controller) {
+        super(controller, "Transform Matrix", ModalityType.APPLICATION_MODAL);
 
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
@@ -52,30 +52,37 @@ public class Properties extends JDialog {
         setFont(new Font("Calibri", Font.PLAIN, 14));
         setLayout(gridbag);
 
-        JLabel title = new JLabel(String.format("Transform T%02d Properties", transform.getId()), JLabel.CENTER);
+        JLabel title = new JLabel(String.format("Transform T%02d Matrix", transform.getId()), JLabel.CENTER);
         title.setFont(new Font("Calibri", Font.BOLD, 16));
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
-        c.weightx = 1.0;
-        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.weightx = 3.0;
+        c.gridwidth = 3; // GridBagConstraints.REMAINDER;
         gridbag.setConstraints(title, c);
         add(title);
 
-        x = addProperty("X", transform.x, gridbag, c);
-        y = addProperty("Y", transform.y, gridbag, c);
-        w = addProperty("Width", transform.w, gridbag, c);
-        h = addProperty("Height", transform.h, gridbag, c);
-        r = addProperty("Angle", Math.toDegrees(transform.r), gridbag, c);
+        double matrix[] = new double[6];
+        transform.getTransform().getMatrix(matrix);
+        
+        c0 = addProperty(0, matrix[0], gridbag, c);
+        c1 = addProperty(1, matrix[2], gridbag, c);
+        c2 = addProperty(2, matrix[4], gridbag, c);
+        c3 = addProperty(3, matrix[1], gridbag, c);
+        c4 = addProperty(4, matrix[3], gridbag, c);
+        c5 = addProperty(5, matrix[5], gridbag, c);
 
         @SuppressWarnings("serial")
         JButton update = new JButton(new AbstractAction("Update") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                transform.x = x.get();
-                transform.y = y.get();
-                transform.w = w.get();
-                transform.h = h.get();
-                transform.r = Math.toRadians(r.get());
+                double matrix[] = new double[6];
+                matrix[0] = c0.get();
+                matrix[2] = c1.get();
+                matrix[4] = c2.get();
+                matrix[1] = c3.get();
+                matrix[3] = c4.get();
+                matrix[5] = c5.get();
+                transform.setMatrix(matrix);
                 bus.post(ifs);
                 setVisible(false);
             }
@@ -85,6 +92,7 @@ public class Properties extends JDialog {
         c.anchor = GridBagConstraints.EAST;
         c.gridx = 0;
         c.gridwidth = 1;
+        c.weightx = 1.0;
         gridbag.setConstraints(update, c);
         add(update);
 
@@ -103,32 +111,26 @@ public class Properties extends JDialog {
 
         pack();
 
-        Dimension size = new Dimension(200, 200);
+        Dimension size = new Dimension(300, 150);
         setMinimumSize(size);
         setResizable(false);
     }
 
-    private <T> Supplier<T> addProperty(String string, T value, GridBagLayout gridbag, GridBagConstraints c) {
-        JLabel label = new JLabel(string, JLabel.RIGHT);
-        label.setFont(new Font("Calibri", Font.PLAIN, 14));
-        c.gridx = 0;
-        c.gridwidth = GridBagConstraints.RELATIVE;
-        c.weightx = 2.0;
-        gridbag.setConstraints(label, c);
-        add(label);
-
+    private Supplier<Double> addProperty(int number, double value, GridBagLayout gridbag, GridBagConstraints c) {
         final JFormattedTextField field = new JFormattedTextField(value);
         field.setFont(new Font("Cambria", Font.ITALIC, 14));
-        Supplier<T> supplier = new Supplier<T>() {
+        Supplier<Double> supplier = new Supplier<Double>() {
             @SuppressWarnings("unchecked")
             @Override
-            public T get() {
-                return (T) field.getValue();
+            public Double get() {
+                return (Double) field.getValue();
             }
         };
-        c.gridx = 2;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.weightx = 1.0;
+
+        int position = number % 3;
+        c.gridx = position;
+        c.gridwidth = position == 2 ? GridBagConstraints.REMAINDER : 1;
+        c.weightx = 0.5;
         gridbag.setConstraints(field, c);
         add(field);
 

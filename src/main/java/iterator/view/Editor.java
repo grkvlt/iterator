@@ -85,6 +85,14 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 properties.showDialog();
             }
         });
+        transform.add(new AbstractAction("Matrix") {
+            { enabled = false; }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Matrix matrix = new Matrix(getSelected(), Editor.this.ifs, Editor.this.bus, Editor.this.controller);
+                matrix.showDialog();
+            }
+        });
         transform.add(new AbstractAction("Delete") {
             @Override
             public void actionPerformed(ActionEvent e) {
