@@ -519,7 +519,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         setVisible(true);
     }
 
-    private void show(String name) {
+    public void show(String name) {
         cards.show(view, name);
         current = name;
         if (name.equals(VIEWER)) {
@@ -613,6 +613,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public About getAbout() { return about; }
 
     public Preferences getPreferences() { return prefs; }
+
+    public IFS getIFS() { return ifs; }
+
+    public EventBus getEventBus() { return bus; }
 
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override

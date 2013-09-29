@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<IFS name="leaf">
+    <Transforms>
+        <Transform id="3" zIndex="2" x="185.0" y="95.0" w="400.0" h="400.0" r="0.0" sw="600.0" sh="600.0"/>
+        <Transform id="2" zIndex="1" x="90.0" y="70.0" w="300.0" h="400.0" r="0.2914567944778671" sw="600.0" sh="600.0"/>
+        <Transform id="1" zIndex="0" x="55.0" y="150.0" w="200.0" h="200.0" r="-0.1418970546041639" sw="600.0" sh="600.0"/>
+    </Transforms>
+</IFS>

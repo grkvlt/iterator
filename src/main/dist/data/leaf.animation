@@ -1,0 +1,7 @@
+ifs ./data/leaf.xml
+save /tmp/leaf
+frames 500
+delay 1000
+transform 0 r 0 360
+transform 1 r 90 450
+transform 2 r 180 540
