@@ -24,11 +24,13 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.text.ParseException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
+import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JLabel;
 
 import com.google.common.base.Supplier;
@@ -90,9 +92,9 @@ public class Matrix extends JDialog {
         update.setFont(new Font("Calibri", Font.PLAIN, 14));
         c.fill = GridBagConstraints.NONE;
         c.anchor = GridBagConstraints.EAST;
-        c.gridx = 0;
+        c.gridx = 1;
         c.gridwidth = 1;
-        c.weightx = 1.0;
+        c.weightx = 2.0;
         gridbag.setConstraints(update, c);
         add(update);
 
@@ -104,7 +106,7 @@ public class Matrix extends JDialog {
             }
         });
         cancel.setFont(new Font("Calibri", Font.PLAIN, 14));
-        c.gridx = 1;
+        c.gridx = 2;
         c.gridwidth = GridBagConstraints.REMAINDER;
         gridbag.setConstraints(cancel, c);
         add(cancel);
@@ -116,11 +118,28 @@ public class Matrix extends JDialog {
         setResizable(false);
     }
 
+
+    private class DoubleFormatter extends AbstractFormatter {
+        /** serialVersionUID */
+        private static final long serialVersionUID = 1107330803545615990L;
+
+        @Override
+        public Object stringToValue(String text) throws ParseException {
+            return Double.valueOf(text);
+        }
+
+        @Override
+        public String valueToString(Object value) throws ParseException {
+            return String.format("%.06f", value);
+        }
+        
+    }
     private Supplier<Double> addProperty(int number, double value, GridBagLayout gridbag, GridBagConstraints c) {
-        final JFormattedTextField field = new JFormattedTextField(value);
+        final JFormattedTextField field = new JFormattedTextField(new DoubleFormatter());
+        field.setValue(value);
         field.setFont(new Font("Cambria", Font.ITALIC, 14));
+        field.setColumns(10);
         Supplier<Double> supplier = new Supplier<Double>() {
-            @SuppressWarnings("unchecked")
             @Override
             public Double get() {
                 return (Double) field.getValue();
@@ -128,9 +147,11 @@ public class Matrix extends JDialog {
         };
 
         int position = number % 3;
+        c.fill = GridBagConstraints.VERTICAL;
+        c.anchor = position == 0 ? GridBagConstraints.WEST : position == 2 ? GridBagConstraints.EAST : GridBagConstraints.CENTER;
         c.gridx = position;
         c.gridwidth = position == 2 ? GridBagConstraints.REMAINDER : 1;
-        c.weightx = 0.5;
+        c.weightx = position == 1 ? 2.0 : 1.0;
         gridbag.setConstraints(field, c);
         add(field);
 

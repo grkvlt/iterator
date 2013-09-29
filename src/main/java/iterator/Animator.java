@@ -197,6 +197,9 @@ public class Animator implements Subscriber {
                 double fraction = (double) i / (double) length;
                 for (Change change : segment.getKey()) {
                     Transform transform = ifs.get(change.transform);
+                    if (transform.isMatrix()) {
+                        throw new UnsupportedOperationException("Cannot animate matrix transforms currently");
+                    }
                     double delta = (change.end - change.start) * fraction;
                     switch (change.field) {
                     case 'x': transform.x = change.start + delta; break;

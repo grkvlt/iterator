@@ -43,6 +43,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -64,6 +65,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     private final Explorer controller;
 
     private JPopupMenu transform;
+    private Action properties, duplicate;
 
     private IFS ifs;
     private Transform selected;
@@ -78,15 +80,15 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         this.controller = controller;
 
         transform = new JPopupMenu();
-        transform.add(new AbstractAction("Properties") {
+        properties = new AbstractAction("Properties") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Properties properties = new Properties(getSelected(), Editor.this.ifs, Editor.this.bus, Editor.this.controller);
                 properties.showDialog();
             }
-        });
+        };
+        transform.add(properties);
         transform.add(new AbstractAction("Matrix") {
-            { enabled = false; }
             @Override
             public void actionPerformed(ActionEvent e) {
                 Matrix matrix = new Matrix(getSelected(), Editor.this.ifs, Editor.this.bus, Editor.this.controller);
@@ -101,7 +103,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 Editor.this.bus.post(ifs);
             }
         });
-        transform.add(new AbstractAction("Duplicate") {
+        duplicate = new AbstractAction("Duplicate") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Transform copy = new Transform(getSize());
@@ -114,7 +116,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 selected = copy;
                 Editor.this.bus.post(ifs);
             }
-        });
+        };
+        transform.add(duplicate);
         transform.add(new AbstractAction("Raise") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -188,16 +191,16 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         Graphics2D g = (Graphics2D) graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        paintGrid(g);
+        paintGrid((Graphics2D) g.create());
 
         if (ifs != null) {
             for (Transform t : ifs) {
                 if (!t.equals(selected)) {
-                    paintTransform(t, false, g);
+                    paintTransform(t, false, (Graphics2D) g.create());
                 }
             }
             if (selected != null) {
-                paintTransform(selected, true, g);
+                paintTransform(selected, true, (Graphics2D) g.create());
             }
 
             if (selected == null && start != null && end != null) {
@@ -228,14 +231,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         Rectangle unit = new Rectangle(getSize());
         Shape rect = t.getTransform().createTransformedShape(unit);
 
-        // Fill the rectangle
-        if (highlight) {
-            g.setPaint(new Color(Color.BLUE.getRed(), Color.BLUE.getGreen(), Color.BLUE.getBlue(), 16));
-        } else {
-            g.setPaint(new Color(Color.GRAY.getRed(), Color.GRAY.getGreen(), Color.GRAY.getBlue(), 16));
-        }
-        g.fill(rect);
-
         // Draw the outline
         g.setPaint(Color.BLACK);
         if (highlight) {
@@ -245,24 +240,38 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         }
         g.draw(rect);
 
-        // Draw the resize handles
-        g.setStroke(new BasicStroke(2f));
-        g.setPaint(Color.BLACK);
-        int[] cornerX = new int[] { 0, 0, getWidth(), getWidth() };
-        int[] cornerY = new int[] { 0, getHeight(), getHeight(), 0 };
-        for (int i = 0; i < 4; i++) {
-            Point center = new Point();
-            t.getTransform().transform(new Point(cornerX[i], cornerY[i]), center);
-            Rectangle corner = new Rectangle(center.x - 4, center.y - 4, 8, 8);
-            g.fill(corner);
+        // Fill the rectangle
+        if (highlight) {
+            if (t.isMatrix()) {
+                g.setPaint(new Color(Color.GREEN.getRed(), Color.GREEN.getGreen(), Color.GREEN.getBlue(), 16));
+            } else {
+                g.setPaint(new Color(Color.BLUE.getRed(), Color.BLUE.getGreen(), Color.BLUE.getBlue(), 16));
+            }
+        } else {
+            g.setPaint(new Color(Color.GRAY.getRed(), Color.GRAY.getGreen(), Color.GRAY.getBlue(), 8));
         }
+        g.fill(rect);
 
-        // And rotate handle
-        int rotateX = getWidth() / 2, rotateY = 0;
-        Point center = new Point();
-        t.getTransform().transform(new Point(rotateX, rotateY), center);
-        Arc2D handle = new Arc2D.Double(center.getX() -4d, center.getY() - 4d, 8d, 8d, 0d, 360d, Arc2D.OPEN);
-        g.draw(handle);
+        if (!t.isMatrix()) {
+            // Draw the resize handles
+            g.setStroke(new BasicStroke(2f));
+            g.setPaint(Color.BLACK);
+            int[] cornerX = new int[] { 0, 0, getWidth(), getWidth() };
+            int[] cornerY = new int[] { 0, getHeight(), getHeight(), 0 };
+            for (int i = 0; i < 4; i++) {
+                Point center = new Point();
+                t.getTransform().transform(new Point(cornerX[i], cornerY[i]), center);
+                Rectangle corner = new Rectangle(center.x - 4, center.y - 4, 8, 8);
+                g.fill(corner);
+            }
+    
+            // And rotate handle
+            int rotateX = getWidth() / 2, rotateY = 0;
+            Point center = new Point();
+            t.getTransform().transform(new Point(rotateX, rotateY), center);
+            Arc2D handle = new Arc2D.Double(center.getX() - 6d, center.getY() - 6d, 12d, 12d, 0d, 360d, Arc2D.OPEN);
+            g.draw(handle);
+        }
 
         // Draw the number
         Graphics2D gr = (Graphics2D) g.create();
@@ -279,6 +288,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         gr.setTransform(rotation);
         gr.drawString(String.format("T%02d%s", t.getId(), (highlight && rotate != null) ? String.format(" (%d)", (int) Math.toDegrees(t.r)) : ""), text.x + 5, text.y + 25);
         gr.dispose();
+
+        g.dispose();
     }
 
     public void paintGrid(Graphics2D g) {
@@ -303,6 +314,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         for (int y = 0; y < getHeight(); y += max) {
             g.drawLine(0, y, getWidth(), y);
         }
+        g.dispose();
     }
 
     public Transform getTransformAt(int x, int y) {
@@ -324,7 +336,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         int rotateX = getWidth() / 2, rotateY = 0;
         Point center = new Point();
         t.getTransform().transform(new Point(rotateX, rotateY), center);
-        Arc2D handle = new Arc2D.Double(center.getX() - 4d, center.getY() - 4d, 8d, 8d, 0d, 360d, Arc2D.OPEN);
+        Arc2D handle = new Arc2D.Double(center.getX() - 6d, center.getY() - 6d, 12d, 12d, 0d, 360d, Arc2D.OPEN);
         return handle.contains(point);
     }
 
@@ -359,6 +371,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         if (SwingUtilities.isLeftMouseButton(e)) {
             resize = null;
             for (Transform t : ifs) {
+                if (t.isMatrix()) continue;
                 if (isResize(t, e.getPoint())) {
                     resize = t;
                     break;
@@ -384,7 +397,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 ifs.remove(resize);
                 selected = resize;
             } else if (clicked != null) {
-                if (isRotate(clicked, e.getPoint())) {
+                if (!clicked.isMatrix() && isRotate(clicked, e.getPoint())) {
                     selected = clicked;
                     rotate = selected;
                     ifs.remove(rotate);
@@ -392,12 +405,14 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
                 } else {
                     selected = clicked;
-                    move = selected;
-                    ifs.remove(move);
+                    if (!clicked.isMatrix()) {
+                        move = selected;
+                        setCursor(new Cursor(Cursor.MOVE_CURSOR));
+                    }
                     start = snap(e.getPoint());
-                    setCursor(new Cursor(Cursor.MOVE_CURSOR));
+                    ifs.remove(selected);
                 }
-            } else  {
+            } else {
                 start = snap(e.getPoint());
                 selected = null;
                 setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
@@ -406,6 +421,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         } else if (SwingUtilities.isRightMouseButton(e)) {
             if (clicked != null) {
                 selected = clicked;
+                properties.setEnabled(!selected.isMatrix());
+                duplicate.setEnabled(!selected.isMatrix());
                 transform.show(e.getComponent(), e.getX(), e.getY());
             }
         }

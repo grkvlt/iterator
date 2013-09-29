@@ -19,7 +19,6 @@ Iterated Function System Explorer.
  - Native full-screen mode
  - Support native windowing system features
 - Better editing UI
- - Edit matrix coefficients
  - Add flip, skew, perspective etc. transforms
  - Preserve aspect ratio on resize option
 - Embedded Applet
