@@ -36,21 +36,21 @@ public class Transform {
     private int id;
     @XmlAttribute
     private int zIndex;
-    @XmlAttribute
-    public double x;
-    @XmlAttribute
-    public double y;
-    @XmlAttribute
-    public double w;
-    @XmlAttribute
-    public double h;
-    @XmlAttribute
-    public double r;
+    @XmlAttribute(required = false)
+    public Double x;
+    @XmlAttribute(required = false)
+    public Double y;
+    @XmlAttribute(required = false)
+    public Double w;
+    @XmlAttribute(required = false)
+    public Double h;
+    @XmlAttribute(required = false)
+    public Double r;
     @XmlAttribute
     private double sw;
     @XmlAttribute
     private double sh;
-    @XmlAttribute
+    @XmlAttribute(required = false)
     private double matrix[] = null;
 
     @SuppressWarnings("unused")
@@ -65,8 +65,8 @@ public class Transform {
     public Transform(int id, int zIndex, Dimension size) {
         this.id = id;
         this.zIndex = zIndex;
-        this.sw = size.width;
-        this.sh = size.height;
+        this.sw = size.getWidth();
+        this.sh = size.getHeight();
         this.x = 0d;
         this.y = 0d;
         this.w = 0d;
@@ -92,6 +92,11 @@ public class Transform {
 
     public void setMatrix(double[] matrix) {
         this.matrix = matrix;
+        this.x = null;
+        this.y = null;
+        this.w = null;
+        this.h = null;
+        this.r = null;
     }
 
     public boolean isMatrix() { return matrix != null; }
@@ -102,8 +107,8 @@ public class Transform {
 
     public void setSize(Dimension size) {
         Point2D scale = new Point2D.Double(size.getWidth() / sw, size.getHeight()/ sh);
-        sw = size.width;
-        sh = size.height;
+        sw = size.getWidth();
+        sh = size.getHeight();
         
         if (isMatrix()) {
             AffineTransform transform = getTransform();
@@ -131,6 +136,30 @@ public class Transform {
         return transform;
     }
 
+    public double getTranslateX() {
+        return getTransform().getTranslateX();
+    }
+
+    public double getTranslateY() {
+        return getTransform().getTranslateY();
+    }
+
+    public double getScaleX() {
+        return getTransform().getScaleX();
+    }
+
+    public double getScaleY() {
+        return getTransform().getScaleY();
+    }
+
+    public double getShearX() {
+        return getTransform().getShearX();
+    }
+
+    public double getShearY() {
+        return getTransform().getShearY();
+    }
+
     public double[] applyTransform(double xin, double yin) {
         AffineTransform transform = getTransform();
         double src[] = new double[] { xin, yin };
@@ -154,6 +183,7 @@ public class Transform {
     @Override
     public String toString() {
         return Objects.toStringHelper(this)
+                .omitNullValues()
                 .add("id", id)
                 .add("zIndex", zIndex)
                 .add("sw", sw)
@@ -163,6 +193,7 @@ public class Transform {
                 .add("w", w)
                 .add("h", h)
                 .add("r", r)
+                .add("matrix", matrix)
                 .toString();
     }
 }
