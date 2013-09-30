@@ -405,10 +405,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
                 } else {
                     selected = clicked;
-                    if (!clicked.isMatrix()) {
-                        move = selected;
-                        setCursor(new Cursor(Cursor.MOVE_CURSOR));
-                    }
+                    move = selected;
+                    setCursor(new Cursor(Cursor.MOVE_CURSOR));
                     start = snap(e.getPoint());
                     ifs.remove(selected);
                 }
@@ -532,11 +530,19 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 double y = move.y + dy;
 
                 selected = new Transform(selected.getId(), selected.getZIndex(), getSize());
-                selected.x = x;
-                selected.y = y;
-                selected.w = move.w;
-                selected.h = move.h;
-                selected.r = move.r;
+                if (move.isMatrix()) {
+                    AffineTransform moved = move.getTransform();
+                    moved.translate(x, y);
+                    double matrix[] = new double[6];
+                    moved.getMatrix(matrix);
+                    selected.setMatrix(matrix);
+                } else {
+                    selected.x = x;
+                    selected.y = y;
+                    selected.w = move.w;
+                    selected.h = move.h;
+                    selected.r = move.r;
+                }
             } else if (selected != null && rotate != null) {
                 Point origin = new Point();
                 rotate.getTransform().transform(new Point(0, 0), origin);
