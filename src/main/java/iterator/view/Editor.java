@@ -600,15 +600,19 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             case KeyEvent.VK_BACK_SPACE:
                 ifs.remove(selected);
                 selected = null;
-                Editor.this.bus.post(ifs);
+                bus.post(ifs);
                 break;
             case KeyEvent.VK_RIGHT:
-                selected.r += Math.PI / 2d;
-                Editor.this.bus.post(ifs);
+                if (!selected.isMatrix()) {
+                    selected.r += Math.PI / 2d;
+                    bus.post(ifs);
+                }
                 break;
             case KeyEvent.VK_LEFT:
-                selected.r -= Math.PI / 2d;
-                Editor.this.bus.post(ifs);
+                if (!selected.isMatrix()) {
+                    selected.r -= Math.PI / 2d;
+                    bus.post(ifs);
+                }
                 break;
             }
         }
