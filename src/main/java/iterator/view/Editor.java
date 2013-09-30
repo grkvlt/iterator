@@ -284,7 +284,13 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         Point text = new Point();
         t.getTransform().transform(new Point(0, 0), text);
         AffineTransform rotation = new AffineTransform();
-        rotation.rotate(t.r, text.x, text.y);
+        if (t.isMatrix()) {
+            rotation = t.getTransform();
+            rotation.scale(1 / t.getScaleX(), 1 / t.getScaleY());
+            rotation.translate(-t.getTranslateX(), -t.getTranslateY());
+        } else {
+            rotation.rotate(t.r, text.x, text.y);
+        }
         gr.setTransform(rotation);
         gr.drawString(String.format("T%02d%s", t.getId(), (highlight && rotate != null) ? String.format(" (%d)", (int) Math.toDegrees(t.r)) : ""), text.x + 5, text.y + 25);
         gr.dispose();
@@ -437,10 +443,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     public void mouseReleased(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e)) {
             if (selected == null && start != null && end != null) {
-                int x = Math.min(start.x, end.x);
-                int y = Math.min(start.y, end.y);
-                int w = Math.max(start.x, end.x) - x;
-                int h = Math.max(start.y, end.y) - y;
+                double x = Math.min(start.x, end.x);
+                double y = Math.min(start.y, end.y);
+                double w = Math.max(start.x, end.x) - x;
+                double h = Math.max(start.y, end.y) - y;
 
                 int grid = controller.getSnapGrid();
                 w = Math.max(grid, w);
@@ -526,17 +532,17 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 int dx = end.x - start.x;
                 int dy = end.y - start.y;
 
-                double x = move.x + dx;
-                double y = move.y + dy;
-
                 selected = new Transform(selected.getId(), selected.getZIndex(), getSize());
                 if (move.isMatrix()) {
                     AffineTransform moved = move.getTransform();
-                    moved.translate(x, y);
+                    moved.translate(dx, dy);
                     double matrix[] = new double[6];
                     moved.getMatrix(matrix);
                     selected.setMatrix(matrix);
                 } else {
+                    double x = move.x + dx;
+                    double y = move.y + dy;
+
                     selected.x = x;
                     selected.y = y;
                     selected.w = move.w;

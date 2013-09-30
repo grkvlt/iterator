@@ -214,10 +214,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         Point start = controller.getEditor().getStart();
         Point end = controller.getEditor().getEnd();
         if (selected == null && start != null && end != null) {
-            int x = Math.min(start.x, end.x);
-            int y = Math.min(start.y, end.y);
-            int w = Math.max(start.x, end.x) - x;
-            int h = Math.max(start.y, end.y) - y;
+            double x = Math.min(start.x, end.x);
+            double y = Math.min(start.y, end.y);
+            double w = Math.max(start.x, end.x) - x;
+            double h = Math.max(start.y, end.y) - y;
 
             int grid = controller.getMinGrid();
             w = Math.max(grid, w);
