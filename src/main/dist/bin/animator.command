@@ -20,4 +20,4 @@ JAVA_OPTS="${JAVA_OPTS} -splash:${LIB}/splash.png -Dapple.laf.useScreenMenuBar=t
 ##
 # Exexcute Java
 ##
-java -cp ".:${LIB}/*" ${JAVA_OPTS} iterator.Animator "$@" 2>> explorer.log
+java -cp ".:${LIB}/*" ${JAVA_OPTS} iterator.Animator "$@" 2>> animator.log
