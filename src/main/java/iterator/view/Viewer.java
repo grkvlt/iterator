@@ -180,9 +180,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         }
     }
 
+    public void rescale(float scale, Point2D centre) {
+        this.scale = scale;
+        this.centre = centre;
+    }
+
     public void rescale() {
-        scale = 1.0f;
-        centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
+        rescale(1f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
     }
 
     public void reset() {
@@ -348,23 +352,22 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 }
             } else if (e.getKeyCode() == KeyEvent.VK_MINUS) {
                 stop();
-                scale /= 2.0f;
+                rescale(scale / 2f, centre);
                 reset();
                 start();
             } else if (e.getKeyCode() == KeyEvent.VK_EQUALS) {
                 stop();
                 if (e.isShiftDown()) {
-                    scale *= 2.0f;
+                    rescale(scale * 2f, centre);
                 } else {
-                    scale = 1.0f;
-                    centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
+                    rescale();
                 }
                 reset();
                 start();
             }
         }
     }
-    
+
     /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
     @Override
     public void keyReleased(KeyEvent e) {
@@ -402,11 +405,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 stop();
                 // Calculate new centre point and scale
                 Point2D origin = new Point2D.Double((centre.getX() * scale) - (getWidth() / 2d), (centre.getY() * scale) - (getHeight() / 2d));
-                centre = new Point2D.Double((zoom.x + (zoom.width / 2d) + origin.getX()) / scale, (zoom.y + (zoom.height / 2d) + origin.getY()) / scale);
+                Point2D updated = new Point2D.Double((zoom.x + (zoom.width / 2d) + origin.getX()) / scale, (zoom.y + (zoom.height / 2d) + origin.getY()) / scale);
                 if (zoom.width == 0 && zoom.height == 0) {
-                    scale *= 2f;
+                    rescale(scale * 2f, updated);
                 } else {
-                    scale *= ((float) getWidth() / (float) zoom.width);
+                    rescale(scale * ((float) getWidth() / (float) zoom.width), updated);
                 }
 
                 // Output details

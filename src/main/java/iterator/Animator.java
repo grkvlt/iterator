@@ -32,9 +32,7 @@ import javax.swing.SwingUtilities;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
-import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -53,8 +51,8 @@ public class Animator implements Subscriber {
     private Dimension size;
     private CountDownLatch ready = new CountDownLatch(3);
     private long delay = 500l, frames = 1000l, segment;
-    private double scale;
-    private Point2D centre;
+    private float scale = 1f;
+    private Point2D centre = null;
     private File input, output;
     private List<Change> list = Lists.newArrayList();
     private Map<List<Change>, Long> segments = Maps.newLinkedHashMap();
@@ -155,10 +153,10 @@ public class Animator implements Subscriber {
                 if (Iterables.size(tokens) != 4) {
                     throw new IllegalStateException("Parse error at 'zoom': " + line);
                 }
-                scale = Double.valueOf(Iterables.get(tokens, 1));
+                scale = Float.valueOf(Iterables.get(tokens, 1));
                 centre = new Point2D.Double(
-                        Double.valueOf(Iterables.get(tokens, 3)),
-                        Double.valueOf(Iterables.get(tokens, 4)));
+                        Double.valueOf(Iterables.get(tokens, 2)),
+                        Double.valueOf(Iterables.get(tokens, 3)));
             } else if (type.equalsIgnoreCase("transform")) {
                 // transform id field start finish
                 if (Iterables.size(tokens) != 5) {
@@ -166,7 +164,7 @@ public class Animator implements Subscriber {
                 }
                 Change change = new Change();
                 change.transform = Integer.valueOf(Iterables.get(tokens, 1));
-                String field = Iterables.get(tokens, 2);
+                String field = Iterables.get(tokens, 2).toLowerCase();
                 if (field.length() == 1 && CharMatcher.anyOf("xywhr").matches(field.charAt(0))) {
                     change.field = field.charAt(0);
                 } else {
@@ -232,9 +230,9 @@ public class Animator implements Subscriber {
                 explorer.show(Explorer.VIEWER);
             }
         });
+        Viewer viewer = explorer.getViewer();
 
         // Run the animation segments
-        Viewer viewer = explorer.getViewer();
         long frame = 0;
         for (Map.Entry<List<Change>, Long> segment : segments.entrySet()) {
             long length = segment.getValue();
@@ -260,8 +258,15 @@ public class Animator implements Subscriber {
                     }
                 }
 
-                // Update the viewer and render for required time before saving frame
+                // Update the viewer
                 bus.post(ifs);
+
+                // Rescale
+                if (centre != null) {
+                    viewer.rescale(scale, centre);
+                }
+
+                // render for required time before saving frame
                 viewer.start();
                 Thread.sleep(delay);
                 viewer.save(new File(output, String.format("%04d.png", frame++)));
