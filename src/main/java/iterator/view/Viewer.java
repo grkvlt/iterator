@@ -43,6 +43,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -65,7 +68,7 @@ import com.google.common.eventbus.Subscribe;
 /**
  * Rendered IFS viewer.
  */
-public class Viewer extends JPanel implements ActionListener, KeyListener, ComponentListener, MouseInputListener, Subscriber {
+public class Viewer extends JPanel implements ActionListener, KeyListener, ComponentListener, MouseInputListener, Printable, Subscriber {
     /** serialVersionUID */
     private static final long serialVersionUID = -3294847597249688714L;
 
@@ -199,6 +202,23 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         } catch (IOException e) {
             Throwables.propagate(e);
         }
+    }
+
+    /** @see java.awt.print.Printable#print(Graphics, PageFormat, int) */
+    @Override
+    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+        Graphics2D g = (Graphics2D) graphics.create();
+
+        // Draw the rendered IFS
+        g.drawImage(getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
+
+        // Print information about this IFS
+        // Name
+        // Number of transforms
+        // Scale and centre of zoom
+        // Number of iterations
+
+        return 0;
     }
 
     public void iterate(int k, float scale, Point2D centre) {
