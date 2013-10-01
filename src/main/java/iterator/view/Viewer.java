@@ -19,6 +19,7 @@ import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Subscriber;
+import iterator.util.Utils;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -258,7 +259,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         }
 
         if (ifs.contains(selected)) { selected = null; }
-        List<Transform> transforms = Lists.newArrayList(Iterables.concat(ifs, Optional.fromNullable(selected).asSet(), Optional.fromNullable(ants).asSet()));
+        List<Transform> transforms = Utils.concatenate(ifs, selected, ants);
         Collections.sort(transforms, IFS.IDENTITY);
         double weight = ifs.getWeight() + (selected != null ? selected.getDeterminant() : 0d) + (ants != null ? ants.getDeterminant() : 0d);
 
