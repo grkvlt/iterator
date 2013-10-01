@@ -18,6 +18,7 @@ package iterator;
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Subscriber;
+import iterator.view.Viewer;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
@@ -198,6 +199,9 @@ public class Animator implements Subscriber {
         ready.await();
 
         explorer.show(Explorer.VIEWER);
+        Thread.sleep(delay);
+
+        Viewer viewer = explorer.getViewer();
         ifs = explorer.load(input);
         ifs.setSize(size);
 
@@ -221,8 +225,11 @@ public class Animator implements Subscriber {
                     }
                 }
                 bus.post(ifs);
+                viewer.reset();
+                viewer.start();
                 Thread.sleep(delay);
                 explorer.getViewer().save(new File(output, String.format("%04d.png", frame++)));
+                viewer.stop();
             }
         }
 

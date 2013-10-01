@@ -524,6 +524,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         current = name;
         if (name.equals(VIEWER)) {
             export.setEnabled(true);
+            viewer.reset();
             viewer.start();
         } else {
             export.setEnabled(false);

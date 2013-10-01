@@ -51,6 +51,10 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
@@ -68,7 +72,7 @@ import com.google.common.eventbus.Subscribe;
 /**
  * Rendered IFS viewer.
  */
-public class Viewer extends JPanel implements ActionListener, KeyListener, ComponentListener, MouseInputListener, Printable, Subscriber {
+public class Viewer extends JPanel implements ActionListener, KeyListener, ComponentListener, MouseInputListener, Printable, Subscriber, Runnable {
     /** serialVersionUID */
     private static final long serialVersionUID = -3294847597249688714L;
 
@@ -78,18 +82,20 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private BufferedImage image;
     private Timer timer;
     private double x, y;
-    private long count;
+    private AtomicLong count = new AtomicLong(0);
+    private AtomicBoolean running = new AtomicBoolean(false);
     private Random random = new Random();
     private float scale = 1.0f;
     private Point2D centre;
     private Rectangle zoom;
+    private ExecutorService executor = Executors.newCachedThreadPool();
 
     public Viewer(EventBus bus, Explorer controller) {
         super();
 
         this.controller = controller;
 
-        timer = new Timer(1, this);
+        timer = new Timer(100, this);
         timer.setCoalesce(true);
         timer.setInitialDelay(0);
 
@@ -124,7 +130,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     protected void paintComponent(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.drawImage(image, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
+
+        if (image != null) {
+            g.drawImage(image, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
+        }
 
         if (zoom != null) {
             g.setPaint(Color.BLACK);
@@ -148,7 +157,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             }
             TextLayout scaleText = new TextLayout(String.format("%.1fx", scale), font, frc);
             scaleText.draw(g, getWidth() - 10f - (float) scaleText.getBounds().getWidth(), getHeight() - 30f);
-            TextLayout countText = new TextLayout(String.format("%,dK", count).replaceAll("[^0-9K]", " "), font, frc);
+            TextLayout countText = new TextLayout(String.format("%,dK", count.get()).replaceAll("[^0-9K]", " "), font, frc);
             countText.draw(g, getWidth() - 10f - (float) countText.getBounds().getWidth(), getHeight() - 10f);
 
             paintGrid(g);
@@ -186,9 +195,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
         x = random.nextInt(getWidth());
         y = random.nextInt(getHeight());
-        count = 0l;
-
-        if (isVisible()) timer.start();
+        count.set(0l);
     }
 
     public void save(File file) {
@@ -197,7 +204,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
             // Output details
             String details = String.format("%d transforms: %.1fx scale at (%.2f, %.2f) with %,dK iterations",
-                    ifs.size(), scale, centre.getX(), centre.getY(), count);
+                    ifs.size(), scale, centre.getX(), centre.getY(), count.get());
             controller.printf("File %s: %s\n", file.getName(), details);
         } catch (IOException e) {
             Throwables.propagate(e);
@@ -279,29 +286,48 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 Rectangle rect = new Rectangle((int) Math.floor(px + 0.5d), (int) Math.floor(py + 0.5d), r, r);
                 g.fill(rect);
             }
-            if (i % 1000 == 0) count++;
+            if (i % 1000 == 0) count.incrementAndGet();
         }
 
         g.dispose();
     }
 
-    /** @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent) */
+    /**
+     * Invoked when the timer fires, to refresh the image when rendering.
+     *
+     * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (ifs != null && !ifs.isEmpty() && image != null) {
+        repaint();
+    }
+
+    /**
+     * Called as a task to render the IFS.
+     *
+     * @see java.lang.Runnable#run()
+     */
+    @Override
+    public void run() {
+        do {
             iterate(25_000, scale, centre);
-            repaint();
-        }
+        } while (running.get());
     }
 
     public void start() {
-        reset();
+        timer.start();
+        if (running.compareAndSet(false, true)) {
+            for (int i = 0; i < Math.max(Runtime.getRuntime().availableProcessors() / 2, 2); i++) {
+                executor.submit(this);
+            }
+        }
     }
 
     public void stop() {
         if (timer.isRunning()) {
             timer.stop();
         }
+        running.compareAndSet(true, false);
     }
 
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
@@ -314,22 +340,26 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void keyPressed(KeyEvent e) {
         if (isVisible()) {
             if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                if (timer.isRunning()) {
-                    timer.stop();
+                if (running.get()) {
+                    stop();
                 } else {
-                    timer.start();
+                    start();
                 }
             } else if (e.getKeyCode() == KeyEvent.VK_MINUS) {
+                stop();
                 scale /= 2.0f;
                 reset();
+                start();
             } else if (e.getKeyCode() == KeyEvent.VK_EQUALS) {
-                if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
+                stop();
+                if (e.isShiftDown()) {
                     scale *= 2.0f;
                 } else {
                     scale = 1.0f;
                     centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
                 }
                 reset();
+                start();
             }
         }
     }
@@ -368,6 +398,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void mouseReleased(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e)) {
             if (zoom != null) {
+                stop();
                 // Calculate new centre point and scale
                 Point2D origin = new Point2D.Double((centre.getX() * scale) - (getWidth() / 2d), (centre.getY() * scale) - (getHeight() / 2d));
                 centre = new Point2D.Double((zoom.x + (zoom.width / 2d) + origin.getX()) / scale, (zoom.y + (zoom.height / 2d) + origin.getY()) / scale);
@@ -384,6 +415,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
                 zoom = null;
                 reset();
+                start();
             }
         }
     }
@@ -421,6 +453,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     /** @see java.awt.event.ComponentListener#componentShown(java.awt.event.ComponentEvent) */
     @Override
     public void componentShown(ComponentEvent e) {
+        reset();
     }
 
     /** @see java.awt.event.ComponentListener#componentHidden(java.awt.event.ComponentEvent) */
