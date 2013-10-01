@@ -20,6 +20,7 @@ import iterator.model.Transform;
 import iterator.util.Subscriber;
 
 import java.awt.Dimension;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -51,6 +52,8 @@ public class Animator implements Subscriber {
     private Dimension size;
     private CountDownLatch ready = new CountDownLatch(3);
     private long delay = 500l, frames = 1000l, segment;
+    private double scale;
+    private Point2D centre;
     private File config, input, output;
     private List<Change> list = Lists.newArrayList();
     private Map<List<Change>, Long> segments = Maps.newLinkedHashMap();
@@ -131,6 +134,14 @@ public class Animator implements Subscriber {
                     throw new IllegalStateException("Parse error at 'delay': " + line);
                 }
                 delay = Long.valueOf(Iterables.get(tokens, 1));
+            } else if (type.equalsIgnoreCase("zoom")) {
+                if (Iterables.size(tokens) != 4) {
+                    throw new IllegalStateException("Parse error at 'zoom': " + line);
+                }
+                scale = Double.valueOf(Iterables.get(tokens, 1));
+                centre = new Point2D.Double(
+                        Double.valueOf(Iterables.get(tokens, 3)),
+                        Double.valueOf(Iterables.get(tokens, 4)));
             } else if (type.equalsIgnoreCase("transform")) {
                 if (Iterables.size(tokens) != 5) {
                     throw new IllegalStateException("Parse error at 'transform': " + line);
