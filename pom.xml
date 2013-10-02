@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>iterator</groupId>
     <artifactId>iterator</artifactId>
-    <version>1.0.8-SNAPSHOT</version>
+    <version>1.0.9-SNAPSHOT</version>
     <name>Iterator</name>
     <description>Iterated Function System Explorer</description>
 
