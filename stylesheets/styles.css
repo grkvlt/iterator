@@ -271,7 +271,7 @@ footer {
     font-size:12pt;
     color:#444;
   }
-  header *, .badge {
+  header *, .badge, #youtube {
     display: none;
     visibility: hidden;
   }
