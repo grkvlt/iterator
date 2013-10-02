@@ -534,8 +534,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
 
                 selected = new Transform(selected.getId(), selected.getZIndex(), getSize());
                 if (move.isMatrix()) {
-                    AffineTransform moved = move.getTransform();
-                    moved.translate(dx, dy);
+                    AffineTransform moved = AffineTransform.getTranslateInstance(dx, dy);
+                    moved.concatenate(move.getTransform());
                     double matrix[] = new double[6];
                     moved.getMatrix(matrix);
                     selected.setMatrix(matrix);
