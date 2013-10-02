@@ -619,6 +619,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public EventBus getEventBus() { return bus; }
 
+    public int getThreads() {
+        Integer threads = Math.max(Runtime.getRuntime().availableProcessors() / 2, MIN_THREADS);
+        return config.get(THREADS_PROPERTY, threads);
+    }
+
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override
     public void keyTyped(KeyEvent e) {
@@ -653,7 +658,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             }
         } else if (e.getKeyCode() == KeyEvent.VK_S) {
             if (viewer.isVisible() || details.isVisible()) {
-                if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
+                if (e.isShiftDown()) {
                     seed--;
                 } else {
                     seed++;

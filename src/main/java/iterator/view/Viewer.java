@@ -321,7 +321,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void start() {
         timer.start();
         if (running.compareAndSet(false, true)) {
-            for (int i = 0; i < Math.max(Runtime.getRuntime().availableProcessors() / 2, 2); i++) {
+            for (int i = 0; i < controller.getThreads(); i++) {
                 executor.submit(this);
             }
         }

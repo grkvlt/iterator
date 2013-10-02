@@ -46,6 +46,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String WINDOW_PROPERTY =  EXPLORER_PROPERTY + ".window";
     public static final String DEBUG_PROPERTY = EXPLORER_PROPERTY + ".debug";
     public static final String MODE_PROPERTY = EXPLORER_PROPERTY + ".mode";
+    public static final String THREADS_PROPERTY = EXPLORER_PROPERTY + ".threads";
 
     public static final String DEFAULT_PALETTE_FILE = "abstract";
     public static final Integer DEFAULT_PALETTE_SIZE = 64;
@@ -55,6 +56,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Integer DEFAULT_GRID_SNAP = 5;
     public static final Integer DEFAULT_WINDOW_SIZE = 600;
     public static final Integer MIN_WINDOW_SIZE = 400; // Details view requires 350px
+    public static final Integer MIN_THREADS = 2;
 
     public static final String MODE_COLOUR = "colour";
     public static final String MODE_PALETTE = "palette";
