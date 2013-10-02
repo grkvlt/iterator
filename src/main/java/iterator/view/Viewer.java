@@ -63,10 +63,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
@@ -108,6 +105,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     }
 
     public BufferedImage getImage() { return image; }
+
+    public long getCount() { return count.get(); }
 
     /** @see Subscriber#updated(IFS) */
     @Override

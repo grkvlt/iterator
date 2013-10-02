@@ -50,7 +50,7 @@ public class Animator implements Subscriber {
     private EventBus bus;
     private Dimension size;
     private CountDownLatch ready = new CountDownLatch(3);
-    private long delay = 500l, frames = 1000l, segment;
+    private long delay = 500l, iterations = -1l, frames = 1000l, segment;
     private float scale = 1f;
     private Point2D centre = null;
     private File input, output;
@@ -108,6 +108,7 @@ public class Animator implements Subscriber {
      * save directory
      * frames count
      * delay ms
+     * iterations thousands
      * zoom scale centrex centrey
      * segment frames
      *     transform id field start finish
@@ -148,6 +149,12 @@ public class Animator implements Subscriber {
                     throw new IllegalStateException("Parse error at 'delay': " + line);
                 }
                 delay = Long.valueOf(Iterables.get(tokens, 1));
+            } else if (type.equalsIgnoreCase("iterations")) {
+                // iterations thousands
+                if (Iterables.size(tokens) != 2) {
+                    throw new IllegalStateException("Parse error at 'iterations': " + line);
+                }
+                iterations = Long.valueOf(Iterables.get(tokens, 1));
             } else if (type.equalsIgnoreCase("zoom")) {
                 // zoom scale centrex centrey
                 if (Iterables.size(tokens) != 4) {
@@ -230,7 +237,7 @@ public class Animator implements Subscriber {
                 explorer.show(Explorer.VIEWER);
             }
         });
-        Viewer viewer = explorer.getViewer();
+        final Viewer viewer = explorer.getViewer();
 
         // Run the animation segments
         long frame = 0;
@@ -266,9 +273,15 @@ public class Animator implements Subscriber {
                     viewer.rescale(scale, centre);
                 }
 
-                // render for required time before saving frame
+                // render for required time/iterations before saving frame
                 viewer.start();
-                Thread.sleep(delay);
+                if (iterations > 0) {
+                    while (viewer.getCount() < iterations) {
+                        Thread.sleep(10l);
+                    }
+                } else {
+                    Thread.sleep(delay);
+                }
                 viewer.save(new File(output, String.format("%04d.png", frame++)));
             }
         }
