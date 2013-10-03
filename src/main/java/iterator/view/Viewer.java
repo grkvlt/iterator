@@ -114,9 +114,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Subscribe
     public void updated(IFS ifs) {
         this.ifs = ifs;
-
         reset();
-        rescale();
+        if (!isVisible()) {
+            rescale();
+        } else {
+            stop();
+            start();
+        }
     }
 
     /** @see Subscriber#resized(Dimension) */
@@ -288,7 +292,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
             t.getTransform().transform(points, 0, points, 0, 2);
 
-            if (count.get() == 0) continue; // discard first 1K points
+            if (isVisible() && count.get() < 10) continue; // discard first 10K points
 
             int x = (int) ((points[0] - centre.getX()) * scale) + (getWidth() / 2);
             int y = (int) ((points[1] - centre.getY()) * scale) + (getHeight() / 2);

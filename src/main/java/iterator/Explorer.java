@@ -116,13 +116,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public static final String COLOUR_OPTION_LONG = "--colour";
     public static final String PALETTE_OPTION = "-p";
     public static final String PALETTE_OPTION_LONG = "--palette";
-    public static final String STEALING_OPTION = "-s";
-    public static final String STEALING_OPTION_LONG = "--stealing";
-    public static final String IFS_COLOUR_OPTION = "-i";
-    public static final String IFS_COLOUR_OPTION_LONG = "--ifscolour";
     public static final String CONFIG_OPTION_LONG = "--config";
 
     private boolean fullScreen = false;
+
     private boolean colour = false;
     private boolean palette = false;
     private boolean stealing = false;
@@ -174,15 +171,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                             argv[i].equalsIgnoreCase(PALETTE_OPTION_LONG)) {
                         colour = true;
                         palette = true;
-                    } else if (argv[i].equalsIgnoreCase(STEALING_OPTION) ||
-                            argv[i].equalsIgnoreCase(STEALING_OPTION_LONG)) {
-                        colour = true;
-                        palette = true;
-                        stealing = true;
-                    } else if (argv[i].equalsIgnoreCase(IFS_COLOUR_OPTION) ||
-                            argv[i].equalsIgnoreCase(IFS_COLOUR_OPTION_LONG)) {
-                        colour = true;
-                        ifscolour = true;
                     } else if (argv[i].equalsIgnoreCase(CONFIG_OPTION_LONG)) {
                         if (argv.length >= i + 1) {
                             override = new File(argv[++i]);
@@ -217,7 +205,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         // Load configuration
         config.loadProperties(override);
 
-        // Check mode configuration
+        // Check colour mode configuration
         if (config.containsKey(MODE_PROPERTY)) {
             String mode = config.get(MODE_PROPERTY);
             if (MODE_COLOUR.equalsIgnoreCase(mode)) {
@@ -246,7 +234,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 stealing = false;
                 ifscolour = false;
             } else {
-                throw new IllegalArgumentException("Cannot set mode: " + mode);
+                throw new IllegalArgumentException("Cannot set colour mode: " + mode);
+            }
             }
         }
 
@@ -267,7 +256,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             loadColours();
         }
         printf("Configured %s: %s",
-                colour ? palette ? stealing ? "stealing" : "palette" : "colour" : "grayscale",
+                colour ? palette ? stealing ? "stealing" : "palette" : ifscolour ? "ifscolour" : "colour" : "grayscale",
                 palette ? paletteFile : colour ? "hsb" : "black");
 
         // Setup event bus
@@ -704,8 +693,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     seed++;
                 }
                 loadColours();
-                viewer.reset();
-                details.updated(ifs);
+                bus.post(ifs);
             }
         }
     }
