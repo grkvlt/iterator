@@ -18,6 +18,7 @@ package iterator.view;
 import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
+import iterator.util.Config.Render;
 import iterator.util.Subscriber;
 import iterator.util.Utils;
 
@@ -42,6 +43,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
@@ -145,7 +147,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         }
 
         if (zoom != null) {
-            g.setPaint(Color.BLACK);
+            g.setPaint(controller.getRenderMode() == Render.MEASURE ? Color.WHITE : Color.BLACK);
             g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
             g.draw(zoom);
         }
@@ -202,7 +204,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
         image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
-        g.setColor(isVisible() ? Color.WHITE : new Color(1f, 1f, 1f, 0f));
+        if (isVisible()) {
+            g.setColor(controller.getRenderMode() == Render.MEASURE ? Color.BLACK : Color.WHITE);
+        } else {
+            g.setColor(new Color(1f, 1f, 1f, 0f));
+        }
         g.fillRect(0, 0, getWidth(), getHeight());
         g.dispose();
 
@@ -290,6 +296,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             Transform t = transforms.get(j);
             if (t.getDeterminant() < random.nextDouble() * weight) continue;
 
+            Point2D old = new Point2D.Double(points[2], points[3]);
             t.getTransform().transform(points, 0, points, 0, 2);
 
             if (isVisible() && count.get() < 10) continue; // discard first 10K points
@@ -298,25 +305,52 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             int y = (int) ((points[1] - centre.getY()) * scale) + (getHeight() / 2);
             if (x >= 0 && y >= 0 && x < getWidth() && y < getWidth()) {
                 int p = x + y * getWidth();
-                if (j > top[p]) top[p] = j;
+
+                if (controller.getRenderMode() == Render.TOP) {
+                    if (j > top[p]) top[p] = j;
+                }
 
                 Rectangle rect = new Rectangle(x, y, r, r);
 
                 Color color = Color.BLACK;
                 if (controller.isColour()) {
                     if (controller.isIFSColour()) {
-                        color = Color.getHSBColor((float) points[2] / getWidth(), (float) points[3] / getHeight(), 0.8f);
+                        color = Color.getHSBColor((float) old.getX() / getWidth(), (float) old.getY() / getHeight(), 0.8f);
                     } else if (controller.hasPalette()) {
                         if (controller.isStealing()) {
-                            color = controller.getPixel(points[2], points[3]);
+                            color = controller.getPixel(old.getX(), old.getY());
                         } else {
-                            color = controller.getColours().get(top[p] % controller.getPaletteSize());
+                            if (controller.getRenderMode() == Render.TOP) {
+                                color = controller.getColours().get(top[p] % controller.getPaletteSize());
+                            } else {
+                                color = controller.getColours().get(j % controller.getPaletteSize());
+                            }
                         }
                     } else {
-                        color = Color.getHSBColor((float) top[p] / (float) transforms.size(), 0.8f, 0.8f);
+                        if (controller.getRenderMode() == Render.TOP) {
+                            color = Color.getHSBColor((float) top[p] / (float) transforms.size(), 0.8f, 0.8f);
+                        } else {
+                            color = Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f);
+                        }
                     }
                 }
-                g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), a));
+                if (controller.getRenderMode() == Render.IFS) {
+                    g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), 255));
+                } else if (controller.getRenderMode() == Render.MEASURE) {
+                    if (top[p] == 0) {
+                        color = new Color(color.getRed(), color.getGreen(), color.getBlue());
+                    } else {
+                        color = new Color(top[p]);
+                        float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+                        if (hsb[2] < 0.8f) {
+                            color = color.brighter();
+                        }
+                    }
+                    top[p] = color.getRGB();
+                    g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), 128));
+                } else {
+                    g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), a));
+                }
 
                 g.fill(rect);
             }

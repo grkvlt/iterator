@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 
+import com.google.common.base.CaseFormat;
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ForwardingSortedMap;
@@ -47,6 +48,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String DEBUG_PROPERTY = EXPLORER_PROPERTY + ".debug";
     public static final String MODE_PROPERTY = EXPLORER_PROPERTY + ".mode";
     public static final String THREADS_PROPERTY = EXPLORER_PROPERTY + ".threads";
+    public static final String RENDER_PROPERTY = EXPLORER_PROPERTY + ".render";
 
     public static final String DEFAULT_PALETTE_FILE = "abstract";
     public static final Integer DEFAULT_PALETTE_SIZE = 64;
@@ -58,11 +60,36 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Integer MIN_WINDOW_SIZE = 400; // Details view requires 350px
     public static final Integer MIN_THREADS = 2;
 
-    public static final String MODE_COLOUR = "colour";
-    public static final String MODE_PALETTE = "palette";
-    public static final String MODE_STEALING = "stealing";
-    public static final String MODE_IFS_COLOUR = "ifscolour";
-    public static final String MODE_GRAY = "gray";
+    public static enum Mode {
+        COLOUR, PALETTE, STEALING, IFS_COLOUR, GRAY;
+
+        @Override
+        public String toString() {
+            return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name());
+        }
+    }
+
+    public static final String MODE_COLOUR = Mode.COLOUR.toString();
+    public static final String MODE_PALETTE = Mode.PALETTE.toString();
+    public static final String MODE_STEALING = Mode.STEALING.toString();
+    public static final String MODE_IFS_COLOUR = Mode.IFS_COLOUR.toString();
+    public static final String MODE_GRAY = Mode.GRAY.toString();
+    public static final String DEFAULT_MODE = MODE_GRAY;
+
+    public static enum Render {
+        STANDARD, TOP, MEASURE, IFS;
+
+        @Override
+        public String toString() {
+            return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name());
+        }
+    }
+
+    public static final String RENDER_STANDARD = Render.STANDARD.toString();
+    public static final String RENDER_TOP = Render.TOP.toString();
+    public static final String RENDER_MEASURE = Render.MEASURE.toString();
+    public static final String RENDER_IFS = Render.IFS.toString();
+    public static final String DEFAULT_RENDER = RENDER_STANDARD;
 
     private static final SortedMap<String, String> config = Maps.newTreeMap();
 

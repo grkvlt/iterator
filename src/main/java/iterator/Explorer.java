@@ -125,6 +125,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private boolean stealing = false;
     private boolean ifscolour = false;
 
+    private Render render = Render.STANDARD;
+
     private Platform platform = Platform.getPlatform();
     private BufferedImage icon, source;
     private Preferences prefs;
@@ -236,7 +238,12 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             } else {
                 throw new IllegalArgumentException("Cannot set colour mode: " + mode);
             }
-            }
+        }
+
+        // Check rendering configuration
+        if (config.containsKey(RENDER_PROPERTY)) {
+            String value = config.get(RENDER_PROPERTY);
+            render = Render.valueOf(value.toUpperCase());
         }
 
         // Get window size configuration
@@ -617,6 +624,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public List<Color> getColours() { return colours; }
 
     public int getPaletteSize() { return paletteSize; }
+
+    public Render getRenderMode() { return render; }
 
     public long getSeed() { return seed; }
 
