@@ -294,7 +294,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
                 Color color = Color.BLACK;
                 if (controller.isColour()) {
-                    if (controller.hasPalette()) {
+                    if (controller.isIFSColour()) {
+                        color = Color.getHSBColor((float) points[2] / getWidth(), (float) points[3] / getHeight(), 0.8f);
+                    } else if (controller.hasPalette()) {
                         if (controller.isStealing()) {
                             color = controller.getPixel(points[2], points[3]);
                         } else {

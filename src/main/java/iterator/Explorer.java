@@ -118,12 +118,15 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public static final String PALETTE_OPTION_LONG = "--palette";
     public static final String STEALING_OPTION = "-s";
     public static final String STEALING_OPTION_LONG = "--stealing";
+    public static final String IFS_COLOUR_OPTION = "-i";
+    public static final String IFS_COLOUR_OPTION_LONG = "--ifscolour";
     public static final String CONFIG_OPTION_LONG = "--config";
 
     private boolean fullScreen = false;
     private boolean colour = false;
     private boolean palette = false;
     private boolean stealing = false;
+    private boolean ifscolour = false;
 
     private Platform platform = Platform.getPlatform();
     private BufferedImage icon, source;
@@ -176,6 +179,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                         colour = true;
                         palette = true;
                         stealing = true;
+                    } else if (argv[i].equalsIgnoreCase(IFS_COLOUR_OPTION) ||
+                            argv[i].equalsIgnoreCase(IFS_COLOUR_OPTION_LONG)) {
+                        colour = true;
+                        ifscolour = true;
                     } else if (argv[i].equalsIgnoreCase(CONFIG_OPTION_LONG)) {
                         if (argv.length >= i + 1) {
                             override = new File(argv[++i]);
@@ -217,18 +224,27 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 colour = true;
                 palette = false;
                 stealing = false;
+                ifscolour = false;
             } else if (MODE_PALETTE.equalsIgnoreCase(mode)) {
                 colour = true;
                 palette = true;
                 stealing = false;
+                ifscolour = false;
             } else if (MODE_STEALING.equalsIgnoreCase(mode)) {
                 colour = true;
                 palette = true;
                 stealing = true;
+                ifscolour = false;
+            } else if (MODE_IFS_COLOUR.equalsIgnoreCase(mode)) {
+                colour = true;
+                palette = false;
+                stealing = false;
+                ifscolour = true;
             } else if (MODE_GRAY.equalsIgnoreCase(mode)) {
                 colour = false;
                 palette = false;
                 stealing = false;
+                ifscolour = false;
             } else {
                 throw new IllegalArgumentException("Cannot set mode: " + mode);
             }
@@ -352,6 +368,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     IFS loaded = load(chooser.getSelectedFile());
                     loaded.setSize(size);
                     bus.post(loaded);
+                    show(EDITOR);
                 }
             }
         });
@@ -605,6 +622,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public boolean hasPalette() { return palette && colours != null; }
 
     public boolean isStealing() { return stealing && source != null; }
+
+    public boolean isIFSColour() { return ifscolour; }
 
     public List<Color> getColours() { return colours; }
 
