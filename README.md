@@ -3,7 +3,7 @@ IFS Explorer
 
 Iterated Function System Explorer.
 
-- http://grkvlt.github.com/iterator/
+- http://grkvlt.github.io/iterator/
 
 ### Program Requirements
 
@@ -13,7 +13,7 @@ Iterated Function System Explorer.
 
 ### TODO
 
-- Implement 'Colour Stealing' etc. from _Superfractals_ book
+- Extract startup and config code to separate class
 - Improve matrix coefficient editing integration
 - Add dialog for editing configuration file properties
 - Better Operating-System integration
