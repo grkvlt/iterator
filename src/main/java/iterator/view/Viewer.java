@@ -78,6 +78,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
     private IFS ifs;
     private BufferedImage image;
+    private int top[];
     private Timer timer;
     private double points[] = new double[4];
     private AtomicLong count = new AtomicLong(0);
@@ -113,10 +114,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Subscribe
     public void updated(IFS ifs) {
         this.ifs = ifs;
-        if (!isVisible()) {
-            reset();
-            rescale();
-        }
+
+        reset();
+        rescale();
     }
 
     /** @see Subscriber#resized(Dimension) */
@@ -206,6 +206,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         points[1] = random.nextInt(getHeight());
         points[2] = random.nextInt(getWidth());
         points[3] = random.nextInt(getHeight());
+
+        top = new int[getWidth() * getHeight()];
+
         count.set(0l);
     }
 
@@ -289,7 +292,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
             int x = (int) ((points[0] - centre.getX()) * scale) + (getWidth() / 2);
             int y = (int) ((points[1] - centre.getY()) * scale) + (getHeight() / 2);
-            if (x > 0 && y > 0 && x < getWidth() && y < getWidth()) {
+            if (x >= 0 && y >= 0 && x < getWidth() && y < getWidth()) {
+                int p = x + y * getWidth();
+                if (j > top[p]) top[p] = j;
+
                 Rectangle rect = new Rectangle(x, y, r, r);
 
                 Color color = Color.BLACK;
@@ -300,10 +306,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                         if (controller.isStealing()) {
                             color = controller.getPixel(points[2], points[3]);
                         } else {
-                            color = controller.getColours().get(j % controller.getPaletteSize());
+                            color = controller.getColours().get(top[p] % controller.getPaletteSize());
                         }
                     } else {
-                        color = Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f);
+                        color = Color.getHSBColor((float) top[p] / (float) transforms.size(), 0.8f, 0.8f);
                     }
                 }
                 g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), a));
