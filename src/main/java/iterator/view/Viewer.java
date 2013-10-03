@@ -79,7 +79,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private IFS ifs;
     private BufferedImage image;
     private Timer timer;
-    private double x, y;
+    private double points[] = new double[4];
     private AtomicLong count = new AtomicLong(0);
     private AtomicBoolean running = new AtomicBoolean(false);
     private Random random = new Random();
@@ -113,8 +113,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Subscribe
     public void updated(IFS ifs) {
         this.ifs = ifs;
-        reset();
-        rescale();
+        if (!isVisible()) {
+            reset();
+            rescale();
+        }
     }
 
     /** @see Subscriber#resized(Dimension) */
@@ -130,6 +132,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     protected void paintComponent(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
         if (image != null) {
             g.drawImage(image, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
@@ -197,8 +202,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         g.fillRect(0, 0, getWidth(), getHeight());
         g.dispose();
 
-        x = random.nextInt(getWidth());
-        y = random.nextInt(getHeight());
+        points[0] = random.nextInt(getWidth());
+        points[1] = random.nextInt(getHeight());
+        points[2] = random.nextInt(getWidth());
+        points[3] = random.nextInt(getHeight());
         count.set(0l);
     }
 
@@ -235,9 +242,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void iterate(int k, float scale, Point2D centre) {
         Graphics2D g = image.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+        g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+        g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
 
         Transform selected = controller.getEditor().getSelected();
@@ -268,29 +276,38 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
         int n = transforms.size();
         int r = isVisible() ? 1 : 2;
-        int a = isVisible() ? 8 : (int) Math.min(128d, Math.pow(n,  1.6) * 8d);
+        int a = isVisible() ? 8 : (int) Math.min(128d, Math.pow(n,  1.2) * 16d);
         for (int i = 0; i < k; i++) {
+            if (i % 1000 == 0) count.incrementAndGet();
             int j = random.nextInt(transforms.size());
             Transform t = transforms.get(j);
             if (t.getDeterminant() < random.nextDouble() * weight) continue;
-            Color c = Color.BLACK;
-            if (controller.isColour()) {
-                if (controller.hasPalette()) {
-                    c = controller.getColours().get(j % controller.getPaletteSize());
-                } else {
-                    c = Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f);
+
+            t.getTransform().transform(points, 0, points, 0, 2);
+
+            if (count.get() == 0) continue; // discard first 1K points
+
+            int x = (int) ((points[0] - centre.getX()) * scale) + (getWidth() / 2);
+            int y = (int) ((points[1] - centre.getY()) * scale) + (getHeight() / 2);
+            if (x > 0 && y > 0 && x < getWidth() && y < getWidth()) {
+                Rectangle rect = new Rectangle(x, y, r, r);
+
+                Color color = Color.BLACK;
+                if (controller.isColour()) {
+                    if (controller.hasPalette()) {
+                        if (controller.isStealing()) {
+                            color = controller.getPixel(points[2], points[3]);
+                        } else {
+                            color = controller.getColours().get(j % controller.getPaletteSize());
+                        }
+                    } else {
+                        color = Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f);
+                    }
                 }
-            }
-            g.setPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), a));
-            double dst[] = t.applyTransform(x, y);
-            x = dst[0]; y = dst[1];
-            double px = ((x - centre.getX()) * scale) + (getWidth() / 2d);
-            double py = ((y - centre.getY()) * scale) + (getHeight() / 2d);
-            if (px > 0d && py > 0d && px < getWidth() && py < getWidth()) {
-                Rectangle rect = new Rectangle((int) Math.floor(px + 0.5d), (int) Math.floor(py + 0.5d), r, r);
+                g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), a));
+
                 g.fill(rect);
             }
-            if (i % 1000 == 0) count.incrementAndGet();
         }
 
         g.dispose();

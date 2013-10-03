@@ -160,14 +160,6 @@ public class Transform {
         return getTransform().getShearY();
     }
 
-    public double[] applyTransform(double xin, double yin) {
-        AffineTransform transform = getTransform();
-        double src[] = new double[] { xin, yin };
-        double dst[] = new double[2];
-        transform.transform(src, 0, dst, 0, 1);
-        return dst;
-    }
-
     @Override
     public int hashCode() {
         return Objects.hashCode(id);

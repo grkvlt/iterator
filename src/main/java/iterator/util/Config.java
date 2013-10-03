@@ -60,6 +60,7 @@ public class Config extends ForwardingSortedMap<String, String> {
 
     public static final String MODE_COLOUR = "colour";
     public static final String MODE_PALETTE = "palette";
+    public static final String MODE_STEALING = "stealing";
     public static final String MODE_GRAY = "gray";
 
     private static final SortedMap<String, String> config = Maps.newTreeMap();

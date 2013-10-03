@@ -116,14 +116,17 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public static final String COLOUR_OPTION_LONG = "--colour";
     public static final String PALETTE_OPTION = "-p";
     public static final String PALETTE_OPTION_LONG = "--palette";
+    public static final String STEALING_OPTION = "-s";
+    public static final String STEALING_OPTION_LONG = "--stealing";
     public static final String CONFIG_OPTION_LONG = "--config";
 
     private boolean fullScreen = false;
     private boolean colour = false;
     private boolean palette = false;
+    private boolean stealing = false;
 
     private Platform platform = Platform.getPlatform();
-    private BufferedImage icon;
+    private BufferedImage icon, source;
     private Preferences prefs;
     private About about;
 
@@ -168,6 +171,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                             argv[i].equalsIgnoreCase(PALETTE_OPTION_LONG)) {
                         colour = true;
                         palette = true;
+                    } else if (argv[i].equalsIgnoreCase(STEALING_OPTION) ||
+                            argv[i].equalsIgnoreCase(STEALING_OPTION_LONG)) {
+                        colour = true;
+                        palette = true;
+                        stealing = true;
                     } else if (argv[i].equalsIgnoreCase(CONFIG_OPTION_LONG)) {
                         if (argv.length >= i + 1) {
                             override = new File(argv[++i]);
@@ -208,13 +216,19 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             if (MODE_COLOUR.equalsIgnoreCase(mode)) {
                 colour = true;
                 palette = false;
+                stealing = false;
             } else if (MODE_PALETTE.equalsIgnoreCase(mode)) {
                 colour = true;
                 palette = true;
-            } else
-            if (MODE_GRAY.equalsIgnoreCase(mode)) {
+                stealing = false;
+            } else if (MODE_STEALING.equalsIgnoreCase(mode)) {
+                colour = true;
+                palette = true;
+                stealing = true;
+            } else if (MODE_GRAY.equalsIgnoreCase(mode)) {
                 colour = false;
                 palette = false;
+                stealing = false;
             } else {
                 throw new IllegalArgumentException("Cannot set mode: " + mode);
             }
@@ -236,7 +250,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             paletteSize = config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE);
             loadColours();
         }
-        printf("Configured %s: %s", colour ? "colour" : "grayscale", palette ? paletteFile : colour ? "hsb" : "black");
+        printf("Configured %s: %s",
+                colour ? palette ? stealing ? "stealing" : "palette" : "colour" : "grayscale",
+                palette ? paletteFile : colour ? "hsb" : "black");
 
         // Setup event bus
         bus = new EventBus(EXPLORER);
@@ -281,21 +297,23 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void loadColours() {
-        try {
-            BufferedImage image = ImageIO.read(Resources.getResource("palette/" + paletteFile + ".png"));
-            colours = Lists.newArrayList();
-            Random random = new Random(seed);
-            while (colours.size() < paletteSize) {
-                int x = random.nextInt(image.getWidth());
-                int y = random.nextInt(image.getHeight());
-                Color c = new Color(image.getRGB(x, y));
-                if (!colours.contains(c)) {
-                    colours.add(c);
-                }
+        source = loadImage("palette/" + paletteFile + ".png");
+        colours = Lists.newArrayList();
+        Random random = new Random(seed);
+        while (colours.size() < paletteSize) {
+            int x = random.nextInt(source.getWidth());
+            int y = random.nextInt(source.getHeight());
+            Color c = new Color(source.getRGB(x, y));
+            if (!colours.contains(c)) {
+                colours.add(c);
             }
-        } catch (IOException ioe) {
-            Throwables.propagate(ioe);
         }
+    }
+
+    public Color getPixel(double x, double y) {
+        int sx = (int) Math.max(0, Math.min(source.getWidth() - 1, (x / getWidth()) * source.getWidth()));
+        int sy = (int) Math.max(0, Math.min(source.getHeight() - 1, (y / getHeight()) * source.getHeight()));
+        return new Color(source.getRGB(sx, sy));
     }
 
     @SuppressWarnings("serial")
@@ -317,6 +335,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             public void actionPerformed(ActionEvent e) {
                 IFS untitled = new IFS();
                 bus.post(untitled);
+                show(EDITOR);
             }
         });
         newIfs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -584,6 +603,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public boolean isColour() { return colour; }
 
     public boolean hasPalette() { return palette && colours != null; }
+
+    public boolean isStealing() { return stealing && source != null; }
 
     public List<Color> getColours() { return colours; }
 
