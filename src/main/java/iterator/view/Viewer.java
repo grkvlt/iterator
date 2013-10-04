@@ -311,6 +311,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
                 Rectangle rect = new Rectangle(x, y, r, r);
 
+                // Choose the colour based on the display mode
                 Color color = Color.BLACK;
                 if (controller.isColour()) {
                     if (controller.isIFSColour()) {
@@ -333,6 +334,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                         }
                     }
                 }
+
+                // Set the paint colour according to the rendering mode
                 if (controller.getRenderMode() == Render.IFS) {
                     g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), 255));
                 } else if (controller.getRenderMode() == Render.MEASURE) {

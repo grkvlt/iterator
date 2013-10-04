@@ -346,8 +346,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             @Override
             public void actionPerformed(ActionEvent e) {
                 IFS untitled = new IFS();
-                bus.post(untitled);
                 show(EDITOR);
+                bus.post(untitled);
             }
         });
         newIfs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -363,8 +363,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 if (result == JFileChooser.APPROVE_OPTION) {
                     IFS loaded = load(chooser.getSelectedFile());
                     loaded.setSize(size);
-                    bus.post(loaded);
                     show(EDITOR);
+                    bus.post(loaded);
                 }
             }
         });
@@ -379,6 +379,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     File saveAs = new File(cwd, ifs.getName() + ".xml");
                     save(saveAs);
                     save.setEnabled(false);
+                    bus.post(ifs);
                 }
             }
         });
