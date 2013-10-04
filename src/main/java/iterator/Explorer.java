@@ -18,6 +18,7 @@ package iterator;
 import static iterator.util.Config.*;
 import iterator.model.IFS;
 import iterator.util.Config;
+import iterator.util.Config.Render;
 import iterator.util.Platform;
 import iterator.util.Subscriber;
 import iterator.util.Version;
@@ -48,6 +49,9 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.List;
 import java.util.Random;
 
@@ -252,7 +256,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         size = new Dimension(w, h);
 
         // Load icon resources
-        icon = loadImage("icon.png");
+        icon = loadImage(Resources.getResource("icon.png"));
         setIconImage(icon);
 
         // Load colour palette
@@ -300,16 +304,24 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
     }
 
-    public static BufferedImage loadImage(String name) {
+    public static BufferedImage loadImage(URL url) {
         try {
-            return ImageIO.read(Resources.getResource(name));
+            return ImageIO.read(url);
         } catch (IOException ioe) {
             throw Throwables.propagate(ioe);
         }
     }
 
     public void loadColours() {
-        source = loadImage("palette/" + paletteFile + ".png");
+        if (paletteFile.contains(".")) {
+            try {
+                source = loadImage(URI.create(paletteFile).toURL());
+            } catch (MalformedURLException mue) {
+                Throwables.propagate(mue);
+            }
+        } else {
+            source = loadImage(Resources.getResource("palette/" + paletteFile + ".png"));
+        }
         colours = Lists.newArrayList();
         Random random = new Random(seed);
         while (colours.size() < paletteSize) {

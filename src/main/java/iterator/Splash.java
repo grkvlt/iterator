@@ -35,6 +35,8 @@ import javax.swing.JPanel;
 import javax.swing.JWindow;
 import javax.swing.Timer;
 
+import com.google.common.io.Resources;
+
 /**
  * Splash screen.
  */
@@ -50,7 +52,7 @@ public class Splash extends JPanel implements ActionListener {
     public Splash() {
         super();
 
-        splash = Explorer.loadImage("splash.png");
+        splash = Explorer.loadImage(Resources.getResource("splash.png"));
 
         parent = new JWindow();
         parent.getContentPane().setLayout(new BorderLayout());

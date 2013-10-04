@@ -28,6 +28,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 import com.google.common.eventbus.EventBus;
+import com.google.common.io.Resources;
 
 /**
  * About dialog.
@@ -42,7 +43,7 @@ public class About extends JPanel implements MouseListener {
     public About(EventBus bus, Explorer controller) {
         super();
 
-        splash = Explorer.loadImage("splash.png");
+        splash = Explorer.loadImage(Resources.getResource("splash.png"));
         setSize(splash.getWidth(), splash.getHeight());
 
         about = new JDialog(controller, "About IFS Explorer", ModalityType.APPLICATION_MODAL);
