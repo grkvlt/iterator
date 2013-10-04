@@ -43,7 +43,6 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
@@ -347,7 +346,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                         }
                     }
                     top[p] = color.getRGB();
-                    g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), 128));
+                    g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), isVisible() ? 16 : 128));
                 } else {
                     g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), a));
                 }
@@ -406,18 +405,27 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Override
     public void keyPressed(KeyEvent e) {
         if (isVisible()) {
-            if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            switch (e.getKeyCode()) {
+            case KeyEvent.VK_SPACE:
                 if (running.get()) {
                     stop();
                 } else {
                     start();
                 }
-            } else if (e.getKeyCode() == KeyEvent.VK_MINUS) {
+                break;
+            case KeyEvent.VK_ESCAPE:
+                if (zoom != null) {
+                    zoom = null;
+                    repaint();
+                }
+                break;
+            case KeyEvent.VK_MINUS:
                 stop();
                 rescale(scale / 2f, centre);
                 reset();
                 start();
-            } else if (e.getKeyCode() == KeyEvent.VK_EQUALS) {
+                break;
+            case KeyEvent.VK_EQUALS:
                 stop();
                 if (e.isShiftDown()) {
                     rescale(scale * 2f, centre);
@@ -426,6 +434,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 }
                 reset();
                 start();
+                break;
             }
         }
     }

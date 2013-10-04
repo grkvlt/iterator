@@ -448,6 +448,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 double w = Math.max(start.x, end.x) - x;
                 double h = Math.max(start.y, end.y) - y;
 
+                start = null;
+                end = null;
+
                 int grid = controller.getSnapGrid();
                 w = Math.max(grid, w);
                 h = Math.max(grid, h);
@@ -612,6 +615,16 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 if (!selected.isMatrix()) {
                     selected.r -= Math.PI / 2d;
                     bus.post(ifs);
+                }
+                break;
+            }
+        } else {
+            switch (e.getKeyCode()) {
+            case KeyEvent.VK_ESCAPE:
+                if (start != null && end != null) {
+                    start = null;
+                    end = null;
+                    repaint();
                 }
                 break;
             }
