@@ -148,7 +148,45 @@
         </p>
         <p>
           The <code>explorer.mode</code> setting determines the way that colours
-          will be chosen for points of the IFS.
+          will be chosen for points of the IFS. The options are <em>colour</em>,
+          <em>gray</em>, <em>palette</em>, <em>stealing</em> and <em>ifscolour</em>.
+          The <em>colour</em> option assigns different colours to each transform
+          across the full spectrum, giving a rainbow coloured image. The <em>gray</em>
+          option generates a black and white image, as differing levels of gray.
+        </p>
+        <p>
+          To produce a coloured image with the colours taken from a reference
+          image use <em>palette</em> which picks a random set of colours from
+          pixels in the source image. This mode uses <code>explorer.palette.file</code>
+          to specify the image. If one of <em>abstract</em>, <em>autumn</em>, <em>car</em>,
+          <em>car2</em>, <em>lego</em>, <em>night</em>, <em>forest</em>, <em>trees</em>
+          or <em>wave</em> is specified then an embedded file from the application
+          is used. Instead, a URL can be specified, either <code>file:///</code>
+          or <code>http://</code>, and that image will be loaded. The colours
+          are assigned to each transform in the same way as with the <em>colour</em>
+          mode. To change the colours used, the random number seed can be altered using
+          <code>explorer.palette.seed</code>.
+        </p>
+        <p>
+          The <em>stealing</em> mode uses a colour stealing algorithm, taken from
+          <strong>Superfractals</strong>. This also uses the palette file
+          setting, and can produce some very appealing and natural images.
+          Finally, <em>ifscolour</em> generates a colour image using a
+          spectrum of colours generated using the IFS.
+        </p>
+        <p>
+          The <code>explorer.render</code> option complements the display
+          mode and can be set to one of <em>ifs</em>, <em>top</em>, <em>standard</em>
+          or <em>measure</em>. The <em>ifs</em> option renders the IFS attractor
+          set and is best combined with the <em>gray</em> display mode.
+          The <em>standard</em> rendering mode is the default, and uses
+          alpha blending to combine colours when rendering. The <em>top</em>
+          rendering mode generates a fractal top, as defined in <strong>Superfractals</strong>
+          and can only be used with the <em>colour</em> or <em>palette</em>
+          display modes. Finally, <em>measure</em> generates the measure set,
+          which displays on a black background and can be combined with any
+          of the <em>colour</em>, <em>palette</em> or <em>stealing</em> modes
+          to specify the colours.
         </p>
         <h3>Usage</h3>
         <p>
