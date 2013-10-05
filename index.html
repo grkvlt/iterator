@@ -115,7 +115,8 @@
           <li><code>explorer.window.width</code> - Width of main window - <em>600</em></li>
           <li><code>explorer.window.height</code> - Height of main window - <em>600</em></li>
           <li><code>explorer.debug</code> - Enable debugging mode - <em>false</em></li>
-          <li><code>explorer.mode</code> - Setup colour mode - <em>palette</em></li>
+          <li><code>explorer.mode</code> - Colour display mode - <em>palette</em></li>
+          <li><code>explorer.render</code> - IFS rendering style - <em>standard</em></li>
           <li><code>explorer.threads</code> - Number of threads - <em>2</em></li>
         </ul>
         <p>
@@ -134,6 +135,21 @@
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> export JAVA_OPTS="-Dexplorer.palette.file=wave \
 <b>&gt;</b> -Dexplorer.palette.seed=1234"
 <b>$</b> ./bin/explorer.sh --colour --palette ./data/spikes.xml</code></pre>
+        <h3>Options</h3>
+        <p>
+          The most interesting configuration properties are the <code>explorer.mode</code>,
+          <code>explorer.render</code> and <code>explorer.palette.*</code> options.
+          These determine the colour and style that will be used to display the
+          IFS on screen.
+        </p>
+        <p>
+          <strong>Note</strong><em> that these options interact with each other and
+          not all combinations of settings will make sense.</em>
+        </p>
+        <p>
+          The <code>explorer.mode</code> setting determines the way that colours
+          will be chosen for points of the IFS.
+        </p>
         <h3>Usage</h3>
         <p>
           A series of example XML data files for IFS transforms are provided
