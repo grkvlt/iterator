@@ -170,15 +170,15 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             TextLayout countText = new TextLayout(String.format("%,dK", count.get()).replaceAll("[^0-9K]", " "), font, frc);
             countText.draw(g, getWidth() - 10f - (float) countText.getBounds().getWidth(), getHeight() - 10f);
 
-            paintGrid(g);
+            paintGrid((Graphics2D) g.create());
         }
 
         g.dispose();
     }
 
     public void paintGrid(Graphics2D g) {
-        Color grid = new Color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue(), 16);
-        g.setPaint(grid);
+        Color red = new Color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue(), controller.getRenderMode() == Render.MEASURE ? 64 : 16);
+        g.setPaint(red);
         g.setStroke(new BasicStroke(1f));
         int max = controller.getMaxGrid();
         for (int x = 0; x < getWidth(); x += max) {
@@ -187,6 +187,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         for (int y = 0; y < getHeight(); y += max) {
             g.drawLine(0, y, getWidth(), y);
         }
+        g.dispose();
     }
 
     public void rescale(float scale, Point2D centre) {
@@ -344,7 +345,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     } else {
                         color = new Color(top[p]);
                         float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
-                        if (hsb[2] < 0.8f) {
+                        if (hsb[2] < 0.66f) {
                             color = color.brighter();
                         }
                     }
