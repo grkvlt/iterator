@@ -59,10 +59,13 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <!-- Required properties to define an external keystore -->
         <explorer.crypto.keystore>${project.build.directory}/keystore</explorer.crypto.keystore>
         <explorer.crypto.alias>iterator</explorer.crypto.alias>
         <explorer.crypto.storepass>password</explorer.crypto.storepass>
         <explorer.crypto.keypass>password</explorer.crypto.keypass>
+
+        <!-- Change these if creating a keystore -->
         <explorer.crypto.keyalg>DSA</explorer.crypto.keyalg>
         <explorer.crypto.keysize>1024</explorer.crypto.keysize>
         <explorer.crypto.dname>CN=Andrew Kennedy, OU=XXX, O=XXX, L=Edinburgh, ST=Scotland, C=UK</explorer.crypto.dname>
@@ -112,37 +115,6 @@
                         </manifest>
                     </archive>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>keytool-maven-plugin</artifactId>
-                <version>1.3</version>
-                <executions>
-                     <execution>
-                        <id>empty-keystore</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>generate-keypair</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>generateKeyPair</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <alias>${explorer.crypto.alias}</alias>
-                     <dname>${explorer.crypto.dname}</dname>
-                     <keypass>${explorer.crypto.keypass}</keypass>
-                     <keysize>${explorer.crypto.keysize}</keysize>
-                     <keyalg>${explorer.crypto.keyalg}</keyalg>
-                     <keystore>${explorer.crypto.keystore}</keystore>
-                     <storepass>${explorer.crypto.storepass}</storepass>
-                     <validity>${explorer.crypto.validity}</validity>
-                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -235,6 +207,52 @@
 
     <profiles>
         <profile>
+            <!-- Create a keystore for signing artifacts, unless the explorer.external-keystore property is set -->
+            <id>external-keystore</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!explorer.external-keystore</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>keytool-maven-plugin</artifactId>
+                        <version>1.3</version>
+                        <executions>
+                             <execution>
+                                <id>empty-keystore</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>generate-keypair</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>generateKeyPair</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <alias>${explorer.crypto.alias}</alias>
+                            <dname>${explorer.crypto.dname}</dname>
+                            <keypass>${explorer.crypto.keypass}</keypass>
+                            <keysize>${explorer.crypto.keysize}</keysize>
+                            <keyalg>${explorer.crypto.keyalg}</keyalg>
+                            <keystore>${explorer.crypto.keystore}</keystore>
+                            <storepass>${explorer.crypto.storepass}</storepass>
+                            <validity>${explorer.crypto.validity}</validity>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <!-- Apple OSX specific code -->
             <id>osx</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
