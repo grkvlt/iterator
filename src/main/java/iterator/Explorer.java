@@ -106,8 +106,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             "\n";
 
     private static final Version version = Version.instance();
-    private static final Config config = new Config();
-    private File override;
 
     public static final String EXPLORER = "IFS Explorer";
     public static final String EDITOR = "Editor";
@@ -121,6 +119,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public static final String PALETTE_OPTION = "-p";
     public static final String PALETTE_OPTION_LONG = "--palette";
     public static final String CONFIG_OPTION_LONG = "--config";
+
+    private Config config;
+    private File override;
 
     private boolean fullScreen = false;
 
@@ -209,7 +210,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
 
         // Load configuration
-        config.loadProperties(override);
+        config = Config.loadProperties(override);
 
         // Check colour mode configuration
         if (config.containsKey(MODE_PROPERTY)) {

@@ -18,16 +18,22 @@ package iterator.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ForwardingSortedMap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
+import com.google.common.io.InputSupplier;
 import com.google.common.io.Resources;
 
 /**
@@ -65,7 +71,7 @@ public class Config extends ForwardingSortedMap<String, String> {
 
         @Override
         public String toString() {
-            return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name());
+            return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name()).toLowerCase(Locale.UK);
         }
     }
 
@@ -81,7 +87,7 @@ public class Config extends ForwardingSortedMap<String, String> {
 
         @Override
         public String toString() {
-            return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name());
+            return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name()).toLowerCase(Locale.UK);
         }
     }
 
@@ -91,43 +97,69 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String RENDER_IFS = Render.IFS.toString();
     public static final String DEFAULT_RENDER = RENDER_STANDARD;
 
-    private static final SortedMap<String, String> config = Maps.newTreeMap();
+    public static final Predicate<CharSequence> EXPLORER_KEYS = Predicates.containsPattern("^" + EXPLORER_PROPERTY + ".");
 
-    public Config() { }
-    
-    public void loadProperties(File override) {
+    private final File override;
+    private final SortedMap<String, String> config;
+
+    private Config(File override) {
+        this.override = override;
+        this.config = Maps.newTreeMap();
+    }
+
+    public static Config loadProperties(File override) {
+        Config instance = new Config(override);
+        instance.load();
+        return instance;
+    }
+
+    public SortedMap<String, String> copyOf() {
+        return ImmutableSortedMap.copyOfSorted(this);
+    }
+
+    public void load() {
+        clear();
+
+        // Defaults from classpath
+        load(Resources.newReaderSupplier(Resources.getResource(PROPERTIES_FILE), Charsets.UTF_8));
+
+        // Configuration from home directory
+        File home = new File(System.getProperty(USER_HOME_PROPERTY), "." + PROPERTIES_FILE);
+        if (home.exists()) {
+            load(Files.newReaderSupplier(home, Charsets.UTF_8));
+        }
+
+        // Configuration from current directory
+        File current = new File(PROPERTIES_FILE);
+        if (current.exists()) {
+            load(Files.newReaderSupplier(current, Charsets.UTF_8));
+        }
+
+        // Override file from command line
+        if (override != null) {
+            load(Files.newReaderSupplier(override, Charsets.UTF_8));
+        }
+
+        // Finally load system properties (JAVA_OPTS)
+        load(System.getProperties());
+    }
+
+    public void load(InputSupplier<? extends Reader> supplier) {
         try {
-            // Defaults from classpath
-            load(Resources.newReaderSupplier(Resources.getResource(PROPERTIES_FILE), Charsets.UTF_8).getInput());
-
-            // Configuration from home directory
-            File home = new File(System.getProperty(USER_HOME_PROPERTY), "." + PROPERTIES_FILE);
-            if (home.exists()) {
-                load(Files.newReaderSupplier(home, Charsets.UTF_8).getInput());
-            }
-
-            // Configuration from current directory
-            File current = new File(PROPERTIES_FILE);
-            if (current.exists()) {
-                load(Files.newReaderSupplier(current, Charsets.UTF_8).getInput());
-            }
-
-            // Override file from command line
-            if (override != null) {
-                load(Files.newReaderSupplier(override, Charsets.UTF_8).getInput());
-            }
-
-            // Finally load system properties (JAVA_OPTS)
-            config.putAll(Maps.fromProperties(System.getProperties()));
+            Properties properties = new Properties();
+            properties.load(supplier.getInput());
+            load(properties);
         } catch (IOException ioe) {
-            Throwables.propagate(ioe);
+            throw Throwables.propagate(ioe);
         }
     }
 
-    private void load(Reader reader) throws IOException {
-        Properties properties = new Properties();
-        properties.load(reader);
-        config.putAll(Maps.fromProperties(properties));
+    public void load(Properties properties) {
+        load(Maps.fromProperties(properties));
+    }
+
+    public void load(Map<String, String> data) {
+        putAll(Maps.filterKeys(data, EXPLORER_KEYS));
     }
 
     @SuppressWarnings("unchecked")
@@ -171,5 +203,10 @@ public class Config extends ForwardingSortedMap<String, String> {
     @Override
     protected SortedMap<String, String> delegate() {
         return config;
+    }
+
+    @Override
+    public String toString() {
+        return Joiner.on(",").useForNull("").withKeyValueSeparator("=").join(this);
     }
 }
