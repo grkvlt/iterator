@@ -71,7 +71,11 @@
         <explorer.crypto.dname>CN=Andrew Kennedy, OU=XXX, O=XXX, L=Edinburgh, ST=Scotland, C=UK</explorer.crypto.dname>
         <explorer.crypto.validity>3650</explorer.crypto.validity>
 
+        <!-- Set this to the location you will deploy the JNLP file to -->
+        <!--
         <explorer.deploy.codebase>http://localhost/iterator-${project.version}-webstart/</explorer.deploy.codebase>
+        -->
+        <explorer.deploy.codebase>http://iterator.s3-website-eu-west-1.amazonaws.com/</explorer.deploy.codebase>
 
         <jquery.version>1.7.2</jquery.version>
         <guava.version>14.0.1</guava.version>
