@@ -1,6 +1,6 @@
 @ECHO OFF
 REM
-REM Copyright 2012-2013 by Andrew Kennedy.
+REM Copyright 2012-2017 by Andrew Kennedy.
 REM http://www.apache.org/licenses/LICENSE-2.0
 REM
 REM Iterated Function System Animator

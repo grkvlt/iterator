@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 by Andrew Kennedy.
+ * Copyright 2012-2017 by Andrew Kennedy.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,27 @@
  */
 package iterator;
 
-import static iterator.util.Config.*;
-import iterator.model.IFS;
-import iterator.util.Config;
-import iterator.util.Config.Render;
-import iterator.util.Platform;
-import iterator.util.Subscriber;
-import iterator.util.Version;
-import iterator.view.Details;
-import iterator.view.Editor;
-import iterator.view.Viewer;
+import static iterator.util.Config.DEBUG_PROPERTY;
+import static iterator.util.Config.DEFAULT_GRID_MAX;
+import static iterator.util.Config.DEFAULT_GRID_MIN;
+import static iterator.util.Config.DEFAULT_GRID_SNAP;
+import static iterator.util.Config.DEFAULT_PALETTE_FILE;
+import static iterator.util.Config.DEFAULT_PALETTE_SEED;
+import static iterator.util.Config.DEFAULT_PALETTE_SIZE;
+import static iterator.util.Config.DEFAULT_WINDOW_SIZE;
+import static iterator.util.Config.GRID_PROPERTY;
+import static iterator.util.Config.MIN_THREADS;
+import static iterator.util.Config.MIN_WINDOW_SIZE;
+import static iterator.util.Config.MODE_COLOUR;
+import static iterator.util.Config.MODE_GRAY;
+import static iterator.util.Config.MODE_IFS_COLOUR;
+import static iterator.util.Config.MODE_PALETTE;
+import static iterator.util.Config.MODE_PROPERTY;
+import static iterator.util.Config.MODE_STEALING;
+import static iterator.util.Config.PALETTE_PROPERTY;
+import static iterator.util.Config.RENDER_PROPERTY;
+import static iterator.util.Config.THREADS_PROPERTY;
+import static iterator.util.Config.WINDOW_PROPERTY;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -68,6 +79,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
@@ -81,6 +94,16 @@ import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.io.Resources;
+
+import iterator.model.IFS;
+import iterator.util.Config;
+import iterator.util.Config.Render;
+import iterator.util.Platform;
+import iterator.util.Subscriber;
+import iterator.util.Version;
+import iterator.view.Details;
+import iterator.view.Editor;
+import iterator.view.Viewer;
 
 /**
  * IFS Explorer main class.
@@ -100,7 +123,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             "                               |_|                          \n" +
             "\n" +
             "    Iterated Function System Explorer Version %s\n" +
-            "    Copyright 2012-2013 by Andrew Donald Kennedy\n" +
+            "    Copyright 2012-2017 by Andrew Donald Kennedy\n" +
             "    Licensed under the Apache Software License, Version 2.0\n" +
             "    https://grkvlt.github.io/iterator/\n" +
             "\n";
@@ -267,9 +290,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             paletteSize = config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE);
             loadColours();
         }
-        printf("Configured %s: %s",
-                colour ? palette ? stealing ? "stealing" : "palette" : ifscolour ? "ifscolour" : "colour" : "grayscale",
-                palette ? paletteFile : colour ? "hsb" : "black");
+        if (isDebug()) {
+            printf("Configured %s: %s",
+                    colour ? palette ? stealing ? "stealing" : "palette" : ifscolour ? "ifscolour" : "colour" : "grayscale",
+                    palette ? paletteFile : colour ? "hsb" : "black");
+        }
 
         // Setup event bus
         bus = new EventBus(EXPLORER);
@@ -302,6 +327,12 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             } catch (Exception e) {
                 printf("Unable to configure OSX support: %s\n", e.getMessage());
             }
+        }
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+            printf("Unable to configure UI support: %s\n", e.getMessage());
+            System.exit(1);
         }
     }
 
@@ -583,7 +614,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     @Subscribe
     public void resized(Dimension resized) {
         size = resized.getSize();
-        System.err.println("Resized: " + size.width + ", " + size.height);
+        if (isDebug()) System.err.println("Resized: " + size.width + ", " + size.height);
     }
 
     /** @see Subscriber#updated(IFS) */
@@ -591,7 +622,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     @Subscribe
     public void updated(IFS updated) {
         ifs = updated;
-        System.err.println("Updated: " + ifs);
+        if (isDebug()) System.err.println("Updated: " + ifs);
         String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
         setTitle(name);
         if (!ifs.isEmpty()) {

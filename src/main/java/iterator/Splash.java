@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 by Andrew Kennedy.
+ * Copyright 2012-2017 by Andrew Kennedy.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ public class Splash extends JPanel implements ActionListener {
         g.setFont(new Font("Calibri", Font.BOLD, 25));
         g.drawString("Version " + Version.instance().get(), 10, 100);
         g.setFont(new Font("Calibri", Font.BOLD, 13));
-        g.drawString("Copyright 2012-2013 by Andrew Kennedy", 10, height - 15);
+        g.drawString("Copyright 2012-2017 by Andrew Kennedy", 10, height - 15);
         g.setFont(new Font("Consolas", Font.BOLD, 12));
         g.drawString("http://grkvlt.github.io/iterator/", 260, height - 15);
     }

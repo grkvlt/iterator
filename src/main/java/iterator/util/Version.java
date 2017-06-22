@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 by Andrew Kennedy.
+ * Copyright 2012-2017 by Andrew Kennedy.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,18 @@
 package iterator.util;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 import java.net.URL;
 import java.util.Properties;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.io.Resources;
 
 public class Version implements Supplier<String> {
 
-    private static final String VERSION_RESOURCE_FILE = "META-INF/maven/iterator/iterator/pom.properties";
+    private static final String VERSION_RESOURCE_FILE = "iterator.properties";
     private static final String VERSION_PROPERTY_NAME = "version";
 
     private static final Version INSTANCE = new Version();
@@ -49,9 +50,9 @@ public class Version implements Supplier<String> {
     }
 
     private String readVersion(URL resource) {
+        if (resource == null) return null;
         Properties versionProperties = new Properties();
-        try (InputStream versionStream = Resources.newInputStreamSupplier(resource).getInput()) {
-            if (versionStream == null) return null;
+        try (Reader versionStream = Resources.asCharSource(resource, Charsets.UTF_8).openStream()) {
             versionProperties.load(versionStream);
         } catch (IOException exception) {
             throw new IllegalStateException("Unable to load version resource file", exception);

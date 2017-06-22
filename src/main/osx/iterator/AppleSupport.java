@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 by Andrew Kennedy.
+ * Copyright 2012-2017 by Andrew Kennedy.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,18 +23,19 @@ import com.apple.eawt.AboutHandler;
 import com.apple.eawt.AppEvent.AboutEvent;
 import com.apple.eawt.AppEvent.OpenFilesEvent;
 import com.apple.eawt.AppEvent.PreferencesEvent;
+import com.apple.eawt.AppEvent.QuitEvent;
 import com.apple.eawt.Application;
 import com.apple.eawt.OpenFilesHandler;
 import com.apple.eawt.PreferencesHandler;
-import com.apple.eawt.QuitStrategy;
+import com.apple.eawt.QuitHandler;
+import com.apple.eawt.QuitResponse;
 import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
 
 /**
  * Apple OSX native support.
  */
-@SuppressWarnings("restriction")
-public class AppleSupport implements OpenFilesHandler, AboutHandler, PreferencesHandler {
+public class AppleSupport implements OpenFilesHandler, AboutHandler, PreferencesHandler, QuitHandler {
     private final EventBus bus;
     private final Explorer controller;
 
@@ -49,14 +50,14 @@ public class AppleSupport implements OpenFilesHandler, AboutHandler, Preferences
         app.setOpenFileHandler(this);
         app.setAboutHandler(this);
         app.setPreferencesHandler(this);
-        app.setQuitStrategy(QuitStrategy.SYSTEM_EXIT_0);
+        app.setQuitHandler(this);
         app.setDockIconImage(controller.getIcon());
     }
 
     /** @see com.apple.eawt.OpenFilesHandler#openFiles(com.apple.eawt.AppEvent.OpenFilesEvent) */
     @Override
     public void openFiles(OpenFilesEvent e) {
-        File open = Iterables.getFirst(e.getFiles(), null);
+        File open = Iterables.<File>getFirst(e.getFiles(), null);
         IFS loaded = controller.load(open);
         loaded.setSize(controller.getSize());
         bus.post(loaded);
@@ -65,6 +66,13 @@ public class AppleSupport implements OpenFilesHandler, AboutHandler, Preferences
     /** @see com.apple.eawt.PreferencesHandler#handlePreferences(com.apple.eawt.AppEvent.PreferencesEvent) */
     @Override
     public void handlePreferences(PreferencesEvent e) {
+    }
+
+    /** @see com.apple.eawt.QuitHandler#handleQuitRequestWith(com.apple.eawt.AppEvent.QuitEvent, com.apple.eawt.QuitResponse) */
+    @Override
+    public void handleQuitRequestWith(QuitEvent e, QuitResponse r) {
+        r.performQuit();
+        System.exit(0);
     }
 
     /** @see com.apple.eawt.AboutHandler#handleAbout(com.apple.eawt.AppEvent.AboutEvent) */

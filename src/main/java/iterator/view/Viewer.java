@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 by Andrew Kennedy.
+ * Copyright 2012-2017 by Andrew Kennedy.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -488,9 +488,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 }
 
                 // Output details
-                String details = String.format("%.1fx scale, centre (%.1f, %.1f) via click at (%d, %d)",
-                        scale, centre.getX(), centre.getY(), (int) (zoom.x + (zoom.width / 2d)), (int) (zoom.y + (zoom.height / 2d)));
-                controller.printf("Zoom: %s\n", details);
+                if (controller.isDebug()) {
+                    String details = String.format("%.1fx scale, centre (%.1f, %.1f) via click at (%d, %d)",
+                            scale, centre.getX(), centre.getY(), (int) (zoom.x + (zoom.width / 2d)), (int) (zoom.y + (zoom.height / 2d)));
+                    controller.printf("Zoom: %s\n", details);
+                }
 
                 zoom = null;
                 reset();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 by Andrew Kennedy.
+ * Copyright 2012-2017 by Andrew Kennedy.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package iterator.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -32,8 +31,8 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ForwardingSortedMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
+import com.google.common.io.CharSource;
 import com.google.common.io.Files;
-import com.google.common.io.InputSupplier;
 import com.google.common.io.Resources;
 
 /**
@@ -121,33 +120,33 @@ public class Config extends ForwardingSortedMap<String, String> {
         clear();
 
         // Defaults from classpath
-        load(Resources.newReaderSupplier(Resources.getResource(PROPERTIES_FILE), Charsets.UTF_8));
+        load(Resources.asCharSource(Resources.getResource(PROPERTIES_FILE), Charsets.UTF_8));
 
         // Configuration from home directory
         File home = new File(System.getProperty(USER_HOME_PROPERTY), "." + PROPERTIES_FILE);
         if (home.exists()) {
-            load(Files.newReaderSupplier(home, Charsets.UTF_8));
+            load(Files.asCharSource(home, Charsets.UTF_8));
         }
 
         // Configuration from current directory
         File current = new File(PROPERTIES_FILE);
         if (current.exists()) {
-            load(Files.newReaderSupplier(current, Charsets.UTF_8));
+            load(Files.asCharSource(current, Charsets.UTF_8));
         }
 
         // Override file from command line
         if (override != null) {
-            load(Files.newReaderSupplier(override, Charsets.UTF_8));
+            load(Files.asCharSource(override, Charsets.UTF_8));
         }
 
         // Finally load system properties (JAVA_OPTS)
         load(System.getProperties());
     }
 
-    public void load(InputSupplier<? extends Reader> supplier) {
+    public void load(CharSource source) {
         try {
             Properties properties = new Properties();
-            properties.load(supplier.getInput());
+            properties.load(source.openStream());
             load(properties);
         } catch (IOException ioe) {
             throw Throwables.propagate(ioe);

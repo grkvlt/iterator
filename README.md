@@ -7,9 +7,9 @@ Iterated Function System Explorer.
 
 ### Program Requirements
 
-- Java 1.7.0 Runtime Environment
+- Java 1.8.x Runtime Environment
 - Windows, Linux or OSX Operating System
-- Maven and 1.7.0 JDK to build
+- Maven and 1.8.x JDK to build
 
 ### TODO
 
@@ -42,5 +42,5 @@ currently work-in-progress, both performance and UX improvements
 are always on-going.
 
 ----
-Copyright 2012-2013 by [Andrew Donald Kennedy](mailto:andrew.international+iterator@gmail.com) and
+Copyright 2012-2017 by [Andrew Donald Kennedy](mailto:andrew.international+iterator@gmail.com) and
 Licensed under the [Apache Software License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
