@@ -597,36 +597,38 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
     @Override
     public void keyPressed(KeyEvent e) {
-        if (selected != null) {
-            switch (e.getKeyCode()) {
-            case KeyEvent.VK_DELETE:
-            case KeyEvent.VK_BACK_SPACE:
-                ifs.remove(selected);
-                selected = null;
-                bus.post(ifs);
-                break;
-            case KeyEvent.VK_RIGHT:
-                if (!selected.isMatrix()) {
-                    selected.r += Math.PI / 2d;
+        if (isVisible()) {
+            if (selected != null) {
+                switch (e.getKeyCode()) {
+                case KeyEvent.VK_DELETE:
+                case KeyEvent.VK_BACK_SPACE:
+                    ifs.remove(selected);
+                    selected = null;
                     bus.post(ifs);
+                    break;
+                case KeyEvent.VK_RIGHT:
+                    if (!selected.isMatrix()) {
+                        selected.r += Math.PI / 2d;
+                        bus.post(ifs);
+                    }
+                    break;
+                case KeyEvent.VK_LEFT:
+                    if (!selected.isMatrix()) {
+                        selected.r -= Math.PI / 2d;
+                        bus.post(ifs);
+                    }
+                    break;
                 }
-                break;
-            case KeyEvent.VK_LEFT:
-                if (!selected.isMatrix()) {
-                    selected.r -= Math.PI / 2d;
-                    bus.post(ifs);
+            } else {
+                switch (e.getKeyCode()) {
+                case KeyEvent.VK_ESCAPE:
+                    if (start != null && end != null) {
+                        start = null;
+                        end = null;
+                        repaint();
+                    }
+                    break;
                 }
-                break;
-            }
-        } else {
-            switch (e.getKeyCode()) {
-            case KeyEvent.VK_ESCAPE:
-                if (start != null && end != null) {
-                    start = null;
-                    end = null;
-                    repaint();
-                }
-                break;
             }
         }
     }
