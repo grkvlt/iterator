@@ -30,6 +30,7 @@ import javax.swing.text.html.StyleSheet;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
@@ -122,7 +123,7 @@ public class Details extends JTextPane implements Subscriber {
                 Color c = Color.WHITE;
                 if (controller.isColour()) {
                     if (controller.hasPalette()) {
-                        c = controller.getColours().get(i % controller.getPaletteSize());
+                        c = Iterables.get(controller.getColours(), i % controller.getPaletteSize());
                     } else {
                         c = Color.getHSBColor((float) i / (float) ifs.size(), 0.8f, 0.8f);
                     }

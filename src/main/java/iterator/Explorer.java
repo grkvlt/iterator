@@ -66,6 +66,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -92,6 +93,7 @@ import com.google.common.base.CaseFormat;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.io.Resources;
@@ -162,7 +164,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private About about;
 
     private IFS ifs;
-    private List<Color> colours;
+    private Set<Color> colours;
     private int paletteSize;
     private String paletteFile;
     private long seed;
@@ -351,15 +353,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         } else {
             source = loadImage(Resources.getResource("palette/" + paletteFile + ".png"));
         }
-        colours = Lists.newArrayList();
+        colours = Sets.newHashSet();
         Random random = new Random(seed);
         while (colours.size() < paletteSize) {
             int x = random.nextInt(source.getWidth());
             int y = random.nextInt(source.getHeight());
             Color c = new Color(source.getRGB(x, y));
-            if (!colours.contains(c)) {
-                colours.add(c);
-            }
+            colours.add(c);
         }
     }
 
@@ -663,7 +663,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public boolean isIFSColour() { return ifscolour; }
 
-    public List<Color> getColours() { return colours; }
+    public Set<Color> getColours() { return colours; }
 
     public int getPaletteSize() { return paletteSize; }
 

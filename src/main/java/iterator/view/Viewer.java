@@ -65,6 +65,7 @@ import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
@@ -320,9 +321,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                             color = controller.getPixel(old.getX(), old.getY());
                         } else {
                             if (controller.getRenderMode() == Render.TOP) {
-                                color = controller.getColours().get(top[p] % controller.getPaletteSize());
+                                color = Iterables.get(controller.getColours(), top[p] % controller.getPaletteSize());
                             } else {
-                                color = controller.getColours().get(j % controller.getPaletteSize());
+                                color = Iterables.get(controller.getColours(), j % controller.getPaletteSize());
                             }
                         }
                     } else {
