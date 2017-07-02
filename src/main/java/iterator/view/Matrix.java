@@ -15,10 +15,6 @@
  */
 package iterator.view;
 
-import iterator.Explorer;
-import iterator.model.IFS;
-import iterator.model.Transform;
-
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -35,6 +31,10 @@ import javax.swing.JLabel;
 
 import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
+
+import iterator.Explorer;
+import iterator.model.IFS;
+import iterator.model.Transform;
 
 /**
  * Matrix dialog.

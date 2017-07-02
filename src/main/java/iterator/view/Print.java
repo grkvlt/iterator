@@ -15,14 +15,14 @@
  */
 package iterator.view;
 
-import iterator.Explorer;
-import iterator.model.IFS;
-import iterator.util.Subscriber;
-
 import java.awt.Dimension;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+
+import iterator.Explorer;
+import iterator.model.IFS;
+import iterator.util.Subscriber;
 
 /**
  * Printing.

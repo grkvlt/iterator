@@ -15,11 +15,6 @@
  */
 package iterator.view;
 
-import iterator.Explorer;
-import iterator.model.IFS;
-import iterator.model.Transform;
-import iterator.util.Subscriber;
-
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -53,6 +48,11 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Ordering;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+
+import iterator.Explorer;
+import iterator.model.IFS;
+import iterator.model.Transform;
+import iterator.util.Subscriber;
 
 /**
  * IFS Editor.

@@ -15,8 +15,6 @@
  */
 package iterator;
 
-import iterator.model.IFS;
-
 import java.io.File;
 
 import com.apple.eawt.AboutHandler;
@@ -31,6 +29,8 @@ import com.apple.eawt.QuitHandler;
 import com.apple.eawt.QuitResponse;
 import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
+
+import iterator.model.IFS;
 
 /**
  * Apple OSX native support.

@@ -15,8 +15,6 @@
  */
 package iterator;
 
-import iterator.util.Version;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -36,6 +34,8 @@ import javax.swing.JWindow;
 import javax.swing.Timer;
 
 import com.google.common.io.Resources;
+
+import iterator.util.Version;
 
 /**
  * Splash screen.

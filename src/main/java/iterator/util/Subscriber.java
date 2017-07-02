@@ -15,12 +15,12 @@
  */
 package iterator.util;
 
-import iterator.model.IFS;
-
 import java.awt.Dimension;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+
+import iterator.model.IFS;
 
 /**
  * {@link EventBus} subscription callbacks.

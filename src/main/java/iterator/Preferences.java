@@ -15,12 +15,12 @@
  */
 package iterator;
 
-import iterator.model.IFS;
-
 import javax.swing.JDialog;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+
+import iterator.model.IFS;
 
 /**
  * Preferences dialog.

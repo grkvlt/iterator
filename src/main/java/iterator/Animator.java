@@ -15,11 +15,6 @@
  */
 package iterator;
 
-import iterator.model.IFS;
-import iterator.model.Transform;
-import iterator.util.Subscriber;
-import iterator.view.Viewer;
-
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.io.File;
@@ -40,6 +35,11 @@ import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.io.Files;
+
+import iterator.model.IFS;
+import iterator.model.Transform;
+import iterator.util.Subscriber;
+import iterator.view.Viewer;
 
 /**
  * IFS Animator.
