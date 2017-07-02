@@ -206,11 +206,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                         if (argv.length >= i + 1) {
                             override = new File(argv[++i]);
                             if (!override.exists()) {
-                                throw new IllegalArgumentException("Configuration file does not exist: " + override);
+                                error("Configuration file does not exist: %s", override);
                             }
                         }
                     } else {
-                        throw new IllegalArgumentException("Cannot parse option: " + argv[i]);
+                        error("Cannot parse option: %s", argv[i]);
                     }
                 } else if (i == argv.length - 1) {
                     // Last argument is a file
@@ -225,10 +225,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                             }
                         };
                     } else {
-                        throw new IllegalArgumentException("Cannot load XML data file: " + argv[i]);
+                        error("Cannot load XML data file: %s", argv[i]);
                     }
                 } else {
-                    throw new IllegalArgumentException("Unknown argument: " + argv[i]);
+                    error("Unknown argument: %s", argv[i]);
                 }
             }
         }
@@ -265,7 +265,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 stealing = false;
                 ifscolour = false;
             } else {
-                throw new IllegalArgumentException("Cannot set colour mode: " + mode);
+                error("Cannot set colour mode: %s", mode);
             }
         }
 
@@ -342,14 +342,14 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void loadColours() {
-        if (paletteFile.contains(".")) {
-            try {
+        try {
+            if (paletteFile.contains(".")) {
                 source = loadImage(URI.create(paletteFile).toURL());
-            } catch (MalformedURLException mue) {
-                Throwables.propagate(mue);
+            } else {
+                source = loadImage(Resources.getResource("palette/" + paletteFile + ".png"));
             }
-        } else {
-            source = loadImage(Resources.getResource("palette/" + paletteFile + ".png"));
+        } catch (MalformedURLException | RuntimeException e) {
+            error(e, "Cannot load colour palette %s: %s", paletteFile, e.getMessage());
         }
         colours = Sets.newHashSet();
         Random random = new Random(seed);
@@ -761,7 +761,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public void debug(String format, Object...varargs) {
         if (isDebug()) {
-            output(System.out, format, varargs);
             output(System.err, format, varargs);
         }
     }
@@ -780,7 +779,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public void error(Optional<Throwable> t, String format, Object...varargs) {
         output(System.err, format, varargs);
-        output(System.out, format, varargs);
         if (t.isPresent() && isDebug()) {
             t.get().printStackTrace(System.err);
         }
