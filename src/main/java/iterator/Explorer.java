@@ -56,6 +56,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -290,11 +291,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             paletteSize = config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE);
             loadColours();
         }
-        if (isDebug()) {
-            printf("Configured %s: %s",
-                    colour ? palette ? stealing ? "stealing" : "palette" : ifscolour ? "ifscolour" : "colour" : "grayscale",
-                    palette ? paletteFile : colour ? "hsb" : "black");
-        }
+        debug("Configured %s: %s",
+                colour ? palette ? stealing ? "stealing" : "palette" : ifscolour ? "ifscolour" : "colour" : "grayscale",
+                palette ? paletteFile : colour ? "hsb" : "black");
 
         // Setup event bus
         bus = new EventBus(EXPLORER);
@@ -322,17 +321,15 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 Object apple = ctor.newInstance(bus, this);
                 setup.invoke(apple);
             } catch (InvocationTargetException ite) {
-                printf("Error while configuring OSX support: %s\n", ite.getCause().getMessage());
-                System.exit(1);
+                error(Optional.of(ite.getCause()), "Error while configuring OSX support: %s", ite.getCause().getMessage());
             } catch (Exception e) {
-                printf("Unable to configure OSX support: %s\n", e.getMessage());
+                error(e, "Unable to configure OSX support");
             }
         }
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
-            printf("Unable to configure UI support: %s\n", e.getMessage());
-            System.exit(1);
+            error(e, "Unable to configure UI support");
         }
     }
 
@@ -712,7 +709,14 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public void keyTyped(KeyEvent e) {
     }
 
-    /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
+    /**
+     * Listener for key-presses across the whole application.
+     * <p>
+     * Handles {@link KeyEvent#VK_TAB TAB} for switching between viewer and editor,
+     * and {@literal S} for changing the random seed.
+     *
+     * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
+     */
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_TAB) {
@@ -757,21 +761,48 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public void keyReleased(KeyEvent e) {
     }
 
-    public void printf(String format, Object...varargs) {
+    public void debug(String format, Object...varargs) {
+        if (isDebug()) {
+            output(System.out, format, varargs);
+            output(System.err, format, varargs);
+        }
+    }
+
+    public void error(String format, Object...varargs) {
+        error(Optional.absent(), format, varargs);
+    }
+
+    public void error(Throwable t, String format, Object...varargs) {
+        error(Optional.of(t), format, varargs);
+    }
+
+    public void error(Throwable t, String message) {
+        error(Optional.of(t), "%s: %s", message, t.getMessage());
+    }
+
+    public void error(Optional<Throwable> t, String format, Object...varargs) {
+        output(System.err, format, varargs);
+        output(System.out, format, varargs);
+        if (t.isPresent() && isDebug()) {
+            t.get().printStackTrace(System.err);
+        }
+        System.exit(1);
+    }
+
+    public void print(String format, Object...varargs) {
+        output(System.out, format, varargs);
+    }
+
+    protected void output(PrintStream out, String format, Object...varargs) {
         String output = String.format(format, varargs);
         if (!output.endsWith("\n")) output = output.concat("\n");
-        System.err.print(output);
-        System.out.print(output);
+        out.print(output);
     }
 
     /** @see java.lang.Thread.UncaughtExceptionHandler#uncaughtException(Thread, Throwable) */
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        printf("Error: Thread %s (%d) caused %s: %s", t.getName(), t.getId(), e.getClass().getName(), e.getMessage());
-        if (isDebug()) { 
-            e.printStackTrace(System.err);
-        }
-        System.exit(1);
+        error(Optional.of(e), "Error: Thread %s (%d) caused %s: %s", t.getName(), t.getId(), e.getClass().getName(), e.getMessage());
     }
 
     /**

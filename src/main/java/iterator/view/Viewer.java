@@ -226,10 +226,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         try {
             ImageIO.write(image, "png", file);
 
-            // Output details
-            String details = String.format("%d transforms: %.1fx scale at (%.2f, %.2f) with %,dK iterations",
-                    ifs.size(), scale, centre.getX(), centre.getY(), count.get());
-            controller.printf("File %s: %s\n", file.getName(), details);
+            controller.debug("File %s: %d transforms: %.1fx scale at (%.2f, %.2f) with %,dK iterations",
+                    file.getName(), ifs.size(), scale, centre.getX(), centre.getY(), count.get());
         } catch (IOException e) {
             Throwables.propagate(e);
         }
@@ -487,12 +485,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     rescale(scale * ((float) getWidth() / (float) zoom.width), updated);
                 }
 
-                // Output details
-                if (controller.isDebug()) {
-                    String details = String.format("%.1fx scale, centre (%.1f, %.1f) via click at (%d, %d)",
-                            scale, centre.getX(), centre.getY(), (int) (zoom.x + (zoom.width / 2d)), (int) (zoom.y + (zoom.height / 2d)));
-                    controller.printf("Zoom: %s\n", details);
-                }
+                controller.debug("Zoom: %.1fx scale, centre (%.1f, %.1f) via click at (%d, %d)",
+                        scale, centre.getX(), centre.getY(), (int) (zoom.x + (zoom.width / 2d)), (int) (zoom.y + (zoom.height / 2d)));
 
                 zoom = null;
                 reset();
