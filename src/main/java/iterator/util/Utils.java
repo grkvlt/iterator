@@ -15,8 +15,11 @@
  */
 package iterator.util;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Set;
+
+import javax.swing.JFormattedTextField.AbstractFormatter;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -79,5 +82,26 @@ public class Utils {
         Iterable<T> joined = Iterables.concat(initial, Iterables.concat(extra));
         return Lists.newArrayList(joined);
     }
+
+    /**
+     * Formatter for {@link Double} values in {@link JFormattedTextField}s.
+     */
+    public static class DoubleFormatter extends AbstractFormatter {
+        /** serialVersionUID */
+        private static final long serialVersionUID = 1107330803545615990L;
+
+        @Override
+        public Object stringToValue(String text) throws ParseException {
+            try {
+                return Double.valueOf(text);
+            } catch (NumberFormatException e) {
+                return 0d;
+            }
+        }
+
+        @Override
+        public String valueToString(Object value) throws ParseException {
+            return String.format("%.4f", value).replaceAll("\\.?0+$", "");
+        }
+    }
 }
-    

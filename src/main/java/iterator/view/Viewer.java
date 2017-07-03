@@ -225,7 +225,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
     public void save(File file) {
         try {
-            ImageIO.write(image, "png", file);
+            ImageIO.write(getImage(), "png", file);
 
             controller.debug("File %s: %d transforms: %.1fx scale at (%.2f, %.2f) with %,dK iterations",
                     file.getName(), ifs.size(), scale, centre.getX(), centre.getY(), count.get());

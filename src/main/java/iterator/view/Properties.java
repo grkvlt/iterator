@@ -15,6 +15,7 @@
  */
 package iterator.view;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -22,10 +23,15 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.LineBorder;
 
 import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
@@ -33,6 +39,7 @@ import com.google.common.eventbus.EventBus;
 import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
+import iterator.util.Utils;
 
 /**
  * Properties dialog.
@@ -44,20 +51,22 @@ public class Properties extends JDialog {
     private final Supplier<Double> x, y, w, h, r;
 
     public Properties(final Transform transform, final IFS ifs, final EventBus bus, final Explorer controller) {
-        super(controller, "Transform Properties", ModalityType.APPLICATION_MODAL);
+        super(controller, "Properties", ModalityType.APPLICATION_MODAL);
 
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
 
         setFont(new Font("Calibri", Font.PLAIN, 14));
+        getContentPane().setBackground(Color.WHITE);
         setLayout(gridbag);
 
-        JLabel title = new JLabel(String.format("Transform T%02d Properties", transform.getId()), JLabel.CENTER);
+        JLabel title = new JLabel(String.format("Transform T%02d", transform.getId()), JLabel.CENTER);
         title.setFont(new Font("Calibri", Font.BOLD, 16));
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.weightx = 1.0;
         c.gridwidth = GridBagConstraints.REMAINDER;
+        c.weighty = 1.0;
         gridbag.setConstraints(title, c);
         add(title);
 
@@ -85,6 +94,7 @@ public class Properties extends JDialog {
         c.anchor = GridBagConstraints.EAST;
         c.gridx = 0;
         c.gridwidth = 1;
+        c.weighty = 1.0;
         gridbag.setConstraints(update, c);
         add(update);
 
@@ -114,11 +124,23 @@ public class Properties extends JDialog {
         c.gridx = 0;
         c.gridwidth = GridBagConstraints.RELATIVE;
         c.weightx = 2.0;
+        c.weighty = 2.0;
         gridbag.setConstraints(label, c);
         add(label);
 
-        final JFormattedTextField field = new JFormattedTextField(value);
+        final JFormattedTextField field = new JFormattedTextField(new Utils.DoubleFormatter());
+        field.setHorizontalAlignment(JTextField.LEFT);
+        field.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        field.setValue(value);
         field.setFont(new Font("Cambria", Font.ITALIC, 14));
+
+        c.gridx = 2;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.weightx = 1.0;
+        c.weighty = 2.0;
+        gridbag.setConstraints(field, c);
+        add(field);
+
         Supplier<T> supplier = new Supplier<T>() {
             @SuppressWarnings("unchecked")
             @Override
@@ -126,12 +148,6 @@ public class Properties extends JDialog {
                 return (T) field.getValue();
             }
         };
-        c.gridx = 2;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.weightx = 1.0;
-        gridbag.setConstraints(field, c);
-        add(field);
-
         return supplier;
     }
 

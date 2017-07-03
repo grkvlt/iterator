@@ -17,6 +17,7 @@ package iterator.view;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.text.ParseException;
 
 import javax.swing.JTextPane;
 import javax.swing.text.html.HTMLEditorKit;
@@ -34,6 +35,7 @@ import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Subscriber;
+import iterator.util.Utils;
 
 /**
  * Detail display.
@@ -46,19 +48,21 @@ public class Details extends JTextPane implements Subscriber {
 
     private IFS ifs;
 
-    private static final String HTML_MIME_TYPE = "text/html";
-    private static final String INITIAL_CONTENT_HTML = "<html><h1 id=\"title\">Iterated Function System</h1><html>";
+    public static final String HTML_MIME_TYPE = "text/html";
+    public static final String INITIAL_CONTENT_HTML = "<html><h1 id=\"title\">Iterated Function System</h1><html>";
 
-    private static final String[] CSS_RULES = new String[] {
+    public static final String[] CSS_RULES = new String[] {
         "h1 { font-family: Calibri, sans-serif; font-style: bold; font-size: 30px; margin-left: 10px; }",
         "h2 { font-family: Calibri, sans-serif; font-style: bold; font-size: 20px; margin-left: 10px; }",
         ".id { font-family: Calibri, sans-serif; font-style: bold; font-size: 15px; padding: 5px 0 0 0; margin: 0; }",
         ".info { font-family: Calibri, sans-serif; font-style: italic; font-size: 12px; padding: 0 0 5px 0; margin: 0; }",
         ".matrixr1 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 5px 5px 0 -5px; margin: 0; }",
         ".matrixr2 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 0 5px -5px -5px; margin: 0 0 -5px 0; }",
-        ".bracketl { width: 5px; padding: 0; border-left: 2px solid black; border-top: 2px solid black; border-bottom: 2px solid black; }",
-        ".bracketr { width: 5px; padding: 0; border-right: 2px solid black; border-top: 2px solid black; border-bottom: 2px solid black; }",
         ".ifs { margin-left: 20px; border: 0; }",
+    };
+    public static final String[] CSS_BRACKET_RULES = new String[] {
+        ".bracketl { width: 5px; padding: 0; margin-left: 2px; border-left: 2px solid black; border-top: 2px solid black; border-bottom: 2px solid black; }",
+        ".bracketr { width: 5px; padding: 0; margin-right: 2px; border-right: 2px solid black; border-top: 2px solid black; border-bottom: 2px solid black; }",
     };
 
     public Details(EventBus bus, Explorer controller) {
@@ -72,6 +76,9 @@ public class Details extends JTextPane implements Subscriber {
         HTMLEditorKit kit = (HTMLEditorKit) getEditorKitForContentType(HTML_MIME_TYPE);
         StyleSheet css = kit.getStyleSheet();
         for (String rule : CSS_RULES) {
+            css.addRule(rule);
+        }
+        for (String rule : CSS_BRACKET_RULES) {
             css.addRule(rule);
         }
  
@@ -129,35 +136,37 @@ public class Details extends JTextPane implements Subscriber {
                     }
                 }
 
-                String transform = String.format(
-                        "<tr class=\"transform\">" +
-                            "<td class=\"id\">%02d</td>" +
-                            "<td class=\"bracketl\" rowspan=\"2\">&nbsp;</td>" +
-                            "<td class=\"matrixr1\" align=\"right\">%.3f</td>" +
-                            "<td class=\"matrixr1\" align=\"right\">%.3f</td>" +
-                            "<td class=\"matrixr1\" align=\"right\">%.3f</td>" +
-                            "<td class=\"bracketr\" rowspan=\"2\">&nbsp;</td>" +
-                        "</tr>" +
-                        "<tr class=\"transform\">" +
-                            "<td class=\"info\">%.1f%%" +
-                                "<div style=\"width: 15px; height: 10px; border: 1px solid %s; " +
-                                "background: #%02x%02x%02x; padding: 0; margin: 0;\">&nbsp;</div>" +
-                            "</td>" +
-                            "<td class=\"matrixr2\" align=\"right\">%.3f</td>" +
-                            "<td class=\"matrixr2\" align=\"right\">%.3f</td>" +
-                            "<td class=\"matrixr2\" align=\"right\">%.3f</td>" +
-                        "</tr>" +
-                        "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
-                        t.getId(),
-                        matrix[0], matrix[1], matrix[2],
-                        100d * t.getDeterminant() / ifs.getWeight(),
-                        controller.isColour() ? "black" : "white",
-                        c.getRed(), c.getGreen(), c.getBlue(),
-                        matrix[3], matrix[4], matrix[5]);
-                html.append(transform)
-                    .append("</table>")
-                    .append("</td>");
-
+                try {
+                    Utils.DoubleFormatter f = new Utils.DoubleFormatter();
+                    String transform = String.format(
+                            "<tr class=\"transform\">" +
+                                "<td class=\"id\">%02d</td>" +
+                                "<td class=\"bracketl\" rowspan=\"2\">&nbsp;</td>" +
+                                "<td class=\"matrixr1\" align=\"right\">%s</td>" +
+                                "<td class=\"matrixr1\" align=\"right\">%s</td>" +
+                                "<td class=\"matrixr1\" align=\"right\">%s</td>" +
+                                "<td class=\"bracketr\" rowspan=\"2\">&nbsp;</td>" +
+                            "</tr>" +
+                            "<tr class=\"transform\">" +
+                                "<td class=\"info\">%.1f%%" +
+                                    "<div style=\"width: 15px; height: 10px; border: 1px solid %s; " +
+                                    "background: #%02x%02x%02x; padding: 0; margin: 0;\">&nbsp;</div>" +
+                                "</td>" +
+                                "<td class=\"matrixr2\" align=\"right\">%s</td>" +
+                                "<td class=\"matrixr2\" align=\"right\">%s</td>" +
+                                "<td class=\"matrixr2\" align=\"right\">%s</td>" +
+                            "</tr>" +
+                            "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
+                            t.getId(),
+                            f.valueToString(matrix[0]), f.valueToString(matrix[1]), f.valueToString(matrix[2]),
+                            100d * t.getDeterminant() / ifs.getWeight(),
+                            controller.isColour() ? "black" : "white",
+                            c.getRed(), c.getGreen(), c.getBlue(),
+                            f.valueToString(matrix[3]), f.valueToString(matrix[4]), f.valueToString(matrix[5]));
+                    html.append(transform)
+                        .append("</table>")
+                        .append("</td>");
+                } catch (ParseException pe) { }
                 i++;
             }
             html.append("</tr>")
