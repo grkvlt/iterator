@@ -102,9 +102,14 @@
           This will use a fixed list of colours for the transforms. To use a colour palette
           taken from a sample image, specify <code>-p</code> or <code>--palette</code>. The image
           used can be set with the <code>explorer.palette.file</code> system property and
-          can be one of <em>abstract</em>, <em>wave</em> or <em>car</em>.
+          can be one of several included named palettes, such as <em>abstract</em>, <em>wave</em>
+          or <em>car</em>, or a URI pointing at a local or remote <code>PNG</code> image
+          to retrieve colours from.
         </p>
         <h3>Configuration</h3>
+        <p>
+          This list shows some of the available properties along with their default values.
+        </p>
         <ul>
           <li><code>explorer.grid.min</code> - Minimum grid spacing - <em>10</em></li>
           <li><code>explorer.grid.max</code> - Maximum grid spacing - <em>50</em></li>
@@ -120,7 +125,7 @@
           <li><code>explorer.threads</code> - Number of threads - <em>2</em></li>
         </ul>
         <p>
-          The configuration options listed can be set in a property file, which can then
+          The configuration options above can be set in a property file, which can then
           be loaded by the application. The locations searched for configuration files are
           the users <code>HOME</code> directory, for a file named <code>.explorer.properties</code>,
           the current directory for a file named <code>explorer.properties</code> and finally
@@ -142,10 +147,10 @@
           These determine the colour and style that will be used to display the
           IFS on screen.
         </p>
-        <p>
+        <blockquote>
           <strong>Note</strong><em> that these options interact with each other and
           not all combinations of settings will make sense.</em>
-        </p>
+        </blockquote>
         <p>
           The <code>explorer.mode</code> setting determines the way that colours
           will be chosen for points of the IFS. The options are <em>colour</em>,
@@ -155,13 +160,13 @@
           option generates a black and white image, as differing levels of gray.
         </p>
         <p>
-          To produce a coloured image with the colours taken from a reference
-          image use <em>palette</em> which picks a random set of colours from
+          To produce a coloured image, with the colours taken from a reference
+          image, use <em>palette</em> which picks a random set of colours from
           pixels in the source image. This mode uses <code>explorer.palette.file</code>
           to specify the image. If one of <em>abstract</em>, <em>autumn</em>, <em>car</em>,
           <em>car2</em>, <em>lego</em>, <em>night</em>, <em>forest</em>, <em>trees</em>
           or <em>wave</em> is specified then an embedded file from the application
-          is used. Instead, a URL can be specified, either <code>file:///</code>
+          is used. Instead, a URL can be specified, either <code>file://</code>
           or <code>http://</code>, and that image will be loaded. The colours
           are assigned to each transform in the same way as with the <em>colour</em>
           mode. To change the colours used, the random number seed can be altered using
@@ -189,15 +194,6 @@
           to specify the colours.
         </p>
         <h3>Usage</h3>
-        <p>
-          A series of example XML data files for IFS transforms are provided
-          in the <code>data</code> directory of the distribution. Some of these can be
-          found in the <strong>The Computational Beauty of Nature</strong> and <strong>Superfractals</strong>
-          books, details of which are given in the <em>References</em> section.
-          To load the examples, specify the path to the file as the last argument
-          on the command-line. Sample images for these transforms have also been provided,
-          so be sure to use the <code>.xml</code> file, not the <code>.png</code>.
-        </p>
         <p>
           Once the program starts, it will diplay an empty grid in the
           <strong>Editor</strong> mode. The menus provide access to standard
@@ -237,12 +233,12 @@
           item allows the six affine transform matrix coefficients to be
           altered directly.
         </p>
-        <p>
+        <blockquote>
           <strong>Note</strong><em> once the affine transform matrix has been
           edited directly, it will no longer be possible to edit the transform
           visually or change its properties, although it can still be moved
           using the mouse.</em>
-        </p>
+        </blockquote>
         <p>
           When in <strong>Viewer</strong> mode the <em>Space</em> key will pause
           and continue the rendering process. To zoom into the fractal select a
@@ -251,16 +247,28 @@
           of the image by a factor of two. The <em>=</em> key will reset the
           view to the original unmagnified and centered settings.
         </p>
-        <p>
+        <blockquote>
           <strong>Note</strong><em> that when zoomed in at high magnification the
           iterative process can take a very long time until the rendered fractal
           becomes visible.</em>
-        </p>
+        </blockquote>
         <p>
           The <strong>Details</strong> mode shows the actual affine transforms
           and their matrix coefficients for the system as a scrollable list.
         </p>
         <h3>Examples</h3>
+        <p>
+          A series of example XML data files for IFS transforms are provided
+          in the <code>data</code> directory of the distribution. Some of these can be
+          found in the books <strong>The Computational Beauty of Nature</strong>
+          and <strong>Superfractals</strong>, details of which are given in the
+          <em>References</em> section.
+        </p>
+        <p>
+          To load the examples, specify the path to the file as the last argument
+          on the command-line. Sample images for these transforms have also been provided,
+          so be sure to use the <code>.xml</code> file, not the <code>.png</code>.
+        </p>
         <div style="margin-left: 25px;">
           <img src="images/gallery.png" style="border: 0;" alt="Gallery" title="Gallery" border="0" width="485">
         </div>
@@ -292,10 +300,10 @@ with 1,310K iterations</b></code></pre>
         </p>
         <iframe id="youtube" style="margin-left: 25px; border: 1px solid black; margin-bottom: 10px;" width="480" height="270" allowfullscreen
             src="http://www.youtube.com/embed/FJY53HxTe0o?modestbranding=0&theme=dark&autohide=1&fs=1"></iframe>
-        <p>
+        <blockquote>
           <strong>Note</strong><em> further documentation on the <code>.animation</code>
           file format and generating video files is required.</em>
-        </p>
+        </blockquote>
         <h3>References</h3>
         <ol>
           <li><a href="http://en.wikipedia.org/wiki/Iterated_function_system">Iterated Function System</a>; <em>Wikipedia</em></li>
