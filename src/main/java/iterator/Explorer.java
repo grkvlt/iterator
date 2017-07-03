@@ -52,6 +52,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -64,10 +65,25 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import javax.print.Doc;
+import javax.print.DocFlavor;
+import javax.print.DocPrintJob;
+import javax.print.PrintException;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import javax.print.ServiceUI;
+import javax.print.SimpleDoc;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.MediaSizeName;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -473,6 +489,23 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         JMenuItem print = new JMenuItem(new AbstractAction("Print...") {
             @Override
             public void actionPerformed(ActionEvent e) {
+                DocFlavor flavor = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
+                PrintRequestAttributeSet attributes = new HashPrintRequestAttributeSet();
+                PrintService[] services = PrintServiceLookup.lookupPrintServices(flavor, null);
+                print("[PS] found %d print service", services.length);
+                for (PrintService s : services) {
+                    print("[PS] print service %s: %s / %s", s.getName(), s.getAttributes(), Arrays.asList(s.getSupportedDocFlavors()));
+                }
+                if (services.length > 0) {
+                    PrintService service = ServiceUI.printDialog(getGraphicsConfiguration(), 0 , 0, services, services[0], flavor, attributes);
+                    DocPrintJob job = service.createPrintJob();
+                    try {
+                        Doc doc = new SimpleDoc(viewer, flavor, null);
+                        job.print(doc, attributes);
+                     } catch (PrintException pe) {
+                         Throwables.propagate(pe);
+                     }
+                }
             }
         });
         print.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
