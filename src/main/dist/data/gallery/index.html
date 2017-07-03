@@ -20,29 +20,44 @@
     <style>
       h1 {
         font-family: Calibri, sans-serif;
-        margin: 0;
         padding: 0;
-        margin-left: 10px;
-        font-size: 35px;
+        margin: 15px;
+        margin-left: 5px;
+        font-size: 52px;
         font-weight: 800;
       }
       .copyright {
+        padding: 0;
+        margin: 15px;
+        margin-left: 5px;
         font-family: Cambria, serif;
         font-style: italic;
-        font-size: 15px;
+        font-size: 13px;
+      }
+      .copyright code {
+        font-family: Consolas, monospace;
+        font-size: 12px;
+      }
+      .copyright a {
+        text-decoration: none;
+        color: black;
+      }
+      .copyright a:hover {
+        background: #eee;
       }
       #gallery img {
         display: inline;
-        width: 100px;
-        height: 100px;
+        width: 105px;
+        height: 105px;
         border: 2px solid black;
-        margin: 5px;
+        margin: 3px;
+        padding: 0;
         clear: none;
+        float: left;
       }
       #gallery img.big {
-        width: 340px;
-        height: 340px;
-        float: left;
+        width: 335px;
+        height: 335px;
       }
     </style>
   </head>
@@ -114,7 +129,8 @@
         <br style="clear: both;" />
     </div>
     <div class="copyright">
-      Copyright 2012&ndash;2017 by Andrew Donald Kennedy and
+      <code><a class="link" href="https://github.com/grkvlt/iterator/">https://github.com/grkvlt/iterator/</a></code> &ndash;
+      Copyright 2012&ndash;2017 by Andrew Donald Kennedy;
       Licensed under the Apache Software License, Version 2.0
     </div>
   </body>
