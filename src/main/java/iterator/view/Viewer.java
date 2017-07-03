@@ -236,19 +236,17 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
     /** @see java.awt.print.Printable#print(Graphics, PageFormat, int) */
     @Override
-    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+    public int print(Graphics graphics, PageFormat pf, int page) throws PrinterException {
+        if (page > 0) return NO_SUCH_PAGE;
+
         Graphics2D g = (Graphics2D) graphics.create();
+        g.translate(pf.getImageableX(), pf.getImageableY());
+        double scale = pf.getImageableWidth() / (double) getImage().getWidth();
+        g.scale(scale, scale);
 
-        // Draw the rendered IFS
-        g.drawImage(getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
-
-        // Print information about this IFS
-        // Name
-        // Number of transforms
-        // Scale and centre of zoom
-        // Number of iterations
-
-        return 0;
+        printAll(g);
+ 
+        return PAGE_EXISTS;
     }
 
     public void iterate(int k, float scale, Point2D centre) {

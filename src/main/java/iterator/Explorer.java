@@ -52,6 +52,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -68,6 +70,7 @@ import java.util.Random;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
+import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -178,7 +181,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private CardLayout cards;
     private String current;
     private JCheckBoxMenuItem showEditor, showViewer, showDetails;
-    private JMenuItem export, save, saveAs;
+    private JMenuItem export, print, save, saveAs;
 
     private EventBus bus;
     private Runnable postponed;
@@ -451,6 +454,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         export = new JMenuItem(new AbstractAction("Export...") {
             @Override
             public void actionPerformed(ActionEvent e) {
+                viewer.stop();
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("PNG Image Files", "png");
                 JFileChooser chooser = new JFileChooser();
                 chooser.setCurrentDirectory(cwd);
@@ -466,16 +470,31 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     viewer.save(export);
                     cwd = export.getParentFile();
                 }
+                viewer.start();
             }
         });
         export.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         file.add(export);
-        JMenuItem print = new JMenuItem(new AbstractAction("Print...") {
+        print = new JMenuItem(new AbstractAction("Print...") {
             @Override
             public void actionPerformed(ActionEvent e) {
+                viewer.stop();
+                PrinterJob job = PrinterJob.getPrinterJob();
+                job.setJobName(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
+                job.setPrintable(viewer);
+                boolean ok = job.printDialog();
+                if (ok) {
+                    try {
+                         job.print();
+                    } catch (PrinterException pe) {
+                        Throwables.propagate(pe);
+                    }
+                }
+                viewer.start();
             }
         });
         print.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        print.setEnabled(false);
         file.add(print);
         if (platform != Platform.MAC_OS_X) {
             file.add(new AbstractAction("Preferences...") {
@@ -596,10 +615,12 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         current = name;
         if (name.equals(VIEWER)) {
             export.setEnabled(true);
+            print.setEnabled(true);
             viewer.reset();
             viewer.start();
         } else {
             export.setEnabled(false);
+            print.setEnabled(false);
             viewer.stop();
         }
     }
