@@ -72,10 +72,10 @@
         <explorer.crypto.validity>3650</explorer.crypto.validity>
 
         <!-- Set this to the location you will deploy the JNLP file to -->
+        <explorer.deploy.codebase>http://localhost:8080/iterator-${project.version}-webstart/</explorer.deploy.codebase>
         <!--
-        <explorer.deploy.codebase>http://localhost/iterator-${project.version}-webstart/</explorer.deploy.codebase>
-        -->
         <explorer.deploy.codebase>http://iterator.s3-website-eu-west-1.amazonaws.com/</explorer.deploy.codebase>
+        -->
 
         <jquery.version>1.7.2</jquery.version>
         <guava.version>19.0</guava.version>
@@ -117,7 +117,6 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.0.2</version>
@@ -299,5 +298,32 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>
+        <profile>
+            <id>gpg</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>gpg.passphrase</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+					<plugin>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<groupId>org.apache.maven.plugins</groupId>
+						<version>1.6</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+                </plugins>
+            </build>
+		</profile>
+	</profiles>
 </project>
