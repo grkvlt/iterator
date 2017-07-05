@@ -62,7 +62,7 @@
     </resources>
     <resources>
         <jar href="lib/iterator-${project.version}.jar" main="true" />
-        <jar href="lib/guava-14.0.1.jar" />
+        <jar href="lib/guava-${guava.version}.jar" />
     </resources>
 
     <resources os="Linux">
@@ -74,7 +74,7 @@
         <property name="apple.awt.antialiasing" value="on" />
         <property name="apple.awt.textantialiasing" value="on" />
         <property name="apple.awt.graphics.UseQuartz" value="true" />
-        <j2se version="1.7+" java-vm-args="-Xdock:name=IFSExplorer" />
+        <j2se version="1.8+" java-vm-args="-Xdock:name=IFSExplorer" />
     </resources>
     <resources os="Windows">
         <!-- TODO -->
