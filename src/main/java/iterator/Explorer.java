@@ -70,7 +70,6 @@ import java.util.Random;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
-import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;

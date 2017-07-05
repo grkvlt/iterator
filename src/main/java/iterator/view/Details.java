@@ -56,8 +56,8 @@ public class Details extends JTextPane implements Subscriber {
         "h2 { font-family: Calibri, sans-serif; font-style: bold; font-size: 20px; margin-left: 10px; }",
         ".id { font-family: Calibri, sans-serif; font-style: bold; font-size: 15px; padding: 5px 0 0 0; margin: 0; }",
         ".info { font-family: Calibri, sans-serif; font-style: italic; font-size: 12px; padding: 0 0 5px 0; margin: 0; }",
-        ".matrixr1 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 5px 5px 0 -5px; margin: 0; }",
-        ".matrixr2 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 0 5px -5px -5px; margin: 0 0 -5px 0; }",
+        ".matrixr1 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 5px 5px 0 -5px; margin: 0; width: 30px; }",
+        ".matrixr2 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 0 5px -5px -5px; margin: 0 0 -5px 0; width: 30px; }",
         ".ifs { margin-left: 20px; border: 0; }",
     };
     public static final String[] CSS_BRACKET_RULES = new String[] {
@@ -140,7 +140,7 @@ public class Details extends JTextPane implements Subscriber {
                     Utils.DoubleFormatter f = new Utils.DoubleFormatter();
                     String transform = String.format(
                             "<tr class=\"transform\">" +
-                                "<td class=\"id\">%02d</td>" +
+                                "<td class=\"id\" width=\"25px\">%02d</td>" +
                                 "<td class=\"bracketl\" rowspan=\"2\">&nbsp;</td>" +
                                 "<td class=\"matrixr1\" align=\"right\">%s</td>" +
                                 "<td class=\"matrixr1\" align=\"right\">%s</td>" +
@@ -148,7 +148,7 @@ public class Details extends JTextPane implements Subscriber {
                                 "<td class=\"bracketr\" rowspan=\"2\">&nbsp;</td>" +
                             "</tr>" +
                             "<tr class=\"transform\">" +
-                                "<td class=\"info\">%.1f%%" +
+                                "<td class=\"info\" width=\"25px\">%.1f%%" +
                                     "<div style=\"width: 15px; height: 10px; border: 1px solid %s; " +
                                     "background: #%02x%02x%02x; padding: 0; margin: 0;\">&nbsp;</div>" +
                                 "</td>" +

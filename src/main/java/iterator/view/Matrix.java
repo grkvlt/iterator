@@ -21,6 +21,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
@@ -38,7 +40,6 @@ import javax.swing.text.html.StyleSheet;
 import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
 
-import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Utils;
@@ -52,8 +53,8 @@ public class Matrix extends JDialog {
 
     private final Supplier<Double> c0, c1, c2, c3, c4, c5;
 
-    public Matrix(final Transform transform, final IFS ifs, final EventBus bus, final Explorer controller) {
-        super(controller, "Matrix", ModalityType.APPLICATION_MODAL);
+    public Matrix(final Transform transform, final IFS ifs, final EventBus bus, final Window parent) {
+        super(parent, "Matrix", ModalityType.APPLICATION_MODAL);
 
         setLayout(new BorderLayout());
         setFont(new Font("Calibri", Font.PLAIN, 14));
@@ -77,10 +78,14 @@ public class Matrix extends JDialog {
         for (String rule : Details.CSS_BRACKET_RULES) {
             leftCss.addRule(rule);
         }
-        left.setText("<div class=\"bracketl\" height=\"50px\">&nbsp;</div>");
+        left.setText("<div class=\"bracketl\" height=\"50px\" width=\"5px\">&nbsp;</div>");
         panel.add(left, BorderLayout.WEST);
 
-        JPanel values = new JPanel(new GridLayout(0, 3));
+        JPanel values = new JPanel();
+        GridLayout grid = new GridLayout(0, 3);
+        grid.setHgap(10);
+        grid.setVgap(4);
+        values.setLayout(grid);
         values.setBackground(Color.WHITE);
         panel.add(values, BorderLayout.CENTER);
         double matrix[] = new double[6];
@@ -103,7 +108,7 @@ public class Matrix extends JDialog {
         for (String rule : Details.CSS_BRACKET_RULES) {
             rightCss.addRule(rule);
         }
-        right.setText("<div class=\"bracketr\" height=\"50px\">&nbsp;</div>");
+        right.setText("<div class=\"bracketr\" height=\"50px\" width=\"5px\">&nbsp;</div>");
         panel.add(right, BorderLayout.EAST);
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -149,7 +154,8 @@ public class Matrix extends JDialog {
     private Supplier<Double> addProperty(int number, double value, JPanel panel) {
         final JFormattedTextField field = new JFormattedTextField(new Utils.DoubleFormatter());
         field.setHorizontalAlignment(JTextField.RIGHT);
-        field.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        field.setBorder(BorderFactory.createLoweredSoftBevelBorder());
+        field.setMargin(new Insets(2, 2, 2, 2));
         field.setValue(value);
         field.setFont(new Font("Cambria", Font.ITALIC, 14));
         field.setColumns(10);
