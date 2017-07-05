@@ -20,6 +20,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
@@ -29,14 +31,10 @@ import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.LineBorder;
 
 import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
 
-import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Utils;
@@ -50,11 +48,12 @@ public class Properties extends JDialog {
 
     private final Supplier<Double> x, y, w, h, r;
 
-    public Properties(final Transform transform, final IFS ifs, final EventBus bus, final Explorer controller) {
-        super(controller, "Properties", ModalityType.APPLICATION_MODAL);
+    public Properties(final Transform transform, final IFS ifs, final EventBus bus, final Window parent) {
+        super(parent, "Properties", ModalityType.APPLICATION_MODAL);
 
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(2, 5, 2, 5);
 
         setFont(new Font("Calibri", Font.PLAIN, 14));
         getContentPane().setBackground(Color.WHITE);
@@ -130,7 +129,8 @@ public class Properties extends JDialog {
 
         final JFormattedTextField field = new JFormattedTextField(new Utils.DoubleFormatter());
         field.setHorizontalAlignment(JTextField.LEFT);
-        field.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        field.setBorder(BorderFactory.createLoweredSoftBevelBorder());
+        field.setMargin(new Insets(2, 2, 2, 2));
         field.setValue(value);
         field.setFont(new Font("Cambria", Font.ITALIC, 14));
 

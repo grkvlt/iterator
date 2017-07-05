@@ -19,6 +19,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 
 import com.google.common.base.Optional;
@@ -101,7 +102,7 @@ public class Utils {
 
         @Override
         public String valueToString(Object value) throws ParseException {
-            return String.format("%.4f", value).replaceAll("\\.?0+$", "");
+            return String.format("%.6f", value);
         }
     }
 }
