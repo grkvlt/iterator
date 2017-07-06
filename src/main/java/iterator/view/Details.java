@@ -18,6 +18,8 @@ package iterator.view;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.text.ParseException;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JTextPane;
 import javax.swing.text.html.HTMLEditorKit;
@@ -51,19 +53,19 @@ public class Details extends JTextPane implements Subscriber {
     public static final String HTML_MIME_TYPE = "text/html";
     public static final String INITIAL_CONTENT_HTML = "<html><h1 id=\"title\">Iterated Function System</h1><html>";
 
-    public static final String[] CSS_RULES = new String[] {
+    public static final List<String> CSS_RULES = Arrays.asList(
         "h1 { font-family: Calibri, sans-serif; font-style: bold; font-size: 30px; margin-left: 10px; }",
         "h2 { font-family: Calibri, sans-serif; font-style: bold; font-size: 20px; margin-left: 10px; }",
         ".id { font-family: Calibri, sans-serif; font-style: bold; font-size: 15px; padding: 5px 0 0 0; margin: 0; }",
         ".info { font-family: Calibri, sans-serif; font-style: italic; font-size: 12px; padding: 0 0 5px 0; margin: 0; }",
-        ".matrixr1 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 5px 5px 0 -5px; margin: 0; width: 30px; }",
-        ".matrixr2 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 0 5px -5px -5px; margin: 0 0 -5px 0; width: 30px; }",
-        ".ifs { margin-left: 20px; border: 0; }",
-    };
-    public static final String[] CSS_BRACKET_RULES = new String[] {
+        ".matrixr1 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 5px 5px 0 -5px; margin: 0; width: 50px; }",
+        ".matrixr2 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 0 5px -5px -5px; margin: 0 0 -5px 0; width: 50px; }",
+        ".ifs { margin-left: 20px; border: 0; }"
+    );
+    public static final List<String> CSS_BRACKET_RULES = Arrays.asList(
         ".bracketl { width: 5px; padding: 0; margin-left: 2px; border-left: 2px solid black; border-top: 2px solid black; border-bottom: 2px solid black; }",
-        ".bracketr { width: 5px; padding: 0; margin-right: 2px; border-right: 2px solid black; border-top: 2px solid black; border-bottom: 2px solid black; }",
-    };
+        ".bracketr { width: 5px; padding: 0; margin-right: 2px; border-right: 2px solid black; border-top: 2px solid black; border-bottom: 2px solid black; }"
+    );
 
     public Details(EventBus bus, Explorer controller) {
         super();
@@ -75,10 +77,7 @@ public class Details extends JTextPane implements Subscriber {
         setText(INITIAL_CONTENT_HTML);
         HTMLEditorKit kit = (HTMLEditorKit) getEditorKitForContentType(HTML_MIME_TYPE);
         StyleSheet css = kit.getStyleSheet();
-        for (String rule : CSS_RULES) {
-            css.addRule(rule);
-        }
-        for (String rule : CSS_BRACKET_RULES) {
+        for (String rule : Iterables.concat(CSS_RULES, CSS_BRACKET_RULES)) {
             css.addRule(rule);
         }
  
@@ -116,7 +115,7 @@ public class Details extends JTextPane implements Subscriber {
             html.append("<h2>Empty</h2>");
         } else {
             int i = 0;
-            int columns = (int) Math.floor((float) getWidth() / 350f);
+            int columns = getWidth() / 300;
             html.append("<table>");
             for (Transform t : Ordering.from(IFS.IDENTITY).immutableSortedCopy(ifs)) {
                 if (i % columns == 0 && i != 0) html.append("</tr>");
@@ -140,7 +139,7 @@ public class Details extends JTextPane implements Subscriber {
                     Utils.DoubleFormatter f = new Utils.DoubleFormatter();
                     String transform = String.format(
                             "<tr class=\"transform\">" +
-                                "<td class=\"id\" width=\"25px\">%02d</td>" +
+                                "<td class=\"id\" width=\"50px\">%02d</td>" +
                                 "<td class=\"bracketl\" rowspan=\"2\">&nbsp;</td>" +
                                 "<td class=\"matrixr1\" align=\"right\">%s</td>" +
                                 "<td class=\"matrixr1\" align=\"right\">%s</td>" +
@@ -148,7 +147,7 @@ public class Details extends JTextPane implements Subscriber {
                                 "<td class=\"bracketr\" rowspan=\"2\">&nbsp;</td>" +
                             "</tr>" +
                             "<tr class=\"transform\">" +
-                                "<td class=\"info\" width=\"25px\">%.1f%%" +
+                                "<td class=\"info\" width=\"50px\">%.1f%%" +
                                     "<div style=\"width: 15px; height: 10px; border: 1px solid %s; " +
                                     "background: #%02x%02x%02x; padding: 0; margin: 0;\">&nbsp;</div>" +
                                 "</td>" +
