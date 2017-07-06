@@ -67,6 +67,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
@@ -102,6 +103,7 @@ import com.google.common.io.Resources;
 
 import iterator.model.IFS;
 import iterator.util.Config;
+import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Platform;
 import iterator.util.Subscriber;
@@ -244,33 +246,39 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
         // Check colour mode configuration
         if (config.containsKey(MODE_PROPERTY)) {
-            String mode = config.get(MODE_PROPERTY);
-            if (MODE_COLOUR.equalsIgnoreCase(mode)) {
+            Mode mode = Mode.valueOf(config.get(MODE_PROPERTY).toUpperCase(Locale.UK));
+            switch (mode) {
+            case COLOUR:
                 colour = true;
                 palette = false;
                 stealing = false;
                 ifscolour = false;
-            } else if (MODE_PALETTE.equalsIgnoreCase(mode)) {
+                break;
+            case PALETTE:
                 colour = true;
                 palette = true;
                 stealing = false;
                 ifscolour = false;
-            } else if (MODE_STEALING.equalsIgnoreCase(mode)) {
+                break;
+            case STEALING:
                 colour = true;
                 palette = true;
                 stealing = true;
                 ifscolour = false;
-            } else if (MODE_IFS_COLOUR.equalsIgnoreCase(mode)) {
+                break;
+            case IFS_COLOUR:
                 colour = true;
                 palette = false;
                 stealing = false;
                 ifscolour = true;
-            } else if (MODE_GRAY.equalsIgnoreCase(mode)) {
+                break;
+            case GRAY:
                 colour = false;
                 palette = false;
                 stealing = false;
                 ifscolour = false;
-            } else {
+                break;
+            default:
                 error("Cannot set colour mode: %s", mode);
             }
         }
@@ -278,7 +286,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         // Check rendering configuration
         if (config.containsKey(RENDER_PROPERTY)) {
             String value = config.get(RENDER_PROPERTY);
-            render = Render.valueOf(value.toUpperCase());
+            render = Render.valueOf(value.toUpperCase(Locale.UK));
         }
 
         // Get window size configuration
