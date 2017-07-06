@@ -92,6 +92,7 @@ import javax.xml.bind.Unmarshaller;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
@@ -168,7 +169,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private int paletteSize;
     private String paletteFile;
     private long seed;
-    private Dimension size, min = new Dimension(MIN_WINDOW_SIZE, MIN_WINDOW_SIZE);
+    private Dimension size;
+    private Dimension min = new Dimension(MIN_WINDOW_SIZE, MIN_WINDOW_SIZE);
     private File cwd;
 
     private JMenuBar menuBar;
@@ -202,15 +204,16 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                         colour = true;
                     } else if (argv[i].equalsIgnoreCase(PALETTE_OPTION) ||
                             argv[i].equalsIgnoreCase(PALETTE_OPTION_LONG)) {
-                        colour = true;
-                        palette = true;
+                        if (argv.length >= i + 1) {
+                            paletteFile = argv[++i];
+                        } else error("Palette argument not provided");
                     } else if (argv[i].equalsIgnoreCase(CONFIG_OPTION_LONG)) {
                         if (argv.length >= i + 1) {
                             override = new File(argv[++i]);
                             if (!override.exists()) {
                                 error("Configuration file does not exist: %s", override);
                             }
-                        }
+                        } else error("Configuration file argument not provided");
                     } else {
                         error("Cannot parse option: %s", argv[i]);
                     }
@@ -289,7 +292,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         // Load colour palette
         if (palette) {
             seed = config.get(PALETTE_PROPERTY + ".seed", DEFAULT_PALETTE_SEED);
-            paletteFile = config.get(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE);
+            if (Strings.isNullOrEmpty(paletteFile)) {
+                paletteFile = config.get(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE);
+            }
             paletteSize = config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE);
             loadColours();
         }
