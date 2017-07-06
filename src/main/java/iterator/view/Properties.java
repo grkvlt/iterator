@@ -51,6 +51,7 @@ public class Properties extends JDialog {
     public Properties(final Transform transform, final IFS ifs, final EventBus bus, final Window parent) {
         super(parent, "Properties", ModalityType.APPLICATION_MODAL);
 
+        setUndecorated(true);
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(2, 5, 2, 5);
@@ -152,7 +153,7 @@ public class Properties extends JDialog {
     }
 
     public void showDialog() {
-        setLocationByPlatform(true);
+        setLocationRelativeTo(getParent());
         setVisible(true);
     }
 

@@ -56,6 +56,7 @@ public class Matrix extends JDialog {
     public Matrix(final Transform transform, final IFS ifs, final EventBus bus, final Window parent) {
         super(parent, "Matrix", ModalityType.APPLICATION_MODAL);
 
+        setUndecorated(true);
         setLayout(new BorderLayout());
         setFont(new Font("Calibri", Font.PLAIN, 14));
         getContentPane().setBackground(Color.WHITE);
@@ -172,7 +173,7 @@ public class Matrix extends JDialog {
     }
 
     public void showDialog() {
-        setLocationByPlatform(true);
+        setLocationRelativeTo(getParent());
         setVisible(true);
     }
 

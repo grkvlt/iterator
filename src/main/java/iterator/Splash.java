@@ -28,6 +28,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.RescaleOp;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JPanel;
 import javax.swing.JWindow;
@@ -44,7 +45,7 @@ public class Splash extends JPanel implements ActionListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1028745784181961863L;
 
-    public static final int SPLASH_TIMEOUT_MS = 3000;
+    public static final Long SPLASH_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(5);
 
     private JWindow parent;
     private BufferedImage splash;
@@ -105,7 +106,7 @@ public class Splash extends JPanel implements ActionListener {
     public void showDialog() {
         parent.setVisible(true);
 
-        Timer timer = new Timer(SPLASH_TIMEOUT_MS, this);
+        Timer timer = new Timer(SPLASH_TIMEOUT_MS.intValue(), this);
         timer.setRepeats(false);
         timer.start();
     }
