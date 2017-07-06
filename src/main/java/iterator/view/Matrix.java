@@ -78,7 +78,7 @@ public class Matrix extends JDialog {
         for (String rule : Details.CSS_BRACKET_RULES) {
             leftCss.addRule(rule);
         }
-        left.setText("<div class=\"bracketl\" height=\"50px\" width=\"5px\">&nbsp;</div>");
+        left.setText("<div class=\"bracketl\" height=\"80px\" width=\"10px\">&nbsp;</div>");
         panel.add(left, BorderLayout.WEST);
 
         JPanel values = new JPanel();
@@ -108,7 +108,7 @@ public class Matrix extends JDialog {
         for (String rule : Details.CSS_BRACKET_RULES) {
             rightCss.addRule(rule);
         }
-        right.setText("<div class=\"bracketr\" height=\"50px\" width=\"5px\">&nbsp;</div>");
+        right.setText("<div class=\"bracketr\" height=\"80px\" width=\"10px\">&nbsp;</div>");
         panel.add(right, BorderLayout.EAST);
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));

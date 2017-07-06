@@ -102,7 +102,7 @@ public class Utils {
 
         @Override
         public String valueToString(Object value) throws ParseException {
-            return String.format("%.6f", value);
+            return String.format("%.4f", value);
         }
     }
 }

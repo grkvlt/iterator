@@ -58,8 +58,8 @@ public class Details extends JTextPane implements Subscriber {
         "h2 { font-family: Calibri, sans-serif; font-style: bold; font-size: 20px; margin-left: 10px; }",
         ".id { font-family: Calibri, sans-serif; font-style: bold; font-size: 15px; padding: 5px 0 0 0; margin: 0; }",
         ".info { font-family: Calibri, sans-serif; font-style: italic; font-size: 12px; padding: 0 0 5px 0; margin: 0; }",
-        ".matrixr1 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 5px 5px 0 -5px; margin: 0; width: 50px; }",
-        ".matrixr2 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 0 5px -5px -5px; margin: 0 0 -5px 0; width: 50px; }",
+        ".matrixr1 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 5px 5px 0 -5px; margin: 0; width: 60px; }",
+        ".matrixr2 { font-family: Cambria, serif; font-style: italic; font-size: 12px; padding: 0 5px -5px -5px; margin: 0 0 -5px 0; width: 60px; }",
         ".ifs { margin-left: 20px; border: 0; }"
     );
     public static final List<String> CSS_BRACKET_RULES = Arrays.asList(
@@ -115,13 +115,13 @@ public class Details extends JTextPane implements Subscriber {
             html.append("<h2>Empty</h2>");
         } else {
             int i = 0;
-            int columns = getWidth() / 300;
+            int columns = controller.getWidth() / 380;
             html.append("<table>");
             for (Transform t : Ordering.from(IFS.IDENTITY).immutableSortedCopy(ifs)) {
                 if (i % columns == 0 && i != 0) html.append("</tr>");
                 if (i % columns == 0) html.append("<tr>");
                 html.append("<td>")
-                    .append("<table class=\"ifs\" width=\"250px\">");
+                    .append("<table class=\"ifs\">");
 
                 double[] matrix = new double[6];
                 t.getTransform().getMatrix(matrix);
