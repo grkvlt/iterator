@@ -649,7 +649,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     @Subscribe
     public void resized(Dimension resized) {
         size = resized.getSize();
-        if (isDebug()) System.err.println("Resized: " + size.width + ", " + size.height);
+        debug("Resized: %d, %d", size.width, size.height);
     }
 
     /** @see Subscriber#updated(IFS) */
@@ -657,7 +657,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     @Subscribe
     public void updated(IFS updated) {
         ifs = updated;
-        if (isDebug()) System.err.println("Updated: " + ifs);
+        debug("Updated: %s", ifs);
         String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
         setTitle(name);
         if (!ifs.isEmpty()) {
