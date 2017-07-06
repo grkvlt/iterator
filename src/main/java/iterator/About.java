@@ -47,6 +47,8 @@ public class About extends JPanel implements MouseListener {
         setSize(splash.getWidth(), splash.getHeight());
 
         about = new JDialog(controller, "About IFS Explorer", ModalityType.APPLICATION_MODAL);
+
+        about.setUndecorated(true);
         about.setLayout(new BorderLayout());
         about.add(this, BorderLayout.CENTER);
         about.pack();
@@ -62,7 +64,7 @@ public class About extends JPanel implements MouseListener {
     }
 
     public void showDialog() {
-        about.setLocationByPlatform(true);
+        about.setLocationRelativeTo(null);
         about.setVisible(true);
     }
 
