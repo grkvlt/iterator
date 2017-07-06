@@ -71,6 +71,7 @@ public class Matrix extends JDialog {
 
         JTextPane left = new JTextPane();
         left.setBackground(Color.WHITE);
+        left.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 5));
         left.setEditable(false);
         left.setContentType(Details.HTML_MIME_TYPE);
         left.setText(Details.INITIAL_CONTENT_HTML);
@@ -79,10 +80,11 @@ public class Matrix extends JDialog {
         for (String rule : Details.CSS_BRACKET_RULES) {
             leftCss.addRule(rule);
         }
-        left.setText("<div class=\"bracketl\" height=\"80px\" width=\"10px\">&nbsp;</div>");
+        left.setText("<div class=\"bracketl\" height=\"60px\" width=\"10px\">&nbsp;</div>");
         panel.add(left, BorderLayout.WEST);
 
         JPanel values = new JPanel();
+        values.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         GridLayout grid = new GridLayout(0, 3);
         grid.setHgap(10);
         grid.setVgap(4);
@@ -101,6 +103,7 @@ public class Matrix extends JDialog {
 
         JTextPane right = new JTextPane();
         right.setBackground(Color.WHITE);
+        right.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 10));
         right.setEditable(false);
         right.setContentType(Details.HTML_MIME_TYPE);
         right.setText(Details.INITIAL_CONTENT_HTML);
@@ -109,7 +112,7 @@ public class Matrix extends JDialog {
         for (String rule : Details.CSS_BRACKET_RULES) {
             rightCss.addRule(rule);
         }
-        right.setText("<div class=\"bracketr\" height=\"80px\" width=\"10px\">&nbsp;</div>");
+        right.setText("<div class=\"bracketr\" height=\"60px\" width=\"10px\">&nbsp;</div>");
         panel.add(right, BorderLayout.EAST);
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -147,8 +150,6 @@ public class Matrix extends JDialog {
 
         pack();
 
-        Dimension size = new Dimension(300, 150);
-        setMinimumSize(size);
         setResizable(false);
     }
 
@@ -156,11 +157,9 @@ public class Matrix extends JDialog {
         final JFormattedTextField field = new JFormattedTextField(new Utils.DoubleFormatter());
         field.setHorizontalAlignment(JTextField.RIGHT);
         field.setBorder(BorderFactory.createLoweredSoftBevelBorder());
-        field.setMargin(new Insets(2, 2, 2, 2));
         field.setValue(value);
         field.setFont(new Font("Cambria", Font.ITALIC, 14));
-        field.setColumns(10);
-        field.setMinimumSize(new Dimension(50, 10));
+        field.setColumns(8);
         panel.add(field);
 
         Supplier<Double> supplier = new Supplier<Double>() {
