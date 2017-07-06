@@ -17,7 +17,6 @@ Iterated Function System Explorer.
 - Improve matrix coefficient editing integration
 - Add dialog for editing configuration file properties
 - Better Operating-System integration
- - Printing support
  - Native full-screen mode
  - Support native windowing system features
 - Better editing UI
