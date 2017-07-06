@@ -52,6 +52,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
@@ -485,7 +486,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 viewer.stop();
                 PrinterJob job = PrinterJob.getPrinterJob();
                 job.setJobName(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
-                job.setPrintable(viewer);
+                PageFormat pf = job.defaultPage();
+                if (getWidth() > getHeight()) {
+                    pf.setOrientation(PageFormat.LANDSCAPE);
+                } else {
+                    pf.setOrientation(PageFormat.PORTRAIT);
+                }
+                job.setPrintable(viewer, pf);
                 boolean ok = job.printDialog();
                 if (ok) {
                     try {
