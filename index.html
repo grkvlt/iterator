@@ -72,9 +72,9 @@
           GitHub</a> as either <code>.tar.gz</code> or <code>.zip</code> archives. Then run the relevant
           script for your operating system.
         </p>
-        <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/explorer.sh [-f] [-c] [-p] [<i>ifs.xml</i>]
-<b>$</b> ./bin/explorer.command [-f] [-c] [-p] [<i>ifs.xml</i>]
-<b>C&gt;</b> .\bin\explorer.cmd [-f] [-c] [-p] [<i>ifs.xml</i>]</code></pre>
+        <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/explorer.sh [-f] [-c] [-p <i>palette</i>] [<i>ifs.xml</i>]
+<b>$</b> ./bin/explorer.command [-f] [-c] [-p <i>palette</i>] [<i>ifs.xml</i>]
+<b>C&gt;</b> .\bin\explorer.cmd [-f] [-c] [-p <i>palette</i>] [<i>ifs.xml</i>]</code></pre>
         <p>
           Alternatively, the <code>iterator-1.0.11-jar-with-dependencies.jar</code> .jar file
           can simply be downloaded and executed directly, with the <code>java -jar</code> command.
@@ -101,7 +101,7 @@
           Enable colour rendering with the <code>-c</code> or <code>--colour</code> flag.
           This will use a fixed list of colours for the transforms. To use a colour palette
           taken from a sample image, specify <code>-p</code> or <code>--palette</code>. The image
-          used can be set with the <code>explorer.palette.file</code> system property and
+          used can also be set with the <code>explorer.palette.file</code> system property and
           can be one of several included named palettes, such as <em>abstract</em>, <em>wave</em>
           or <em>car</em>, or a URI pointing at a local or remote <code>PNG</code> image
           to retrieve colours from.
@@ -137,9 +137,8 @@
           It is also possible to set individual configuration options as system properties,
           using the <code>JAVA_OPTS</code> environment variable.
         </p>
-        <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> export JAVA_OPTS="-Dexplorer.palette.file=wave \
-<b>&gt;</b> -Dexplorer.palette.seed=1234"
-<b>$</b> ./bin/explorer.sh --colour --palette ./data/spikes.xml</code></pre>
+        <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> export JAVA_OPTS="-Dexplorer.palette.seed=1234"
+<b>$</b> ./bin/explorer.sh --colour --palette wave ./data/spikes.xml</code></pre>
         <h3>Options</h3>
         <p>
           The most interesting configuration properties are the <code>explorer.mode</code>,
