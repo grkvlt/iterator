@@ -87,15 +87,12 @@
                   .css('left', (document.width - 440) / 2);
 
       $('#gallery img').each(function(i) {
-        $(this).css('opacity', (Math.random() / 2) + 0.4)
+        $(this).css('opacity', Math.random() / 2)
                .css('border', '1px solid gray')
                .css('z-index', Math.random() * 100)
                .css('position', 'absolute')
-               .css('left', (Math.random() * document.width) - 200)
-               .css('top', (Math.random() * document.height) - 200);
-        var side = (Math.floor(Math.random() * 4) + 2) * 100;
-        $(this).width(side)
-               .height(side);
+               .css('width', 800)
+               .css('height', 800);
       });
       // ]]>
     </script>
