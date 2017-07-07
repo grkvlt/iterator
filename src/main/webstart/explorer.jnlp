@@ -40,23 +40,21 @@
         <all-permissions />
     </security>
 
-    <application-desc main-class="iterator.Explorer">
-        <argument>--palette</argument>
-    </application-desc>
+    <application-desc main-class="iterator.Explorer" />
 
     <resources>
-        <j2se href="http://java.sun.com/products/autodl/j2se" version="1.7+" />
+        <j2se href="http://java.sun.com/products/autodl/j2se" version="1.8+" />
     </resources>
 
     <resources>
         <property name="explorer.grid.min" value="20" />
         <property name="explorer.grid.max" value="100" />
-        <property name="explorer.grid.snap" value="1" />
+        <property name="explorer.grid.snap" value="5" />
         <property name="explorer.window.width" value="800" />
         <property name="explorer.window.height" value="800" />
-        <property name="explorer.debug" value="true" />
+        <property name="explorer.debug" value="false" />
         <property name="explorer.mode" value="palette" />
-        <property name="explorer.palette.file" value="abstract" />
+        <property name="explorer.palette.file" value="autumn" />
         <property name="explorer.palette.seed" value="0" />
         <property name="explorer.palette.size" value="64" />
     </resources>
