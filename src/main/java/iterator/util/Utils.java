@@ -17,7 +17,6 @@ package iterator.util;
 
 import java.text.ParseException;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
@@ -35,9 +34,8 @@ import com.google.common.collect.Lists;
 public class Utils {
     /**
      * Waits until the {@code input} {@link Supplier#get() supplies} a non-null object.
-     *
+     * <p>
      * This does not have a timeout, and will wait forever.
-     *
      * <pre>
      * {@code bus = waitFor(new Supplier<EventBus>() {
      *     public EventBus get() { return explorer.getEventBus(); }
@@ -63,7 +61,6 @@ public class Utils {
 
     /**
      * Concatenates a series of optional elements onto an initial {@link List}.
-     *
      * <pre>
      * {@code List<Transform> all = concatenate(ifs, selected);}
      * </pre>
@@ -72,15 +69,15 @@ public class Utils {
      * @param optional a series of optional elements that may be null
      * @return a new {@link List} including the non-null optional elements
      * @see Iterables#concat(Iterable)
-     * @see Optional#asSet()
+     * @see Optional#presentInstances(Iterable)
      */
     @SafeVarargs
     public static <T> List<T> concatenate(List<T> initial, T...optional) {
-        List<Set<T>> extra = Lists.newArrayList();
+        List<Optional<T>> extra = Lists.newArrayList();
         for (T nullable : optional) {
-            extra.add(Optional.fromNullable(nullable).asSet());
+            extra.add(Optional.fromNullable(nullable));
         }
-        Iterable<T> joined = Iterables.concat(initial, Iterables.concat(extra));
+        Iterable<T> joined = Iterables.concat(initial, Optional.presentInstances(extra));
         return Lists.newArrayList(joined);
     }
 

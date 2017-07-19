@@ -116,12 +116,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Subscribe
     public void updated(IFS ifs) {
         this.ifs = ifs;
-        reset();
-        if (!isVisible()) {
+        if (!(isVisible() && running.get())) {
             rescale();
-        } else {
-            stop();
-            start();
         }
     }
 
@@ -409,35 +405,35 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void keyPressed(KeyEvent e) {
         if (isVisible()) {
             switch (e.getKeyCode()) {
-            case KeyEvent.VK_SPACE:
-                if (running.get()) {
+                case KeyEvent.VK_SPACE:
+                    if (running.get()) {
+                        stop();
+                    } else {
+                        start();
+                    }
+                    break;
+                case KeyEvent.VK_ESCAPE:
+                    if (zoom != null) {
+                        zoom = null;
+                        repaint();
+                    }
+                    break;
+                case KeyEvent.VK_MINUS:
                     stop();
-                } else {
+                    rescale(scale / 2f, centre);
+                    reset();
                     start();
-                }
-                break;
-            case KeyEvent.VK_ESCAPE:
-                if (zoom != null) {
-                    zoom = null;
-                    repaint();
-                }
-                break;
-            case KeyEvent.VK_MINUS:
-                stop();
-                rescale(scale / 2f, centre);
-                reset();
-                start();
-                break;
-            case KeyEvent.VK_EQUALS:
-                stop();
-                if (e.isShiftDown()) {
-                    rescale(scale * 2f, centre);
-                } else {
-                    rescale();
-                }
-                reset();
-                start();
-                break;
+                    break;
+                case KeyEvent.VK_EQUALS:
+                    stop();
+                    if (e.isShiftDown()) {
+                        rescale(scale * 2f, centre);
+                    } else {
+                        rescale();
+                    }
+                    reset();
+                    start();
+                    break;
             }
         }
     }

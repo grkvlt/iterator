@@ -27,6 +27,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ForwardingSortedMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -41,8 +42,6 @@ import com.google.common.io.Resources;
  * Global cobfiguration values for use in preferences dialog.
  */
 public class Config extends ForwardingSortedMap<String, String> {
-
-    public static final String USER_HOME_PROPERTY = "user.home";
 
     public static final String PROPERTIES_FILE = "explorer.properties";
 
@@ -123,7 +122,7 @@ public class Config extends ForwardingSortedMap<String, String> {
         load(Resources.asCharSource(Resources.getResource(PROPERTIES_FILE), Charsets.UTF_8));
 
         // Configuration from home directory
-        File home = new File(System.getProperty(USER_HOME_PROPERTY), "." + PROPERTIES_FILE);
+        File home = new File(StandardSystemProperty.USER_HOME.value(), "." + PROPERTIES_FILE);
         if (home.exists()) {
             load(Files.asCharSource(home, Charsets.UTF_8));
         }

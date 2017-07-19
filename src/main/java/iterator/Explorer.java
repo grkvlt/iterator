@@ -26,12 +26,7 @@ import static iterator.util.Config.DEFAULT_WINDOW_SIZE;
 import static iterator.util.Config.GRID_PROPERTY;
 import static iterator.util.Config.MIN_THREADS;
 import static iterator.util.Config.MIN_WINDOW_SIZE;
-import static iterator.util.Config.MODE_COLOUR;
-import static iterator.util.Config.MODE_GRAY;
-import static iterator.util.Config.MODE_IFS_COLOUR;
-import static iterator.util.Config.MODE_PALETTE;
 import static iterator.util.Config.MODE_PROPERTY;
-import static iterator.util.Config.MODE_STEALING;
 import static iterator.util.Config.PALETTE_PROPERTY;
 import static iterator.util.Config.RENDER_PROPERTY;
 import static iterator.util.Config.THREADS_PROPERTY;
@@ -67,7 +62,10 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -93,12 +91,16 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import com.google.common.base.CaseFormat;
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import com.google.common.eventbus.SubscriberExceptionContext;
+import com.google.common.eventbus.SubscriberExceptionHandler;
 import com.google.common.io.Resources;
 
 import iterator.model.IFS;
@@ -117,23 +119,23 @@ import iterator.view.Viewer;
  *
  * @author andrew.international@gmail.com
  */
-public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHandler, Subscriber {
+public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHandler, SubscriberExceptionHandler, Subscriber {
     /** serialVersionUID */
     private static final long serialVersionUID = -2003170067188344917L;
 
-    public static final String BANNER =
-            "   ___ _____ ____    _____            _                     \n" +
-            "  |_ _|  ___/ ___|  | ____|_  ___ __ | | ___  _ __ ___ _ __ \n" +
-            "   | || |_  \\___ \\  |  _| \\ \\/ / '_ \\| |/ _ \\| '__/ _ \\ '__|\n" +
-            "   | ||  _|  ___) | | |___ >  <| |_) | | (_) | | |  __/ |   \n" +
-            "  |___|_|   |____/  |_____/_/\\_\\ .__/|_|\\___/|_|  \\___|_|   \n" +
-            "                               |_|                          \n" +
-            "\n" +
-            "    Iterated Function System Explorer Version %s\n" +
-            "    Copyright 2012-2017 by Andrew Donald Kennedy\n" +
-            "    Licensed under the Apache Software License, Version 2.0\n" +
-            "    https://grkvlt.github.io/iterator/\n" +
-            "\n";
+    public static final List<String> BANNER = Arrays.asList(
+            "   ___ _____ ____    _____            _                     ",
+            "  |_ _|  ___/ ___|  | ____|_  ___ __ | | ___  _ __ ___ _ __ ",
+            "   | || |_  \\___ \\  |  _| \\ \\/ / '_ \\| |/ _ \\| '__/ _ \\ '__|",
+            "   | ||  _|  ___) | | |___ >  <| |_) | | (_) | | |  __/ |   ",
+            "  |___|_|   |____/  |_____/_/\\_\\ .__/|_|\\___/|_|  \\___|_|   ",
+            "                               |_|                          ",
+            "",
+            "    Iterated Function System Explorer Version %s",
+            "    Copyright 2012-2017 by Andrew Donald Kennedy",
+            "    Licensed under the Apache Software License, Version 2.0",
+            "    https://grkvlt.github.io/iterator/",
+            "");
 
     private static final Version version = Version.instance();
 
@@ -248,38 +250,38 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         if (config.containsKey(MODE_PROPERTY)) {
             Mode mode = Mode.valueOf(config.get(MODE_PROPERTY).toUpperCase(Locale.UK));
             switch (mode) {
-            case COLOUR:
-                colour = true;
-                palette = false;
-                stealing = false;
-                ifscolour = false;
-                break;
-            case PALETTE:
-                colour = true;
-                palette = true;
-                stealing = false;
-                ifscolour = false;
-                break;
-            case STEALING:
-                colour = true;
-                palette = true;
-                stealing = true;
-                ifscolour = false;
-                break;
-            case IFS_COLOUR:
-                colour = true;
-                palette = false;
-                stealing = false;
-                ifscolour = true;
-                break;
-            case GRAY:
-                colour = false;
-                palette = false;
-                stealing = false;
-                ifscolour = false;
-                break;
-            default:
-                error("Cannot set colour mode: %s", mode);
+                case COLOUR:
+                    colour = true;
+                    palette = false;
+                    stealing = false;
+                    ifscolour = false;
+                    break;
+                case PALETTE:
+                    colour = true;
+                    palette = true;
+                    stealing = false;
+                    ifscolour = false;
+                    break;
+                case STEALING:
+                    colour = true;
+                    palette = true;
+                    stealing = true;
+                    ifscolour = false;
+                    break;
+                case IFS_COLOUR:
+                    colour = true;
+                    palette = false;
+                    stealing = false;
+                    ifscolour = true;
+                    break;
+                case GRAY:
+                    colour = false;
+                    palette = false;
+                    stealing = false;
+                    ifscolour = false;
+                    break;
+                default:
+                    error("Cannot set colour mode: %s", mode);
             }
         }
 
@@ -312,7 +314,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 palette ? paletteFile : colour ? "hsb" : "black");
 
         // Setup event bus
-        bus = new EventBus(EXPLORER);
+        bus = new EventBus(this);
         bus.register(this);
 
         // Setup full-screen mode if required
@@ -841,12 +843,22 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         error(Optional.of(e), "Error: Thread %s (%d) caused %s: %s", t.getName(), t.getId(), e.getClass().getName(), e.getMessage());
     }
 
+    /** @see com.google.common.eventbus.SubscriberExceptionHandler#handleException(Throwable, SubscriberExceptionContext) */
+    @Override
+    public void handleException(Throwable exception, SubscriberExceptionContext context) {
+        debug("Event bus caught %s(%s) in %s#%s(%s)",
+                exception.getClass().getSimpleName(), exception.getMessage(),
+                context.getSubscriber().getClass().getSimpleName(), context.getSubscriberMethod().getName(), Objects.toString(context.getEvent(), "null"));
+        uncaughtException(Thread.currentThread(), exception);
+    }
+
     /**
      * Explorer.
      */
     public static void main(final String...argv) throws Exception {
         // Print text banner
-        System.out.printf(BANNER, version.get());
+        String banner = Joiner.on(StandardSystemProperty.LINE_SEPARATOR.value()).join(BANNER);
+        System.out.printf(banner, version.get());
 
         // Load splash screen first
         Splash splashScreen = new Splash();

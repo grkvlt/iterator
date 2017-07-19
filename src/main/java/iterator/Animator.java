@@ -15,11 +15,16 @@
  */
 package iterator;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -27,9 +32,12 @@ import javax.swing.SwingUtilities;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.base.Splitter;
+import com.google.common.base.StandardSystemProperty;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
@@ -54,22 +62,19 @@ public class Animator implements Subscriber {
     private float scale = 1f;
     private Point2D centre = null;
     private File input, output;
-    private List<Change> list = Lists.newArrayList();
     private Map<List<Change>, Long> segments = Maps.newLinkedHashMap();
 
     public Animator(String configFile) throws Exception {
         File config = new File(configFile);
-        if (!config.exists()) {
-            throw new IllegalArgumentException("Config file not found: " + config);
-        }
+        checkArgument(config.exists(), "Config file '%s' not found", config);
         parse(config);
 
         // Check input and output settings
-        if (input == null || !input.exists()) {
-            throw new IllegalArgumentException("Input file not found: " + input);
-        }
-        if (output == null || (output.exists() && !output.isDirectory())) {
-            throw new IllegalArgumentException("Output location not a directory: " + output);
+        checkNotNull(input, "Input file must be set");
+        checkState(input.exists(), "Input file '%s' not found", input);
+        checkNotNull(output, "Output location must be set");
+        if (output.exists()) {
+            checkState(output.isDirectory(), "Output location '%s' not a direcotry", output);
         } else {
             output.mkdirs();
         }
@@ -99,9 +104,8 @@ public class Animator implements Subscriber {
 
     /**
      * Parse the animation configuration file.
-     *
+     * <p>
      * See the online documentation for more details. The format is generally as shown below:
-     *
      * <pre>
      * {@code # comment
      * ifs file
@@ -121,90 +125,104 @@ public class Animator implements Subscriber {
      * @throws NumberFormatException
      */
     public void parse(File config) throws IOException {
-        for (String line : Files.readLines(config, Charsets.UTF_8)) {
-            Iterable<String> tokens = Splitter.on(' ').omitEmptyStrings().trimResults().split(line);
-            if (Iterables.isEmpty(tokens)) continue;
-            String type = Iterables.get(tokens, 0);
-            if (type.equalsIgnoreCase("ifs")) {
-                // ifs file
-                if (Iterables.size(tokens) != 2) {
-                    throw new IllegalStateException("Parse error at 'ifs': " + line);
-                }
-                input = new File(Iterables.get(tokens, 1).replace("~", System.getProperty("user.home")));
-            } else if (type.equalsIgnoreCase("save")) {
-                // save directory
-                if (Iterables.size(tokens) != 2) {
-                    throw new IllegalStateException("Parse error at 'save': " + line);
-                }
-                output = new File(Iterables.get(tokens, 1).replace("~", System.getProperty("user.home")));
-            } else if (type.equalsIgnoreCase("frames")) {
-                // frames count
-                if (Iterables.size(tokens) != 2) {
-                    throw new IllegalStateException("Parse error at 'frames': " + line);
-                }
-                frames = Long.valueOf(Iterables.get(tokens, 1));
-            } else if (type.equalsIgnoreCase("delay")) {
-                // delay ms
-                if (Iterables.size(tokens) != 2) {
-                    throw new IllegalStateException("Parse error at 'delay': " + line);
-                }
-                delay = Long.valueOf(Iterables.get(tokens, 1));
-            } else if (type.equalsIgnoreCase("iterations")) {
-                // iterations thousands
-                if (Iterables.size(tokens) != 2) {
-                    throw new IllegalStateException("Parse error at 'iterations': " + line);
-                }
-                iterations = Long.valueOf(Iterables.get(tokens, 1));
-            } else if (type.equalsIgnoreCase("zoom")) {
-                // zoom scale centrex centrey
-                if (Iterables.size(tokens) != 4) {
-                    throw new IllegalStateException("Parse error at 'zoom': " + line);
-                }
-                scale = Float.valueOf(Iterables.get(tokens, 1));
-                centre = new Point2D.Double(
-                        Double.valueOf(Iterables.get(tokens, 2)),
-                        Double.valueOf(Iterables.get(tokens, 3)));
-            } else if (type.equalsIgnoreCase("transform")) {
-                // transform id field start finish
-                if (Iterables.size(tokens) != 5) {
-                    throw new IllegalStateException("Parse error at 'transform': " + line);
-                }
-                Change change = new Change();
-                change.transform = Integer.valueOf(Iterables.get(tokens, 1));
-                String field = Iterables.get(tokens, 2).toLowerCase();
-                if (field.length() == 1 && CharMatcher.anyOf("xywhr").matches(field.charAt(0))) {
-                    change.field = field.charAt(0);
-                } else {
-                    throw new IllegalStateException("Parse error at 'transform' field: " + line);
-                }
-                change.start = Double.valueOf(Iterables.get(tokens, 3));
-                change.end = Double.valueOf(Iterables.get(tokens, 4));
-                list.add(change);
-            } else if (type.equalsIgnoreCase("segment")) {
-                // segment frames?
-                if (Iterables.size(tokens) == 2) {
-                    segment = Long.valueOf(Iterables.get(tokens, 1));
-                } else {
-                    segment = frames;
-                }
-                list.clear();
-            } else if (type.equalsIgnoreCase("end")) {
-                // end
-                if (Iterables.size(tokens) != 1) {
-                    throw new IllegalStateException("Parse error at 'end': " + line);
-                }
-                segments.put(ImmutableList.copyOf(list), segment);
-            } else if (type.startsWith("#")) {
-                // # comment
-                continue;
-            } else {
-                throw new IllegalStateException("Parse error: " + line);
+        List<Change> list = Lists.newArrayList();
+        List<String> lines = Files.readLines(config, Charsets.UTF_8);
+        for (int l = 0; l < lines.size(); l++) {
+            String line = lines.get(l);
+            List<String> tokens = Splitter.on(' ').omitEmptyStrings().trimResults().splitToList(line);
+            if (tokens.isEmpty()) continue;
+            String type = tokens.get(0).toLowerCase(Locale.UK);
+            int args = tokens.size() - 1;
+            if (type.startsWith("#")) {
+                continue; // comment
+            }
+            checkArgs(type, args, l);
+            switch (type) {
+                case "ifs": // file
+                    input = new File(tokens.get(1).replace("~", StandardSystemProperty.USER_HOME.value()));
+                    break;
+                case "save": // directory
+                    output = new File(tokens.get(1).replace("~", StandardSystemProperty.USER_HOME.value()));
+                    break;
+                case "frames": // count
+                    frames = Long.valueOf(tokens.get(1));
+                    break;
+                case "delay": // ms
+                    delay = Long.valueOf(tokens.get(1));
+                    break;
+                case "iterations": // thousands
+                    iterations = Long.valueOf(tokens.get(1));
+                    break;
+                case "zoom": // scale centrex centrey
+                    scale = Float.valueOf(tokens.get(1));
+                    centre = new Point2D.Double(
+                            Double.valueOf(tokens.get(2)),
+                            Double.valueOf(tokens.get(3)));
+                    break;
+                case "transform": // id field start finish
+                    Change change = new Change();
+                    change.transform = Integer.valueOf(tokens.get(1));
+                    String field = tokens.get(2).toLowerCase(Locale.UK);
+                    if (field.length() == 1 && CharMatcher.anyOf("xywhr").matches(field.charAt(0))) {
+                        change.field = field.charAt(0);
+                    } else {
+                        throw new IllegalStateException(String.format("Parse error: Invalid 'transform' field %s at line %d", field, l));
+                    }
+                    change.start = Double.valueOf(tokens.get(3));
+                    change.end = Double.valueOf(tokens.get(4));
+                    list.add(change);
+                    break;
+                case "segment": // frames?
+                    if (list.size() > 0) {
+                        throw new IllegalStateException(String.format("Parse error: Segments cannot be nested at line %d", l));
+                    }
+                    if (args == 1) {
+                        segment = Long.valueOf(tokens.get(1));
+                    } else {
+                        segment = frames;
+                    }
+                    break;
+                case "end":
+                    if (list.isEmpty()) {
+                        throw new IllegalStateException(String.format("Parse error: Cannot end an empty segment at line %d", l));
+                    }
+                    segments.put(ImmutableList.copyOf(list), segment);
+                    list.clear();
+                    break;
+                default:
+                    throw new IllegalStateException(String.format("Parse error: Unknown directive '%s' at line %d", type, l));
             }
         }
 
         // Deal with single segment case (no 'segment' or 'end' token)
         if (segments.isEmpty() && list.size() > 0) {
             segments.put(ImmutableList.copyOf(list), frames);
+        }
+    }
+
+    private static final Map<String, Boolean> OPTIONAL_ARGUMENTS = ImmutableMap.<String, Boolean>builder()
+            .put("segment", true)
+            .build();
+    private static final Function<String, Boolean> OPTIONAL = Functions.forMap(OPTIONAL_ARGUMENTS, false);
+
+    private static final Map<String, Integer> NUMBER_ARGUMENTS = ImmutableMap.<String, Integer>builder()
+            .put("ifs", 1)
+            .put("save", 1)
+            .put("frames", 1)
+            .put("delay", 1)
+            .put("iterations", 1)
+            .put("zoom", 3)
+            .put("transform", 4)
+            .put("segment", 1)
+            .build();
+    private static final Function<String, Integer> NUMBER = Functions.forMap(NUMBER_ARGUMENTS, 0);
+
+    private void checkArgs(String type, int args, int l) {
+        int n = NUMBER.apply(type);
+        boolean optional = OPTIONAL.apply(type);
+        if ((optional && args != 0) && args != n) {
+            String message = String.format("Parse error: Directive '%s' requires %d arguments, found %d at line %d", type, n, args, l);
+            throw new IllegalStateException(message);
         }
     }
 
@@ -257,11 +275,11 @@ public class Animator implements Subscriber {
                     }
                     double delta = (change.end - change.start) * fraction;
                     switch (change.field) {
-                    case 'x': transform.x = change.start + delta; break;
-                    case 'y': transform.y = change.start + delta; break;
-                    case 'w': transform.w = change.start + delta; break;
-                    case 'h': transform.h = change.start + delta; break;
-                    case 'r': transform.r = Math.toRadians(change.start + delta); break;
+                        case 'x': transform.x = change.start + delta; break;
+                        case 'y': transform.y = change.start + delta; break;
+                        case 'w': transform.w = change.start + delta; break;
+                        case 'h': transform.h = change.start + delta; break;
+                        case 'r': transform.r = Math.toRadians(change.start + delta); break;
                     }
                 }
 
