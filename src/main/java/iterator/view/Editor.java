@@ -530,7 +530,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 Point delta = new Point();
                 Point inverseX = new Point();
                 Point inverseY = new Point();
-                Point inverse = new Point();
                 AffineTransform reverse = new AffineTransform();
                 reverse.rotate(-resize.r);
                 reverse.transform(new Point(dx, dy), delta);
@@ -538,7 +537,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 try {
                     reverse.inverseTransform(new Point(delta.x, 0), inverseX);
                     reverse.inverseTransform(new Point(0, delta.y), inverseY);
-                    reverse.inverseTransform(new Point(delta.x, delta.y), inverse);
                 } catch (NoninvertibleTransformException e1) {
                     Throwables.propagate(e1);
                 }
@@ -547,41 +545,55 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 double y = resize.y;
 
                 if (e.isShiftDown()) {
-                    double aspect = w / h;
+                    double a = w / h;
                     switch(corner.getType()) {
-                    case Cursor.NW_RESIZE_CURSOR: // OK
-                        x += inverse.y * aspect; y += inverse.y;
-                        w -= delta.y * aspect; h -= delta.y;
-                        break;
-                    case Cursor.NE_RESIZE_CURSOR: // OK ROT
-                        x += inverseY.x; y += inverseY.y;
-                        w -= delta.y * aspect; h -= delta.y;
-                        break;
-                    case Cursor.SW_RESIZE_CURSOR: // OK
-                        x -= inverse.y * aspect; y += inverseX.y;
-                        w += delta.y * aspect; h += delta.y;
-                        break;
-                    case Cursor.SE_RESIZE_CURSOR: // OK ROT
-                        w += delta.y * aspect; h += delta.y;
-                        break;
+                        case Cursor.NW_RESIZE_CURSOR: // OK ROT
+                            x += ((inverseX.y * a) + (inverseY.y * a));
+                            y += (inverseX.y + inverseY.y);
+                            w -= delta.y * a;
+                            h -= delta.y;
+                            break;
+                        case Cursor.NE_RESIZE_CURSOR: // OK ROT
+                            x += inverseY.x;
+                            y += inverseY.y;
+                            w -= delta.y * a;
+                            h -= delta.y;
+                            break;
+                        case Cursor.SW_RESIZE_CURSOR: // OK
+                            x -= ((inverseX.y * a) + (inverseY.y * a));
+                            y += inverseX.y;
+                            w += delta.y * a;
+                            h += delta.y;
+                            break;
+                        case Cursor.SE_RESIZE_CURSOR: // OK ROT
+                            w += delta.y * a;
+                            h += delta.y;
+                            break;
                     }
                 } else {
                     switch(corner.getType()) {
-                    case Cursor.NW_RESIZE_CURSOR: // OK ROT
-                        x += inverse.x; y += inverse.y;
-                        w -= delta.x; h -= delta.y;
-                        break;
-                    case Cursor.NE_RESIZE_CURSOR: // OK ROT
-                        x += inverseY.x; y += inverseY.y;
-                        w += delta.x; h -= delta.y;
-                        break;
-                    case Cursor.SW_RESIZE_CURSOR: // OK ROT
-                        x += inverseX.x; y += inverseX.y;
-                        w -= delta.x; h += delta.y;
-                        break;
-                    case Cursor.SE_RESIZE_CURSOR: // OK ROT
-                        w += delta.x; h += delta.y;
-                        break;
+                        case Cursor.NW_RESIZE_CURSOR: // OK ROT
+                            x += (inverseX.x + inverseY.x);
+                            y += (inverseX.y + inverseY.y);
+                            w -= delta.x;
+                            h -= delta.y;
+                            break;
+                        case Cursor.NE_RESIZE_CURSOR: // OK ROT
+                            x += inverseY.x;
+                            y += inverseY.y;
+                            w += delta.x;
+                            h -= delta.y;
+                            break;
+                        case Cursor.SW_RESIZE_CURSOR: // OK ROT
+                            x += (inverseX.x + inverseY.x);
+                            y += inverseX.y;
+                            w -= delta.x;
+                            h += delta.y;
+                            break;
+                        case Cursor.SE_RESIZE_CURSOR: // OK ROT
+                            w += delta.x;
+                            h += delta.y;
+                            break;
                     }
                 }
 
