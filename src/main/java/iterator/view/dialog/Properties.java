@@ -13,7 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iterator.view;
+package iterator.view.dialog;
+
+import static iterator.util.Messages.DIALOG_PROPERTIES_BUTTON_CANCEL;
+import static iterator.util.Messages.DIALOG_PROPERTIES_BUTTON_UPDATE;
+import static iterator.util.Messages.DIALOG_PROPERTIES_H;
+import static iterator.util.Messages.DIALOG_PROPERTIES_R;
+import static iterator.util.Messages.DIALOG_PROPERTIES_TITLE;
+import static iterator.util.Messages.DIALOG_PROPERTIES_W;
+import static iterator.util.Messages.DIALOG_PROPERTIES_X;
+import static iterator.util.Messages.DIALOG_PROPERTIES_Y;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -23,6 +32,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -35,8 +45,10 @@ import javax.swing.JTextField;
 import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
 
+import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
+import iterator.util.Messages;
 import iterator.util.Utils;
 
 /**
@@ -47,9 +59,12 @@ public class Properties extends JDialog {
     private static final long serialVersionUID = -7626627964747215623L;
 
     private final Supplier<Double> x, y, w, h, r;
+    private final Messages messages;
 
-    public Properties(final Transform transform, final IFS ifs, final EventBus bus, final Window parent) {
-        super(parent, "Properties", ModalityType.APPLICATION_MODAL);
+    public Properties(final Transform transform, final IFS ifs, final Explorer controller, final EventBus bus, final Window parent) {
+        super(parent, null, ModalityType.APPLICATION_MODAL);
+
+        messages = controller.getMessages();
 
         setUndecorated(true);
         GridBagLayout gridbag = new GridBagLayout();
@@ -60,7 +75,8 @@ public class Properties extends JDialog {
         getContentPane().setBackground(Color.WHITE);
         setLayout(gridbag);
 
-        JLabel title = new JLabel(String.format("Transform T%02d", transform.getId()), JLabel.CENTER);
+        String label = MessageFormat.format(messages.getText(DIALOG_PROPERTIES_TITLE), transform.getId());
+        JLabel title = new JLabel(label, JLabel.CENTER);
         title.setFont(new Font("Calibri", Font.BOLD, 16));
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
@@ -70,14 +86,14 @@ public class Properties extends JDialog {
         gridbag.setConstraints(title, c);
         add(title);
 
-        x = addProperty("X", transform.x, gridbag, c);
-        y = addProperty("Y", transform.y, gridbag, c);
-        w = addProperty("Width", transform.w, gridbag, c);
-        h = addProperty("Height", transform.h, gridbag, c);
-        r = addProperty("Angle", Math.toDegrees(transform.r), gridbag, c);
+        x = addProperty(messages.getText(DIALOG_PROPERTIES_X), transform.x, gridbag, c);
+        y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), transform.y, gridbag, c);
+        w = addProperty(messages.getText(DIALOG_PROPERTIES_W), transform.w, gridbag, c);
+        h = addProperty(messages.getText(DIALOG_PROPERTIES_H), transform.h, gridbag, c);
+        r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Math.toDegrees(transform.r), gridbag, c);
 
         @SuppressWarnings("serial")
-        JButton update = new JButton(new AbstractAction("Update") {
+        JButton update = new JButton(new AbstractAction(messages.getText(DIALOG_PROPERTIES_BUTTON_UPDATE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 transform.x = x.get();
@@ -99,7 +115,7 @@ public class Properties extends JDialog {
         add(update);
 
         @SuppressWarnings("serial")
-        JButton cancel = new JButton(new AbstractAction("Cancel") {
+        JButton cancel = new JButton(new AbstractAction(messages.getText(DIALOG_PROPERTIES_BUTTON_CANCEL)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);

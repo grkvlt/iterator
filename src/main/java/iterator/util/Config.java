@@ -73,12 +73,7 @@ public class Config extends ForwardingSortedMap<String, String> {
         }
     }
 
-    public static final String MODE_COLOUR = Mode.COLOUR.toString();
-    public static final String MODE_PALETTE = Mode.PALETTE.toString();
-    public static final String MODE_STEALING = Mode.STEALING.toString();
-    public static final String MODE_IFS_COLOUR = Mode.IFS_COLOUR.toString();
-    public static final String MODE_GRAY = Mode.GRAY.toString();
-    public static final String DEFAULT_MODE = MODE_GRAY;
+    public static final Mode DEFAULT_MODE = Mode.GRAY;
 
     public static enum Render {
         STANDARD, TOP, MEASURE, IFS;
@@ -89,11 +84,7 @@ public class Config extends ForwardingSortedMap<String, String> {
         }
     }
 
-    public static final String RENDER_STANDARD = Render.STANDARD.toString();
-    public static final String RENDER_TOP = Render.TOP.toString();
-    public static final String RENDER_MEASURE = Render.MEASURE.toString();
-    public static final String RENDER_IFS = Render.IFS.toString();
-    public static final String DEFAULT_RENDER = RENDER_STANDARD;
+    public static final Render DEFAULT_RENDER = Render.STANDARD;
 
     public static final Predicate<CharSequence> EXPLORER_KEYS = Predicates.containsPattern("^" + EXPLORER_PROPERTY + ".");
 

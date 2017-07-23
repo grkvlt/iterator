@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iterator.view;
+package iterator.view.dialog;
+
+import static iterator.util.Messages.DIALOG_MATRIX_BUTTON_CANCEL;
+import static iterator.util.Messages.DIALOG_MATRIX_BUTTON_UPDATE;
+import static iterator.util.Messages.DIALOG_PROPERTIES_TITLE;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -40,9 +43,12 @@ import javax.swing.text.html.StyleSheet;
 import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
 
+import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
+import iterator.util.Messages;
 import iterator.util.Utils;
+import iterator.view.Details;
 
 /**
  * Matrix dialog.
@@ -52,16 +58,20 @@ public class Matrix extends JDialog {
     private static final long serialVersionUID = 2515091470183119489L;
 
     private final Supplier<Double> c0, c1, c2, c3, c4, c5;
+    private final Messages messages;
 
-    public Matrix(final Transform transform, final IFS ifs, final EventBus bus, final Window parent) {
-        super(parent, "Matrix", ModalityType.APPLICATION_MODAL);
+    public Matrix(final Transform transform, final IFS ifs, final Explorer controller, final EventBus bus, final Window parent) {
+        super(parent, null, ModalityType.APPLICATION_MODAL);
+
+        messages = controller.getMessages();
 
         setUndecorated(true);
         setLayout(new BorderLayout());
         setFont(new Font("Calibri", Font.PLAIN, 14));
         getContentPane().setBackground(Color.WHITE);
 
-        JLabel title = new JLabel(String.format("Transform T%02d", transform.getId()), JLabel.CENTER);
+        String label = MessageFormat.format(messages.getText(DIALOG_PROPERTIES_TITLE), transform.getId());
+        JLabel title = new JLabel(label, JLabel.CENTER);
         title.setFont(new Font("Calibri", Font.BOLD, 16));
         add(title, BorderLayout.NORTH);
 
@@ -120,7 +130,7 @@ public class Matrix extends JDialog {
         add(buttons, BorderLayout.SOUTH);
 
         @SuppressWarnings("serial")
-        JButton update = new JButton(new AbstractAction("Update") {
+        JButton update = new JButton(new AbstractAction(messages.getText(DIALOG_MATRIX_BUTTON_UPDATE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 double matrix[] = new double[6];
@@ -139,7 +149,7 @@ public class Matrix extends JDialog {
         buttons.add(update);
 
         @SuppressWarnings("serial")
-        JButton cancel = new JButton(new AbstractAction("Cancel") {
+        JButton cancel = new JButton(new AbstractAction(messages.getText(DIALOG_MATRIX_BUTTON_CANCEL)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);

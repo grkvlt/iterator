@@ -15,10 +15,19 @@
  */
 package iterator.view;
 
+import static iterator.util.Messages.MENU_EDITOR_NEW;
+import static iterator.util.Messages.MENU_TRANSFORM_BACK;
+import static iterator.util.Messages.MENU_TRANSFORM_DELETE;
+import static iterator.util.Messages.MENU_TRANSFORM_DUPLICATE;
+import static iterator.util.Messages.MENU_TRANSFORM_FRONT;
+import static iterator.util.Messages.MENU_TRANSFORM_LOWER;
+import static iterator.util.Messages.MENU_TRANSFORM_MATRIX;
+import static iterator.util.Messages.MENU_TRANSFORM_PROPERTIES;
+import static iterator.util.Messages.MENU_TRANSFORM_RAISE;
+
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -53,7 +62,10 @@ import com.google.common.eventbus.Subscribe;
 import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
+import iterator.util.Messages;
 import iterator.util.Subscriber;
+import iterator.view.dialog.Matrix;
+import iterator.view.dialog.Properties;
 
 /**
  * IFS Editor.
@@ -64,6 +76,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
 
     private final EventBus bus;
     private final Explorer controller;
+    private final Messages messages;
 
     private JPopupMenu transform, editor;
     private Action properties, duplicate;
@@ -79,24 +92,25 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         super();
         this.bus = bus;
         this.controller = controller;
+        this.messages = controller.getMessages();
 
         transform = new JPopupMenu();
-        properties = new AbstractAction(controller.getText(Explorer.MENU_TRANSFORM_PROPERTIES)) {
+        properties = new AbstractAction(messages.getText(MENU_TRANSFORM_PROPERTIES)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Properties properties = new Properties(getSelected(), Editor.this.ifs, Editor.this.bus, Editor.this.controller);
+                Properties properties = new Properties(getSelected(), Editor.this.ifs, Editor.this.controller, Editor.this.bus, Editor.this.controller);
                 properties.showDialog();
             }
         };
         transform.add(properties);
-        transform.add(new AbstractAction(controller.getText(Explorer.MENU_TRANSFORM_MATRIX)) {
+        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_MATRIX)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Matrix matrix = new Matrix(getSelected(), Editor.this.ifs, Editor.this.bus, Editor.this.controller);
+                Matrix matrix = new Matrix(getSelected(), Editor.this.ifs, Editor.this.controller, Editor.this.bus, Editor.this.controller);
                 matrix.showDialog();
             }
         });
-        transform.add(new AbstractAction(controller.getText(Explorer.MENU_TRANSFORM_DELETE)) {
+        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_DELETE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ifs.remove(selected);
@@ -104,7 +118,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 Editor.this.bus.post(ifs);
             }
         });
-        duplicate = new AbstractAction(controller.getText(Explorer.MENU_TRANSFORM_DUPLICATE)) {
+        duplicate = new AbstractAction(messages.getText(MENU_TRANSFORM_DUPLICATE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Transform copy = new Transform(getSize());
@@ -119,28 +133,28 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             }
         };
         transform.add(duplicate);
-        transform.add(new AbstractAction(controller.getText(Explorer.MENU_TRANSFORM_RAISE)) {
+        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_RAISE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selected.setZIndex(selected.getZIndex() + 1);
                 Editor.this.bus.post(ifs);
             }
         });
-        transform.add(new AbstractAction(controller.getText(Explorer.MENU_TRANSFORM_LOWER)) {
+        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_LOWER)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selected.setZIndex(selected.getZIndex() - 1);
                 Editor.this.bus.post(ifs);
             }
         });
-        transform.add(new AbstractAction(controller.getText(Explorer.MENU_TRANSFORM_FRONT)) {
+        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_FRONT)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selected.setZIndex(Ordering.from(IFS.Z_ORDER).max(ifs).getZIndex() + 1);
                 Editor.this.bus.post(ifs);
             }
         });
-        transform.add(new AbstractAction(controller.getText(Explorer.MENU_TRANSFORM_BACK)) {
+        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_BACK)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selected.setZIndex(Ordering.from(IFS.Z_ORDER).min(ifs).getZIndex() - 1);
@@ -150,7 +164,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         add(transform);
 
         editor = new JPopupMenu();
-        editor.add(new AbstractAction(controller.getText(Explorer.MENU_EDITOR_NEW)) {
+        editor.add(new AbstractAction(messages.getText(MENU_EDITOR_NEW)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Transform t = new Transform(getSize());

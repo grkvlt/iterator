@@ -22,6 +22,7 @@ import static iterator.util.Config.DEFAULT_GRID_SNAP;
 import static iterator.util.Config.DEFAULT_PALETTE_FILE;
 import static iterator.util.Config.DEFAULT_PALETTE_SEED;
 import static iterator.util.Config.DEFAULT_PALETTE_SIZE;
+import static iterator.util.Config.DEFAULT_RENDER;
 import static iterator.util.Config.DEFAULT_WINDOW_SIZE;
 import static iterator.util.Config.GRID_PROPERTY;
 import static iterator.util.Config.MIN_THREADS;
@@ -31,6 +32,23 @@ import static iterator.util.Config.PALETTE_PROPERTY;
 import static iterator.util.Config.RENDER_PROPERTY;
 import static iterator.util.Config.THREADS_PROPERTY;
 import static iterator.util.Config.WINDOW_PROPERTY;
+import static iterator.util.Messages.DIALOG_FILES_PNG;
+import static iterator.util.Messages.DIALOG_FILES_XML;
+import static iterator.util.Messages.MENU_DISPLAY;
+import static iterator.util.Messages.MENU_DISPLAY_DETAILS;
+import static iterator.util.Messages.MENU_DISPLAY_EDITOR;
+import static iterator.util.Messages.MENU_DISPLAY_VIEWER;
+import static iterator.util.Messages.MENU_FILE;
+import static iterator.util.Messages.MENU_FILE_ABOUT;
+import static iterator.util.Messages.MENU_FILE_EXPORT;
+import static iterator.util.Messages.MENU_FILE_NEW;
+import static iterator.util.Messages.MENU_FILE_OPEN;
+import static iterator.util.Messages.MENU_FILE_PREFERENCES;
+import static iterator.util.Messages.MENU_FILE_PRINT;
+import static iterator.util.Messages.MENU_FILE_QUIT;
+import static iterator.util.Messages.MENU_FILE_SAVE;
+import static iterator.util.Messages.MENU_FILE_SAVE_AS;
+import static iterator.util.Messages.TITLE;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -66,6 +84,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Locale.Category;
+import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.Random;
 import java.util.ResourceBundle;
@@ -109,6 +128,7 @@ import iterator.model.IFS;
 import iterator.util.Config;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
+import iterator.util.Messages;
 import iterator.util.Platform;
 import iterator.util.Subscriber;
 import iterator.util.Version;
@@ -139,39 +159,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             "    https://grkvlt.github.io/iterator/",
             "");
 
-    public static final String TITLE = "explorer.title";
-    public static final String VIEW_DETAILS_TITLE = "explorer.view.details.title";
-
-    public static final String MENU_FILE = "explorer.menu.file";
-    public static final String MENU_FILE_NEW = "explorer.menu.file.new";
-    public static final String MENU_FILE_ABOUT = "explorer.menu.file.about";
-    public static final String MENU_FILE_OPEN = "explorer.menu.file.open";
-    public static final String MENU_FILE_SAVE = "explorer.menu.file.save";
-    public static final String MENU_FILE_SAVE_AS = "explorer.menu.file.save_as";
-    public static final String MENU_FILE_EXPORT = "explorer.menu.file.export";
-    public static final String MENU_FILE_PRINT = "explorer.menu.file.print";
-    public static final String MENU_FILE_PREFERENCES = "explorer.menu.file.preferences";
-    public static final String MENU_FILE_QUIT = "explorer.menu.file.quit";
-
-    public static final String MENU_DISPLAY = "explorer.menu.display";
-    public static final String MENU_DISPLAY_EDITOR = "explorer.menu.display.editor";
-    public static final String MENU_DISPLAY_VIEWER = "explorer.menu.display.viewer";
-    public static final String MENU_DISPLAY_DETAILS = "explorer.menu.display.details";
-
-    public static final String MENU_TRANSFORM_PROPERTIES = "explorer.menu.transform.properties";
-    public static final String MENU_TRANSFORM_MATRIX = "explorer.menu.transform.matrix";
-    public static final String MENU_TRANSFORM_DELETE = "explorer.menu.transform.delete";
-    public static final String MENU_TRANSFORM_DUPLICATE = "explorer.menu.transform.duplicate";
-    public static final String MENU_TRANSFORM_RAISE = "explorer.menu.transform.raise";
-    public static final String MENU_TRANSFORM_LOWER = "explorer.menu.transform.lower";
-    public static final String MENU_TRANSFORM_FRONT = "explorer.menu.transform.front";
-    public static final String MENU_TRANSFORM_BACK = "explorer.menu.transform.back";
-
-    public static final String MENU_EDITOR_NEW = "explorer.menu.editor.new";
-
-    public static final String DIALOG_FILES_XML = "explorer.dialog.files.xml";
-    public static final String DIALOG_FILES_PNG = "explorer.dialog.files.png";
-
     public static final String FULLSCREEN_OPTION = "-f";
     public static final String FULLSCREEN_OPTION_LONG = "--fullscreen";
     public static final String COLOUR_OPTION = "-c";
@@ -196,7 +183,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private boolean stealing = false;
     private boolean ifscolour = false;
 
-    private Render render = Render.STANDARD;
+    private Render render = DEFAULT_RENDER;
 
     private Platform platform = Platform.getPlatform();
     private BufferedImage icon, source;
@@ -211,7 +198,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private Dimension size;
     private Dimension min = new Dimension(MIN_WINDOW_SIZE, MIN_WINDOW_SIZE);
     private File cwd;
-    private ResourceBundle resources;
+    private Messages messages;
+    private EventBus bus;
 
     private JMenuBar menuBar;
     private Editor editor;
@@ -223,15 +211,18 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private String current;
     private JCheckBoxMenuItem showEditor, showViewer, showDetails;
     private JMenuItem export, print, save, saveAs;
-
-    private EventBus bus;
     private Runnable postponed;
 
     public Explorer(String...argv) {
         super();
 
-        resources = ResourceBundle.getBundle("iterator.Explorer", Locale.getDefault(Category.DISPLAY));
-        setTitle(getText(TITLE));
+        // Setup event bus
+        bus = new EventBus(this);
+        bus.register(this);
+
+        messages = new Messages(bus, this);
+
+        setTitle(messages.getText(TITLE));
 
         Thread.setDefaultUncaughtExceptionHandler(this);
 
@@ -352,10 +343,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 colour ? palette ? stealing ? "stealing" : "palette" : ifscolour ? "ifscolour" : "colour" : "grayscale",
                 palette ? paletteFile : colour ? "hsb" : "black");
 
-        // Setup event bus
-        bus = new EventBus(this);
-        bus.register(this);
-
         // Setup full-screen mode if required
         if (fullScreen) {
             setUndecorated(true);
@@ -429,16 +416,16 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         JPanel content = new JPanel(new BorderLayout());
 
         menuBar = new JMenuBar();
-        JMenu file = new JMenu(getText(MENU_FILE));
+        JMenu file = new JMenu(messages.getText(MENU_FILE));
         if (platform != Platform.MAC_OS_X) {
-            file.add(new AbstractAction(getText(MENU_FILE_ABOUT)) {
+            file.add(new AbstractAction(messages.getText(MENU_FILE_ABOUT)) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     about.showDialog();
                 }
             });
         }
-        JMenuItem newIfs = new JMenuItem(new AbstractAction(getText(MENU_FILE_NEW)) {
+        JMenuItem newIfs = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_NEW)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 IFS untitled = new IFS();
@@ -448,10 +435,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         });
         newIfs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         file.add(newIfs);
-        JMenuItem open = new JMenuItem(new AbstractAction(getText(MENU_FILE_OPEN)) {
+        JMenuItem open = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_OPEN)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                FileNameExtensionFilter filter = new FileNameExtensionFilter(getText(DIALOG_FILES_XML), "xml");
+                FileNameExtensionFilter filter = new FileNameExtensionFilter(messages.getText(DIALOG_FILES_XML), "xml");
                 JFileChooser chooser = new JFileChooser();
                 chooser.setCurrentDirectory(cwd);
                 chooser.setFileFilter(filter);
@@ -466,7 +453,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         });
         open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         file.add(open);
-        save = new JMenuItem(new AbstractAction(getText(MENU_FILE_SAVE)) {
+        save = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_SAVE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (ifs.getName() == null) {
@@ -482,10 +469,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         save.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         save.setEnabled(false);
         file.add(save);
-        saveAs = new JMenuItem(new AbstractAction(getText(MENU_FILE_SAVE_AS)) {
+        saveAs = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_SAVE_AS)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                FileNameExtensionFilter filter = new FileNameExtensionFilter(getText(DIALOG_FILES_XML), "xml");
+                FileNameExtensionFilter filter = new FileNameExtensionFilter(messages.getText(DIALOG_FILES_XML), "xml");
                 JFileChooser chooser = new JFileChooser();
                 chooser.setCurrentDirectory(cwd);
                 chooser.setFileFilter(filter);
@@ -505,11 +492,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         });
         saveAs.setEnabled(false);
         file.add(saveAs);
-        export = new JMenuItem(new AbstractAction(getText(MENU_FILE_EXPORT)) {
+        export = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_EXPORT)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 viewer.stop();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter(getText(DIALOG_FILES_PNG), "png");
+                FileNameExtensionFilter filter = new FileNameExtensionFilter(messages.getText(DIALOG_FILES_PNG), "png");
                 JFileChooser chooser = new JFileChooser();
                 chooser.setCurrentDirectory(cwd);
                 chooser.setFileFilter(filter);
@@ -529,7 +516,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         });
         export.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         file.add(export);
-        print = new JMenuItem(new AbstractAction(getText(MENU_FILE_PRINT)) {
+        print = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_PRINT)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 viewer.stop();
@@ -545,7 +532,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 boolean ok = job.printDialog();
                 if (ok) {
                     try {
-                         job.print();
+                        job.print();
                     } catch (PrinterException pe) {
                         Throwables.propagate(pe);
                     }
@@ -557,12 +544,12 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         print.setEnabled(false);
         file.add(print);
         if (platform != Platform.MAC_OS_X) {
-            file.add(new AbstractAction(getText(MENU_FILE_PREFERENCES)) {
+            file.add(new AbstractAction(messages.getText(MENU_FILE_PREFERENCES)) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                 }
             });
-            JMenuItem quit = new JMenuItem(new AbstractAction(getText(MENU_FILE_QUIT)) {
+            JMenuItem quit = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_QUIT)) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     System.exit(0);
@@ -573,20 +560,20 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
         menuBar.add(file);
 
-        JMenu system = new JMenu(getText(MENU_DISPLAY));
-        showEditor = new JCheckBoxMenuItem(new AbstractAction(getText(MENU_DISPLAY_EDITOR)) {
+        JMenu system = new JMenu(messages.getText(MENU_DISPLAY));
+        showEditor = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_DISPLAY_EDITOR)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 show(EDITOR);
             }
         });
-        showViewer = new JCheckBoxMenuItem(new AbstractAction(getText(MENU_DISPLAY_VIEWER)) {
+        showViewer = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_DISPLAY_VIEWER)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 show(VIEWER);
             }
         });
-        showDetails = new JCheckBoxMenuItem(new AbstractAction(getText(MENU_DISPLAY_DETAILS)) {
+        showDetails = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_DISPLAY_DETAILS)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 show(DETAILS);
@@ -840,6 +827,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public void keyReleased(KeyEvent e) {
     }
 
+    public Messages getMessages() {
+        return messages;
+    }
+
     public void debug(String format, Object...varargs) {
         if (isDebug()) {
             output(System.err, format, varargs);
@@ -874,10 +865,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         String output = String.format(format, varargs);
         if (!output.endsWith("\n")) output = output.concat("\n");
         out.print(output);
-    }
-
-    public String getText(String key) {
-        return resources.getString(key);
     }
 
     /** @see java.lang.Thread.UncaughtExceptionHandler#uncaughtException(Thread, Throwable) */
