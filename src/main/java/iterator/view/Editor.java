@@ -79,7 +79,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     private final Messages messages;
 
     private JPopupMenu transform, editor;
-    private Action properties, duplicate;
+    private Action properties;
 
     private IFS ifs;
     private Transform selected;
@@ -118,21 +118,30 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 Editor.this.bus.post(ifs);
             }
         });
-        duplicate = new AbstractAction(messages.getText(MENU_TRANSFORM_DUPLICATE)) {
+        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_DUPLICATE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Transform copy = new Transform(getSize());
-                copy.x = selected.x + 50;
-                copy.y = selected.y + 50;
-                copy.w = selected.w;
-                copy.h = selected.h;
-                copy.r = selected.r;
+                if (selected.isMatrix()) {
+                    double[] matrix = new double[6];
+                    AffineTransform tmp = selected.getTransform();
+                    tmp.translate(50d, 50d);
+                    tmp.getMatrix(matrix);
+                    copy.setMatrix(matrix);
+                } else {
+                    copy.x = selected.x + 50d;
+                    copy.y = selected.y + 50d;
+                    copy.w = selected.w;
+                    copy.h = selected.h;
+                    copy.r = selected.r;
+                    copy.shx = selected.shx;
+                    copy.shy = selected.shy;
+                }
                 ifs.add(copy);
                 selected = copy;
                 Editor.this.bus.post(ifs);
             }
-        };
-        transform.add(duplicate);
+        });
         transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_RAISE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -452,6 +461,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                         copy.w = selected.w;
                         copy.h = selected.h;
                         copy.r = selected.r;
+                        copy.shx = selected.shx;
+                        copy.shy = selected.shy;
                         selected = copy;
                     }
                     move = selected;
@@ -469,7 +480,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             if (clicked != null) {
                 selected = clicked;
                 properties.setEnabled(!selected.isMatrix());
-                duplicate.setEnabled(!selected.isMatrix());
                 transform.show(e.getComponent(), e.getX(), e.getY());
             } else {
                 editor.show(e.getComponent(), e.getX(), e.getY());
@@ -621,6 +631,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 selected.w = w;
                 selected.h = h;
                 selected.r = resize.r;
+                selected.shx = resize.shx;
+                selected.shy = resize.shy;
             } else if (selected != null && move != null) {
                 int dx = end.x - start.x;
                 int dy = end.y - start.y;
@@ -641,6 +653,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     selected.w = move.w;
                     selected.h = move.h;
                     selected.r = move.r;
+                    selected.shx = move.shx;
+                    selected.shy = move.shy;
                 }
             } else if (selected != null && rotate != null) {
                 Point origin = new Point();
@@ -655,6 +669,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 selected.w = rotate.w;
                 selected.h = rotate.h;
                 selected.r = r;
+                selected.shx = rotate.shx;
+                selected.shy = rotate.shy;
             }
             repaint();
         }

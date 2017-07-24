@@ -19,6 +19,8 @@ import static iterator.util.Messages.DIALOG_PROPERTIES_BUTTON_CANCEL;
 import static iterator.util.Messages.DIALOG_PROPERTIES_BUTTON_UPDATE;
 import static iterator.util.Messages.DIALOG_PROPERTIES_H;
 import static iterator.util.Messages.DIALOG_PROPERTIES_R;
+import static iterator.util.Messages.DIALOG_PROPERTIES_SHX;
+import static iterator.util.Messages.DIALOG_PROPERTIES_SHY;
 import static iterator.util.Messages.DIALOG_PROPERTIES_TITLE;
 import static iterator.util.Messages.DIALOG_PROPERTIES_W;
 import static iterator.util.Messages.DIALOG_PROPERTIES_X;
@@ -58,7 +60,7 @@ public class Properties extends JDialog {
     /** serialVersionUID */
     private static final long serialVersionUID = -7626627964747215623L;
 
-    private final Supplier<Double> x, y, w, h, r;
+    private final Supplier<Double> x, y, w, h, r, shx, shy;
     private final Messages messages;
 
     public Properties(final Transform transform, final IFS ifs, final Explorer controller, final EventBus bus, final Window parent) {
@@ -91,6 +93,8 @@ public class Properties extends JDialog {
         w = addProperty(messages.getText(DIALOG_PROPERTIES_W), transform.w, gridbag, c);
         h = addProperty(messages.getText(DIALOG_PROPERTIES_H), transform.h, gridbag, c);
         r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Math.toDegrees(transform.r), gridbag, c);
+        shx = addProperty(messages.getText(DIALOG_PROPERTIES_SHX), transform.shx, gridbag, c);
+        shy = addProperty(messages.getText(DIALOG_PROPERTIES_SHY), transform.shy, gridbag, c);
 
         @SuppressWarnings("serial")
         JButton update = new JButton(new AbstractAction(messages.getText(DIALOG_PROPERTIES_BUTTON_UPDATE)) {
@@ -101,6 +105,8 @@ public class Properties extends JDialog {
                 transform.w = w.get();
                 transform.h = h.get();
                 transform.r = Math.toRadians(r.get());
+                transform.shx = shx.get();
+                transform.shy = shy.get();
                 bus.post(ifs);
                 setVisible(false);
             }

@@ -47,6 +47,10 @@ public class Transform {
     public Double h;
     @XmlAttribute(required = false)
     public Double r;
+    @XmlAttribute(required = false)
+    public Double shx = 0d;
+    @XmlAttribute(required = false)
+    public Double shy = 0d;
     @XmlAttribute
     private double sw;
     @XmlAttribute
@@ -73,6 +77,8 @@ public class Transform {
         this.w = 0d;
         this.h = 0d;
         this.r = 0d;
+        this.shx = 0d;
+        this.shy = 0d;
     }
 
     public int getId() {
@@ -98,6 +104,8 @@ public class Transform {
         this.w = null;
         this.h = null;
         this.r = null;
+        this.shx = null;
+        this.shy = null;
     }
 
     public boolean isMatrix() { return matrix != null; }
@@ -113,7 +121,11 @@ public class Transform {
         
         if (isMatrix()) {
             AffineTransform transform = getTransform();
+            double tx = transform.getTranslateX();
+            double ty = transform.getTranslateY();
+            transform.translate(-tx, -ty);
             transform.scale(scale.getX(), scale.getY());
+            transform.translate(tx * scale.getX(), ty * scale.getY());
             double scaled[] = new double[6];
             transform.getMatrix(scaled);
             matrix = scaled;
@@ -131,6 +143,7 @@ public class Transform {
             transform.setTransform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
         } else {
             transform.translate(x, y);
+            transform.shear(shx, shy);
             transform.rotate(r);
             transform.scale(w / sw, h / sh);
         }
@@ -186,6 +199,8 @@ public class Transform {
                 .add("w", w)
                 .add("h", h)
                 .add("r", r)
+                .add("shx", shx)
+                .add("shy", shy)
                 .add("matrix", matrix)
                 .toString();
     }
