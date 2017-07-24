@@ -116,7 +116,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Subscribe
     public void updated(IFS ifs) {
         this.ifs = ifs;
-        if (!(isVisible() && running.get())) {
+        if (!running.get()) {
+            reset();
             rescale();
         }
     }
@@ -143,7 +144,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         }
 
         if (zoom != null) {
-            g.setPaint(controller.getRenderMode() == Render.MEASURE ? Color.WHITE : Color.BLACK);
+            g.setPaint(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
             g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
             g.draw(zoom);
         }
@@ -174,7 +175,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     }
 
     public void paintGrid(Graphics2D g) {
-        Color red = new Color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue(), controller.getRenderMode() == Render.MEASURE ? 64 : 16);
+        Color red = new Color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue(), controller.getRender() == Render.MEASURE ? 64 : 16);
         g.setPaint(red);
         g.setStroke(new BasicStroke(1f));
         int max = controller.getMaxGrid();
@@ -202,7 +203,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
         if (isVisible()) {
-            g.setColor(controller.getRenderMode() == Render.MEASURE ? Color.BLACK : Color.WHITE);
+            g.setColor(controller.getRender() == Render.MEASURE ? Color.BLACK : Color.WHITE);
         } else {
             g.setColor(new Color(1f, 1f, 1f, 0f));
         }
@@ -301,7 +302,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             if (x >= 0 && y >= 0 && x < getWidth() && y < getWidth()) {
                 int p = x + y * getWidth();
 
-                if (controller.getRenderMode() == Render.TOP) {
+                if (controller.getRender() == Render.TOP) {
                     if (j > top[p]) top[p] = j;
                 }
 
@@ -316,14 +317,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                         if (controller.isStealing()) {
                             color = controller.getPixel(old.getX(), old.getY());
                         } else {
-                            if (controller.getRenderMode() == Render.TOP) {
+                            if (controller.getRender() == Render.TOP) {
                                 color = Iterables.get(controller.getColours(), top[p] % controller.getPaletteSize());
                             } else {
                                 color = Iterables.get(controller.getColours(), j % controller.getPaletteSize());
                             }
                         }
                     } else {
-                        if (controller.getRenderMode() == Render.TOP) {
+                        if (controller.getRender() == Render.TOP) {
                             color = Color.getHSBColor((float) top[p] / (float) transforms.size(), 0.8f, 0.8f);
                         } else {
                             color = Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f);
@@ -332,9 +333,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 }
 
                 // Set the paint colour according to the rendering mode
-                if (controller.getRenderMode() == Render.IFS) {
+                if (controller.getRender() == Render.IFS) {
                     g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), 255));
-                } else if (controller.getRenderMode() == Render.MEASURE) {
+                } else if (controller.getRender() == Render.MEASURE) {
                     if (top[p] == 0) {
                         color = new Color(color.getRed(), color.getGreen(), color.getBlue());
                     } else {

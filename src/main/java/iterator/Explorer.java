@@ -19,6 +19,7 @@ import static iterator.util.Config.DEBUG_PROPERTY;
 import static iterator.util.Config.DEFAULT_GRID_MAX;
 import static iterator.util.Config.DEFAULT_GRID_MIN;
 import static iterator.util.Config.DEFAULT_GRID_SNAP;
+import static iterator.util.Config.DEFAULT_MODE;
 import static iterator.util.Config.DEFAULT_PALETTE_FILE;
 import static iterator.util.Config.DEFAULT_PALETTE_SEED;
 import static iterator.util.Config.DEFAULT_PALETTE_SIZE;
@@ -130,6 +131,7 @@ import iterator.util.Version;
 import iterator.view.Details;
 import iterator.view.Editor;
 import iterator.view.Viewer;
+import iterator.view.dialog.Preferences;
 
 /**
  * IFS Explorer main class.
@@ -178,18 +180,21 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private boolean stealing = false;
     private boolean ifscolour = false;
 
+    private Mode mode = DEFAULT_MODE;
     private Render render = DEFAULT_RENDER;
+    private int paletteSize = DEFAULT_PALETTE_SIZE;
+    private String paletteFile = DEFAULT_PALETTE_FILE;
+    private long seed = 0l;
 
     private Platform platform = Platform.getPlatform();
+    private int threads;
+    private boolean debug;
     private BufferedImage icon, source;
     private Preferences prefs;
     private About about;
 
     private IFS ifs;
     private Set<Color> colours;
-    private int paletteSize;
-    private String paletteFile;
-    private long seed;
     private Dimension size;
     private Dimension min = new Dimension(MIN_WINDOW_SIZE, MIN_WINDOW_SIZE);
     private File cwd;
@@ -271,50 +276,33 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         // Load configuration
         config = Config.loadProperties(override);
 
+        threads = config.get(THREADS_PROPERTY, Math.max(Runtime.getRuntime().availableProcessors() / 2, MIN_THREADS));
+        debug = config.get(DEBUG_PROPERTY, Boolean.FALSE);
+
         // Check colour mode configuration
         if (config.containsKey(MODE_PROPERTY)) {
-            Mode mode = Mode.valueOf(config.get(MODE_PROPERTY).toUpperCase(Locale.UK));
-            switch (mode) {
-                case COLOUR:
-                    colour = true;
-                    palette = false;
-                    stealing = false;
-                    ifscolour = false;
-                    break;
-                case PALETTE:
-                    colour = true;
-                    palette = true;
-                    stealing = false;
-                    ifscolour = false;
-                    break;
-                case STEALING:
-                    colour = true;
-                    palette = true;
-                    stealing = true;
-                    ifscolour = false;
-                    break;
-                case IFS_COLOUR:
-                    colour = true;
-                    palette = false;
-                    stealing = false;
-                    ifscolour = true;
-                    break;
-                case GRAY:
-                    colour = false;
-                    palette = false;
-                    stealing = false;
-                    ifscolour = false;
-                    break;
-                default:
-                    error("Cannot set colour mode: %s", mode);
-            }
+            String value = config.get(MODE_PROPERTY);
+            setMode(value);
         }
 
         // Check rendering configuration
         if (config.containsKey(RENDER_PROPERTY)) {
             String value = config.get(RENDER_PROPERTY);
-            render = Render.valueOf(value.toUpperCase(Locale.UK));
+            setRender(value);
         }
+
+        // Load colour palette
+        if (palette) {
+            setSeed(config.get(PALETTE_PROPERTY + ".seed", DEFAULT_PALETTE_SEED));
+            if (Strings.isNullOrEmpty(paletteFile)) {
+                setPaletteFile(config.get(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE));
+            }
+            setPaletteSize(config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE));
+            loadColours();
+        }
+        debug("Configured %s: %s",
+                colour ? palette ? stealing ? "stealing" : "palette" : ifscolour ? "ifscolour" : "colour" : "grayscale",
+                palette ? paletteFile : colour ? "hsb" : "black");
 
         // Get window size configuration
         int w = Math.max(MIN_WINDOW_SIZE, config.get(WINDOW_PROPERTY + ".width", DEFAULT_WINDOW_SIZE));
@@ -324,19 +312,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         // Load icon resources
         icon = Utils.loadImage(Resources.getResource("icon.png"));
         setIconImage(icon);
-
-        // Load colour palette
-        if (palette) {
-            seed = config.get(PALETTE_PROPERTY + ".seed", DEFAULT_PALETTE_SEED);
-            if (Strings.isNullOrEmpty(paletteFile)) {
-                paletteFile = config.get(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE);
-            }
-            paletteSize = config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE);
-            loadColours();
-        }
-        debug("Configured %s: %s",
-                colour ? palette ? stealing ? "stealing" : "palette" : ifscolour ? "ifscolour" : "colour" : "grayscale",
-                palette ? paletteFile : colour ? "hsb" : "black");
 
         // Setup full-screen mode if required
         if (fullScreen) {
@@ -348,7 +323,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
 
         // Load dialogs
-        prefs = new Preferences(bus, this);
+        prefs = new Preferences(this, bus, this);
         about = new About(bus, this);
 
         // Setup platform specifics
@@ -369,6 +344,68 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             error(e, "Unable to configure UI support");
+        }
+    }
+
+    public void setThreads(int value) {
+        threads = value;
+    }
+
+    public void setDebug(boolean value) {
+        debug = value;
+    }
+
+    public void setSeed(long value) {
+        seed = value;
+    }
+
+    public void setPaletteFile(String value) {
+        paletteFile = value;
+    }
+
+    public void setPaletteSize(int value) {
+        paletteSize = value;
+    }
+
+    public void setRender(String value) {
+        render = Render.valueOf(CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_UNDERSCORE, value));
+    }
+
+    public void setMode(String value) {
+        mode = Mode.valueOf(CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_UNDERSCORE, value));
+        switch (mode) {
+            case COLOUR:
+                colour = true;
+                palette = false;
+                stealing = false;
+                ifscolour = false;
+                break;
+            case PALETTE:
+                colour = true;
+                palette = true;
+                stealing = false;
+                ifscolour = false;
+                break;
+            case STEALING:
+                colour = true;
+                palette = true;
+                stealing = true;
+                ifscolour = false;
+                break;
+            case IFS_COLOUR:
+                colour = true;
+                palette = false;
+                stealing = false;
+                ifscolour = true;
+                break;
+            case GRAY:
+                colour = false;
+                palette = false;
+                stealing = false;
+                ifscolour = false;
+                break;
+            default:
+                error("Cannot set colour mode: %s", mode);
         }
     }
 
@@ -534,6 +571,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             file.add(new AbstractAction(messages.getText(MENU_FILE_PREFERENCES)) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    prefs.showDialog();
                 }
             });
             JMenuItem quit = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_QUIT)) {
@@ -718,14 +756,18 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public Set<Color> getColours() { return colours; }
 
+    public String getPaletteFile() { return paletteFile; }
+
     public int getPaletteSize() { return paletteSize; }
 
-    public Render getRenderMode() { return render; }
+    public Render getRender() { return render; }
+
+    public Mode getMode() { return mode; }
 
     public long getSeed() { return seed; }
 
     /** Debug information shown. */
-    public boolean isDebug() { return config.get(DEBUG_PROPERTY, Boolean.FALSE); }
+    public boolean isDebug() { return debug; }
 
     /** Small grid spacing. */
     public int getMinGrid() { return config.get(GRID_PROPERTY + ".min", DEFAULT_GRID_MIN); }
@@ -752,10 +794,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public EventBus getEventBus() { return bus; }
 
-    public int getThreads() {
-        Integer threads = Math.max(Runtime.getRuntime().availableProcessors() / 2, MIN_THREADS);
-        return config.get(THREADS_PROPERTY, threads);
-    }
+    public int getThreads() { return threads; }
 
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override

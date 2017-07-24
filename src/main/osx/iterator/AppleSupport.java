@@ -66,6 +66,7 @@ public class AppleSupport implements OpenFilesHandler, AboutHandler, Preferences
     /** @see com.apple.eawt.PreferencesHandler#handlePreferences(com.apple.eawt.AppEvent.PreferencesEvent) */
     @Override
     public void handlePreferences(PreferencesEvent e) {
+        controller.getPreferences().showDialog();
     }
 
     /** @see com.apple.eawt.QuitHandler#handleQuitRequestWith(com.apple.eawt.AppEvent.QuitEvent, com.apple.eawt.QuitResponse) */

@@ -54,6 +54,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String THREADS_PROPERTY = EXPLORER_PROPERTY + ".threads";
     public static final String RENDER_PROPERTY = EXPLORER_PROPERTY + ".render";
 
+    public static final String[] PALETTE_FILES = { "abstract", "autumn", "car", "car2", "forest", "lego", "night", "trees", "wave" };
     public static final String DEFAULT_PALETTE_FILE = "abstract";
     public static final Integer DEFAULT_PALETTE_SIZE = 64;
     public static final Long DEFAULT_PALETTE_SEED = 0L;

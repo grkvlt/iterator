@@ -20,11 +20,16 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 
+import com.google.common.base.CaseFormat;
+import com.google.common.base.Converter;
+import com.google.common.base.Enums;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -90,9 +95,6 @@ public class Utils {
      * Formatter for {@link Double} values in {@link JFormattedTextField}s.
      */
     public static class DoubleFormatter extends AbstractFormatter {
-        /** serialVersionUID */
-        private static final long serialVersionUID = 1107330803545615990L;
-
         @Override
         public Object stringToValue(String text) throws ParseException {
             try {
@@ -105,6 +107,81 @@ public class Utils {
         @Override
         public String valueToString(Object value) throws ParseException {
             return String.format("%.4f", value);
+        }
+    }
+
+    /**
+     * Formatter for {@link Integer} values in {@link JFormattedTextField}s.
+     */
+    public static class IntegerFormatter extends AbstractFormatter {
+        private final int min, max;
+
+        public IntegerFormatter() {
+            this(Integer.MIN_VALUE, Integer.MAX_VALUE);
+        }
+
+        public IntegerFormatter(int min, int max) {
+            this.min = min;
+            this.max = max;
+        }
+
+        @Override
+        public Object stringToValue(String text) throws ParseException {
+            try {
+                return Integer.min(max, Integer.max(min, Integer.valueOf(text)));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
+
+        @Override
+        public String valueToString(Object value) throws ParseException {
+            return Objects.toString(value);
+        }
+    }
+
+    /**
+     * Formatter for {@link Long} values in {@link JFormattedTextField}s.
+     */
+    public static class LongFormatter extends AbstractFormatter {
+        private final long min, max;
+
+        public LongFormatter() {
+            this(Long.MIN_VALUE, Long.MAX_VALUE);
+        }
+
+        public LongFormatter(long min, long max) {
+            this.min = min;
+            this.max = max;
+        }
+
+        @Override
+        public Object stringToValue(String text) throws ParseException {
+            try {
+                return Long.min(max, Long.max(min, Long.valueOf(text)));
+            } catch (NumberFormatException e) {
+                return 0l;
+            }
+        }
+
+        @Override
+        public String valueToString(Object value) throws ParseException {
+            return Objects.toString(value);
+        }
+    }
+
+    /**
+     * Formatter for {@link String} values in {@link JFormattedTextField}s.
+     */
+    public static class StringFormatter extends AbstractFormatter {
+        @Override
+        public Object stringToValue(String text) throws ParseException {
+            return text;
+        }
+
+        @Override
+        public String valueToString(Object value) throws ParseException {
+            return Objects.toString(value);
         }
     }
 
