@@ -71,7 +71,6 @@ import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Constructor;
@@ -79,18 +78,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Locale.Category;
-import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.Random;
-import java.util.ResourceBundle;
 import java.util.Set;
 
-import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -131,6 +125,7 @@ import iterator.util.Config.Render;
 import iterator.util.Messages;
 import iterator.util.Platform;
 import iterator.util.Subscriber;
+import iterator.util.Utils;
 import iterator.util.Version;
 import iterator.view.Details;
 import iterator.view.Editor;
@@ -327,7 +322,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         size = new Dimension(w, h);
 
         // Load icon resources
-        icon = loadImage(Resources.getResource("icon.png"));
+        icon = Utils.loadImage(Resources.getResource("icon.png"));
         setIconImage(icon);
 
         // Load colour palette
@@ -377,20 +372,12 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
     }
 
-    public static BufferedImage loadImage(URL url) {
-        try {
-            return ImageIO.read(url);
-        } catch (IOException ioe) {
-            throw Throwables.propagate(ioe);
-        }
-    }
-
     public void loadColours() {
         try {
             if (paletteFile.contains(".")) {
-                source = loadImage(URI.create(paletteFile).toURL());
+                source = Utils.loadImage(URI.create(paletteFile).toURL());
             } else {
-                source = loadImage(Resources.getResource("palette/" + paletteFile + ".png"));
+                source = Utils.loadImage(Resources.getResource("palette/" + paletteFile + ".png"));
             }
         } catch (MalformedURLException | RuntimeException e) {
             error(e, "Cannot load colour palette %s: %s", paletteFile, e.getMessage());

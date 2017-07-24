@@ -15,9 +15,13 @@
  */
 package iterator.util;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 
@@ -25,6 +29,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -100,6 +105,20 @@ public class Utils {
         @Override
         public String valueToString(Object value) throws ParseException {
             return String.format("%.4f", value);
+        }
+    }
+
+    /**
+     * Loads an image from a {@link URL} into a {@link BufferedImage}.
+     *
+     * @param url
+     * @return the loaded image
+     */
+    public static BufferedImage loadImage(URL url) {
+        try {
+            return ImageIO.read(url);
+        } catch (IOException ioe) {
+            throw Throwables.propagate(ioe);
         }
     }
 }

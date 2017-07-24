@@ -36,6 +36,7 @@ import javax.swing.Timer;
 
 import com.google.common.io.Resources;
 
+import iterator.util.Utils;
 import iterator.util.Version;
 
 /**
@@ -53,7 +54,7 @@ public class Splash extends JPanel implements ActionListener {
     public Splash() {
         super();
 
-        splash = Explorer.loadImage(Resources.getResource("splash.png"));
+        splash = Utils.loadImage(Resources.getResource("splash.png"));
 
         parent = new JWindow();
         parent.getContentPane().setLayout(new BorderLayout());
