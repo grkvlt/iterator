@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iterator.view.dialog;
+package iterator.dialog;
 
 import static iterator.util.Messages.DIALOG_MATRIX_BUTTON_CANCEL;
 import static iterator.util.Messages.DIALOG_MATRIX_BUTTON_UPDATE;
-import static iterator.util.Messages.DIALOG_PROPERTIES_TITLE;
+import static iterator.util.Messages.DIALOG_MATRIX_TITLE;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -26,9 +26,12 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.text.MessageFormat;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -53,24 +56,28 @@ import iterator.view.Details;
 /**
  * Matrix dialog.
  */
-public class Matrix extends JDialog {
+public class Matrix extends JDialog implements KeyListener {
     /** serialVersionUID */
     private static final long serialVersionUID = 2515091470183119489L;
 
     private final Supplier<Double> c0, c1, c2, c3, c4, c5;
     private final Messages messages;
 
+    private Action success, failure;
+
     public Matrix(final Transform transform, final IFS ifs, final Explorer controller, final EventBus bus, final Window parent) {
         super(parent, null, ModalityType.APPLICATION_MODAL);
 
         messages = controller.getMessages();
 
+        addKeyListener(this);
         setUndecorated(true);
+        setResizable(false);
         setLayout(new BorderLayout());
         setFont(new Font("Calibri", Font.PLAIN, 14));
         getContentPane().setBackground(Color.WHITE);
 
-        String label = MessageFormat.format(messages.getText(DIALOG_PROPERTIES_TITLE), transform.getId());
+        String label = MessageFormat.format(messages.getText(DIALOG_MATRIX_TITLE), transform.getId());
         JLabel title = new JLabel(label, JLabel.CENTER);
         title.setFont(new Font("Calibri", Font.BOLD, 16));
         add(title, BorderLayout.NORTH);
@@ -129,8 +136,7 @@ public class Matrix extends JDialog {
         buttons.setBackground(Color.WHITE);
         add(buttons, BorderLayout.SOUTH);
 
-        @SuppressWarnings("serial")
-        JButton update = new JButton(new AbstractAction(messages.getText(DIALOG_MATRIX_BUTTON_UPDATE)) {
+        success = new AbstractAction(messages.getText(DIALOG_MATRIX_BUTTON_UPDATE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 double matrix[] = new double[6];
@@ -144,23 +150,22 @@ public class Matrix extends JDialog {
                 bus.post(ifs);
                 setVisible(false);
             }
-        });
+        };
+        JButton update = new JButton(success);
         update.setFont(new Font("Calibri", Font.PLAIN, 14));
+        update.addKeyListener(this);
         buttons.add(update);
 
-        @SuppressWarnings("serial")
-        JButton cancel = new JButton(new AbstractAction(messages.getText(DIALOG_MATRIX_BUTTON_CANCEL)) {
+        failure = new AbstractAction(messages.getText(DIALOG_MATRIX_BUTTON_CANCEL)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
             }
-        });
+        };
+        JButton cancel = new JButton(failure);
         cancel.setFont(new Font("Calibri", Font.PLAIN, 14));
+        cancel.addKeyListener(this);
         buttons.add(cancel);
-
-        pack();
-
-        setResizable(false);
     }
 
     private Supplier<Double> addProperty(int number, double value, JPanel panel) {
@@ -170,6 +175,7 @@ public class Matrix extends JDialog {
         field.setValue(value);
         field.setFont(new Font("Cambria", Font.ITALIC, 14));
         field.setColumns(8);
+        field.addKeyListener(this);
         panel.add(field);
 
         Supplier<Double> supplier = new Supplier<Double>() {
@@ -182,8 +188,33 @@ public class Matrix extends JDialog {
     }
 
     public void showDialog() {
+        pack();
+
         setLocationRelativeTo(getParent());
         setVisible(true);
     }
+
+    /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
+    @Override
+    public void keyTyped(KeyEvent e) { }
+
+    /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
+    @Override
+    public void keyPressed(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_ENTER:
+                if (e.isMetaDown()) {
+                    success.actionPerformed(new ActionEvent(e.getSource(), e.getID(), null));
+                }
+                break;
+            case KeyEvent.VK_ESCAPE:
+                failure.actionPerformed(new ActionEvent(e.getSource(), e.getID(), null));
+                break;
+        }
+    }
+
+    /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
+    @Override
+    public void keyReleased(KeyEvent e) { }
 
 }

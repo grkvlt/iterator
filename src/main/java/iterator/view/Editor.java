@@ -60,12 +60,12 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 import iterator.Explorer;
+import iterator.dialog.Matrix;
+import iterator.dialog.Properties;
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
-import iterator.view.dialog.Matrix;
-import iterator.view.dialog.Properties;
 
 /**
  * IFS Editor.

@@ -46,7 +46,7 @@ public class Splash extends JPanel implements ActionListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1028745784181961863L;
 
-    public static final Long SPLASH_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(5);
+    public static final Long SPLASH_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(3);
 
     private JWindow parent;
     private BufferedImage splash;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iterator.view.dialog;
+package iterator.dialog;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -23,10 +23,15 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.ComponentInputMap;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -36,6 +41,8 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
@@ -46,7 +53,7 @@ import iterator.util.Messages;
 /**
  * Abstract dialog for setting properties.
  */
-public abstract class AbstractPropertyDialog extends JDialog {
+public abstract class AbstractPropertyDialog extends JDialog implements KeyListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -7626627964747215623L;
 
@@ -56,6 +63,8 @@ public abstract class AbstractPropertyDialog extends JDialog {
     protected final GridBagLayout gridbag = new GridBagLayout();
     protected final GridBagConstraints c = new GridBagConstraints();
 
+    private Action success, failure;
+
     public AbstractPropertyDialog(final Explorer controller, final EventBus bus, final Window parent) {
         super(parent, null, ModalityType.APPLICATION_MODAL);
 
@@ -63,6 +72,7 @@ public abstract class AbstractPropertyDialog extends JDialog {
         this.bus = bus;
         this.messages = controller.getMessages();
 
+        addKeyListener(this);
         Dimension size = new Dimension(200, 200);
         setMinimumSize(size);
         setResizable(false);
@@ -88,8 +98,10 @@ public abstract class AbstractPropertyDialog extends JDialog {
     }
 
     protected void setAction(Action action) {
+        success = action;
         JButton select = new JButton(action);
         select.setFont(new Font("Calibri", Font.PLAIN, 14));
+        select.addKeyListener(this);
         c.fill = GridBagConstraints.NONE;
         c.anchor = GridBagConstraints.EAST;
         c.gridx = 0;
@@ -100,14 +112,15 @@ public abstract class AbstractPropertyDialog extends JDialog {
     }
 
     protected void setCancel(String text) {
-        @SuppressWarnings("serial")
-        JButton cancel = new JButton(new AbstractAction(text) {
+        failure = new AbstractAction(text) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
             }
-        });
+        };
+        JButton cancel = new JButton(failure);
         cancel.setFont(new Font("Calibri", Font.PLAIN, 14));
+        cancel.addKeyListener(this);
         c.gridx = 1;
         c.gridwidth = GridBagConstraints.REMAINDER;
         gridbag.setConstraints(cancel, c);
@@ -123,6 +136,7 @@ public abstract class AbstractPropertyDialog extends JDialog {
         field.setMargin(new Insets(2, 2, 2, 2));
         field.setValue(value);
         field.setFont(new Font("Cambria", Font.ITALIC, 14));
+        field.addKeyListener(this);
 
         c.gridx = 2;
         c.gridwidth = GridBagConstraints.REMAINDER;
@@ -149,6 +163,7 @@ public abstract class AbstractPropertyDialog extends JDialog {
         field.setSelectedItem(value);
         field.setEditable(false);
         field.setFont(new Font("Cambria", Font.ITALIC, 14));
+        field.addKeyListener(this);
 
         c.gridx = 2;
         c.gridwidth = GridBagConstraints.REMAINDER;
@@ -173,6 +188,7 @@ public abstract class AbstractPropertyDialog extends JDialog {
         final JCheckBox field = new JCheckBox();
         field.setBorder(BorderFactory.createEmptyBorder());
         field.setSelected(value);
+        field.addKeyListener(this);
 
         c.gridx = 2;
         c.gridwidth = GridBagConstraints.REMAINDER;
@@ -207,5 +223,28 @@ public abstract class AbstractPropertyDialog extends JDialog {
         setLocationRelativeTo(getParent());
         setVisible(true);
     }
+
+    /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
+    @Override
+    public void keyTyped(KeyEvent e) { }
+
+    /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
+    @Override
+    public void keyPressed(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_ENTER:
+                if (e.isMetaDown()) {
+                    success.actionPerformed(new ActionEvent(e.getSource(), e.getID(), null));
+                }
+                break;
+            case KeyEvent.VK_ESCAPE:
+                failure.actionPerformed(new ActionEvent(e.getSource(), e.getID(), null));
+                break;
+        }
+    }
+
+    /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
+    @Override
+    public void keyReleased(KeyEvent e) { }
 
 }

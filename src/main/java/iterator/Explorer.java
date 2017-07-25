@@ -81,7 +81,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
@@ -119,6 +118,7 @@ import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
 import com.google.common.io.Resources;
 
+import iterator.dialog.Preferences;
 import iterator.model.IFS;
 import iterator.util.Config;
 import iterator.util.Config.Mode;
@@ -131,7 +131,6 @@ import iterator.util.Version;
 import iterator.view.Details;
 import iterator.view.Editor;
 import iterator.view.Viewer;
-import iterator.view.dialog.Preferences;
 
 /**
  * IFS Explorer main class.
@@ -798,8 +797,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override
-    public void keyTyped(KeyEvent e) {
-    }
+    public void keyTyped(KeyEvent e) { }
 
     /**
      * Listener for key-presses across the whole application.
@@ -850,8 +848,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
     @Override
-    public void keyReleased(KeyEvent e) {
-    }
+    public void keyReleased(KeyEvent e) { }
 
     public Messages getMessages() {
         return messages;

@@ -20,16 +20,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 
-import com.google.common.base.CaseFormat;
-import com.google.common.base.Converter;
-import com.google.common.base.Enums;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;

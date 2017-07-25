@@ -37,7 +37,7 @@ public class Messages {
     public static final String MENU_FILE_ABOUT = "explorer.menu.file.about";
     public static final String MENU_FILE_OPEN = "explorer.menu.file.open";
     public static final String MENU_FILE_SAVE = "explorer.menu.file.save";
-    public static final String MENU_FILE_SAVE_AS = "explorer.menu.file.save_as";
+    public static final String MENU_FILE_SAVE_AS = "explorer.menu.file.save-as";
     public static final String MENU_FILE_EXPORT = "explorer.menu.file.export";
     public static final String MENU_FILE_PRINT = "explorer.menu.file.print";
     public static final String MENU_FILE_PREFERENCES = "explorer.menu.file.preferences";
