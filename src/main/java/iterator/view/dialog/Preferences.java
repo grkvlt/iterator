@@ -76,7 +76,7 @@ public class Preferences extends AbstractPropertyDialog {
                 controller.setThreads(threads.get());
                 controller.setDebug(debug.get());
                 controller.loadColours();
-                bus.post(controller.getIFS());
+                controller.getViewer().reset();
                 setVisible(false);
             }
         });

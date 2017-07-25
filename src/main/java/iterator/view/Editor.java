@@ -332,7 +332,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             rotation.scale(1 / t.getScaleX(), 1 / t.getScaleY());
             rotation.translate(-t.getTranslateX(), -t.getTranslateY());
         } else {
-            rotation.rotate(t.r, text.x, text.y);
+            rotation.translate(text.x, text.y);
+            rotation.shear(t.shx, t.shy);
+            rotation.rotate(t.r);
+            rotation.translate(-text.x, -text.y);
         }
         gr.setTransform(rotation);
         gr.drawString(String.format("T%02d%s", t.getId(), (highlight && rotate != null) ? String.format(" (%d)", (int) Math.toDegrees(t.r)) : ""), text.x + 5, text.y + 25);
@@ -661,7 +664,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 rotate.getTransform().transform(new Point(0, 0), origin);
                 int dx = end.x - origin.x;
                 int dy = end.y - origin.y;
-                double r = Math.atan2(dy, dx);
+                double r = Math.atan2(dy - (selected.shy * dx), dx - (selected.shx * dy));
 
                 selected = new Transform(selected.getId(), selected.getZIndex(), getSize());
                 selected.x = rotate.x;
