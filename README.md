@@ -3,38 +3,51 @@ IFS Explorer
 
 Iterated Function System Explorer.
 
-- http://grkvlt.github.io/iterator/
+<http://grkvlt.github.io/iterator/>
 
-### Program Requirements
+## Features
+
+- Live transform editor
+  - Move, scale and rotate with mouse
+  - Edit transform properties
+  - Set affine matrix
+  - Update configuration
+- IFS renderer
+  - Colour and greyscale
+  - IFS, measure set and fractal top modes
+  - Printing and export to PNG
+- IFS matrix view
+  - Save and load as XML
+- Animated changes to IFS
+
+## Program Requirements
 
 - Java 1.8.x Runtime Environment
 - Windows, Linux or OSX Operating System
 - Maven and 1.8.x JDK to build
 
-### TODO
+## TODO
 
 - Extract startup and config code to separate class
-- Improve matrix coefficient editing integration
-- Add dialog for editing configuration file properties
 - Better Operating-System integration
- - Native full-screen mode
- - Support native windowing system features
+  - Native full-screen mode
+  - Support native windowing system features
 - Better editing UI
- - Add flip, skew, perspective etc. transforms
- - Preserve aspect ratio on resize option
+  - Fix bugs in resize operation
 - Improved co-ordinate system
- - Allow non-square aspect ratio
- - Use unit vectors as basis
+  - Allow non-square aspect ratio
+  - Use unit vectors as basis
+  - Support co-ordinate transforms (polar or log)
 - Extend platform support
- - Embedded applet
- - Android application
+  - Embedded applet
+  - Android application (?)
 - Refactor UI using JavaFX API
 - Animator enhancements
- - Document usage
- - JSON configuration file parser
- - Headless operation
- - Add camera movements (zoom and pan)
- - Graphical sequence editor
+  - Document usage
+  - JSON configuration file parser
+  - Headless operation
+  - Add camera movements (zoom and pan)
+  - Graphical sequence editor
 
 Alongside these enhancements and new features, some of which are
 currently work-in-progress, both performance and UX improvements
