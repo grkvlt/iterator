@@ -43,7 +43,6 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -67,7 +66,6 @@ import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Config.Render;
 import iterator.util.Subscriber;
-import iterator.util.Utils;
 
 /**
  * Rendered IFS viewer.
@@ -257,31 +255,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
 
-        Transform selected = controller.getEditor().getSelected();
-        Transform ants = null;
-        Point start = controller.getEditor().getStart();
-        Point end = controller.getEditor().getEnd();
-        if (selected == null && start != null && end != null) {
-            double x = Math.min(start.x, end.x);
-            double y = Math.min(start.y, end.y);
-            double w = Math.max(start.x, end.x) - x;
-            double h = Math.max(start.y, end.y) - y;
-
-            int grid = controller.getMinGrid();
-            w = Math.max(grid, w);
-            h = Math.max(grid, h);
-
-            ants = new Transform(Integer.MIN_VALUE, 0, getSize());
-            ants.x = x;
-            ants.y = y;
-            ants.w = w;
-            ants.h = h;
-        }
-
-        if (ifs.contains(selected)) { selected = null; }
-        List<Transform> transforms = Utils.concatenate(ifs, selected, ants);
-        Collections.sort(transforms, IFS.IDENTITY);
-        double weight = ifs.getWeight() + (selected != null ? selected.getDeterminant() : 0d) + (ants != null ? ants.getDeterminant() : 0d);
+        List<Transform> transforms = controller.getEditor().getTransforms();
+        double weight = controller.getEditor().getWeight(transforms);
 
         int n = transforms.size();
         int r = isVisible() ? 1 : 2;

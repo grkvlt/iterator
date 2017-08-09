@@ -46,6 +46,8 @@ import java.awt.geom.Arc2D;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -66,6 +68,7 @@ import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
+import iterator.util.Utils;
 
 /**
  * IFS Editor.
@@ -203,6 +206,47 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
 
     public Point getEnd() { return end; }
 
+    public Transform getAnts() {
+        Transform ants = null;
+        Point start = controller.getEditor().getStart();
+        Point end = controller.getEditor().getEnd();
+        if (selected == null && start != null && end != null) {
+            double x = Math.min(start.x, end.x);
+            double y = Math.min(start.y, end.y);
+            double w = Math.max(start.x, end.x) - x;
+            double h = Math.max(start.y, end.y) - y;
+
+            int grid = controller.getMinGrid();
+            w = Math.max(grid, w);
+            h = Math.max(grid, h);
+
+            ants = new Transform(Integer.MIN_VALUE, 0, getSize());
+            ants.x = x;
+            ants.y = y;
+            ants.w = w;
+            ants.h = h;
+        }
+        return ants;
+    }
+
+    public List<Transform> getTransforms() {
+        Transform selected = controller.getEditor().getSelected();
+        Transform ants = getAnts();
+
+        if (ifs.contains(selected)) { selected = null; }
+        List<Transform> transforms = Utils.concatenate(ifs, selected, ants);
+        Collections.sort(transforms, IFS.IDENTITY);
+        return transforms;
+    }
+
+    public double getWeight(List<Transform> transforms) {
+        return transforms.stream().map(Transform::getDeterminant).reduce((x, y) -> x + y).get();
+    }
+
+    public double getArea(List<Transform> transforms) {
+        return transforms.stream().map(t -> t.w * t.h).reduce((x, y) -> x + y).get();
+    }
+
     /** @see Subscriber#updated(IFS) */
     @Override
     @Subscribe
@@ -249,19 +293,17 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             if (selected == null && start != null && end != null) {
                 g.setPaint(Color.BLACK);
                 g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
-                int x = Math.min(start.x, end.x);
-                int y = Math.min(start.y, end.y);
-                int w = Math.max(start.x, end.x) - x;
-                int h = Math.max(start.y, end.y) - y;
-                Rectangle ants = new Rectangle(x, y, w, h);
-                g.draw(ants);
+                Transform ants = getAnts();
+                g.draw(new Rectangle(ants.x.intValue(), ants.y.intValue(), ants.w.intValue(), ants.h.intValue()));
             }
 
             if (!ifs.isEmpty()) {
                 Viewer viewer = controller.getViewer();
                 viewer.reset();
-                int n = ifs.size() + ((selected == null && start != null && end != null) ? 1 : 0);
-                viewer.iterate(50_000 + (int) Math.min(250_000, 5_000 * n * Math.log(n)), 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
+                List<Transform> transforms = controller.getEditor().getTransforms();
+                double ratio = controller.getEditor().getArea(transforms) / (getWidth() * getHeight());
+                int k = (int) (250_000 * ratio * ratio);
+                viewer.iterate(k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
                 g.setComposite(AlphaComposite.SrcOver.derive(0.8f));
                 g.drawImage(viewer.getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
             }
