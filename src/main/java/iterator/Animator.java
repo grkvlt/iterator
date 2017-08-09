@@ -23,6 +23,7 @@ import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -99,7 +100,7 @@ public class Animator implements Subscriber {
     public static class Change {
         public int transform;
         public double start, end;
-        public char field;
+        public String field;
     }
 
     /**
@@ -162,11 +163,11 @@ public class Animator implements Subscriber {
                 case "transform": // id field start finish
                     Change change = new Change();
                     change.transform = Integer.valueOf(tokens.get(1));
-                    String field = tokens.get(2).toLowerCase(Locale.UK);
-                    if (field.length() == 1 && CharMatcher.anyOf("xywhr").matches(field.charAt(0))) {
-                        change.field = field.charAt(0);
+                    String f = tokens.get(2).toLowerCase(Locale.UK);
+                    if (FIELDS.contains(f)) {
+                        change.field = f;
                     } else {
-                        throw new IllegalStateException(String.format("Parse error: Invalid 'transform' field %s at line %d", field, l));
+                        throw new IllegalStateException(String.format("Parse error: Invalid 'transform' field %s at line %d", f, l));
                     }
                     change.start = Double.valueOf(tokens.get(3));
                     change.end = Double.valueOf(tokens.get(4));
@@ -216,6 +217,8 @@ public class Animator implements Subscriber {
             .put("segment", 1)
             .build();
     private static final Function<String, Integer> NUMBER = Functions.forMap(NUMBER_ARGUMENTS, 0);
+
+    private static final List<String> FIELDS = Arrays.asList("x", "y", "w", "h", "r", "shx", "shy");
 
     private void checkArgs(String type, int args, int l) {
         int n = NUMBER.apply(type);
@@ -275,11 +278,13 @@ public class Animator implements Subscriber {
                     }
                     double delta = (change.end - change.start) * fraction;
                     switch (change.field) {
-                        case 'x': transform.x = change.start + delta; break;
-                        case 'y': transform.y = change.start + delta; break;
-                        case 'w': transform.w = change.start + delta; break;
-                        case 'h': transform.h = change.start + delta; break;
-                        case 'r': transform.r = Math.toRadians(change.start + delta); break;
+                        case "x": transform.x = change.start + delta; break;
+                        case "y": transform.y = change.start + delta; break;
+                        case "w": transform.w = change.start + delta; break;
+                        case "h": transform.h = change.start + delta; break;
+                        case "r": transform.r = Math.toRadians(change.start + delta); break;
+                        case "shx": transform.shx = change.start + delta; break;
+                        case "shy": transform.shy = change.start + delta; break;
                     }
                 }
 
