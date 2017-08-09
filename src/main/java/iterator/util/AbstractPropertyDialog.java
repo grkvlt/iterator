@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iterator.dialog;
+package iterator.util;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -28,32 +28,25 @@ import java.awt.event.KeyListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.ComponentInputMap;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 
 import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
 
 import iterator.Explorer;
-import iterator.util.Messages;
 
 /**
- * Abstract dialog for setting properties.
+ * Abstract dialog box for setting properties.
  */
-public abstract class AbstractPropertyDialog extends JDialog implements KeyListener {
+public abstract class AbstractPropertyDialog extends JDialog implements Dialog, KeyListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -7626627964747215623L;
 
@@ -61,7 +54,7 @@ public abstract class AbstractPropertyDialog extends JDialog implements KeyListe
     protected final Explorer controller;
     protected final EventBus bus;
     protected final GridBagLayout gridbag = new GridBagLayout();
-    protected final GridBagConstraints c = new GridBagConstraints();
+    protected final GridBagConstraints constraints = new GridBagConstraints();
 
     private Action success, failure;
 
@@ -82,18 +75,18 @@ public abstract class AbstractPropertyDialog extends JDialog implements KeyListe
         getContentPane().setBackground(Color.WHITE);
         setLayout(gridbag);
 
-        c.insets = new Insets(2, 5, 2, 5);
-        c.fill = GridBagConstraints.BOTH;
-        c.gridx = 0;
-        c.weightx = 1.0;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.weighty = 1.0;
+        constraints.insets = new Insets(2, 5, 2, 5);
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.gridx = 0;
+        constraints.weightx = 1.0;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.weighty = 1.0;
     }
 
     protected void setLabel(String text) {
         JLabel title = new JLabel(text, JLabel.CENTER);
         title.setFont(new Font("Calibri", Font.BOLD, 16));
-        gridbag.setConstraints(title, c);
+        gridbag.setConstraints(title, constraints);
         add(title);
     }
 
@@ -102,12 +95,12 @@ public abstract class AbstractPropertyDialog extends JDialog implements KeyListe
         JButton select = new JButton(action);
         select.setFont(new Font("Calibri", Font.PLAIN, 14));
         select.addKeyListener(this);
-        c.fill = GridBagConstraints.NONE;
-        c.anchor = GridBagConstraints.EAST;
-        c.gridx = 0;
-        c.gridwidth = 1;
-        c.weighty = 1.0;
-        gridbag.setConstraints(select, c);
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.EAST;
+        constraints.gridx = 0;
+        constraints.gridwidth = 1;
+        constraints.weighty = 1.0;
+        gridbag.setConstraints(select, constraints);
         add(select);
     }
 
@@ -121,14 +114,14 @@ public abstract class AbstractPropertyDialog extends JDialog implements KeyListe
         JButton cancel = new JButton(failure);
         cancel.setFont(new Font("Calibri", Font.PLAIN, 14));
         cancel.addKeyListener(this);
-        c.gridx = 1;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        gridbag.setConstraints(cancel, c);
+        constraints.gridx = 1;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridbag.setConstraints(cancel, constraints);
         add(cancel);
     }
 
-    protected <T> Supplier<T> addProperty(String string, T value, GridBagLayout gridbag, GridBagConstraints c, AbstractFormatter formatter) {
-        addLabel(string, gridbag, c);
+    protected <T> Supplier<T> addProperty(String string, T value, AbstractFormatter formatter) {
+        addLabel(string);
 
         final JFormattedTextField field = new JFormattedTextField(formatter);
         field.setHorizontalAlignment(JTextField.LEFT);
@@ -138,11 +131,11 @@ public abstract class AbstractPropertyDialog extends JDialog implements KeyListe
         field.setFont(new Font("Cambria", Font.ITALIC, 14));
         field.addKeyListener(this);
 
-        c.gridx = 2;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.weightx = 1.0;
-        c.weighty = 2.0;
-        gridbag.setConstraints(field, c);
+        constraints.gridx = 2;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.weightx = 1.0;
+        constraints.weighty = 2.0;
+        gridbag.setConstraints(field, constraints);
         add(field);
 
         Supplier<T> supplier = new Supplier<T>() {
@@ -155,8 +148,8 @@ public abstract class AbstractPropertyDialog extends JDialog implements KeyListe
         return supplier;
     }
 
-    protected <T> Supplier<T> addDropDown(String string, T value, GridBagLayout gridbag, GridBagConstraints c, T...items) {
-        addLabel(string, gridbag, c);
+    protected <T> Supplier<T> addDropDown(String string, T value, T...items) {
+        addLabel(string);
 
         final JComboBox field = new JComboBox<T>(items);
         field.setBorder(BorderFactory.createEmptyBorder());
@@ -165,11 +158,11 @@ public abstract class AbstractPropertyDialog extends JDialog implements KeyListe
         field.setFont(new Font("Cambria", Font.ITALIC, 14));
         field.addKeyListener(this);
 
-        c.gridx = 2;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.weightx = 1.0;
-        c.weighty = 2.0;
-        gridbag.setConstraints(field, c);
+        constraints.gridx = 2;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.weightx = 1.0;
+        constraints.weighty = 2.0;
+        gridbag.setConstraints(field, constraints);
         add(field);
 
         Supplier<T> supplier = new Supplier<T>() {
@@ -182,19 +175,19 @@ public abstract class AbstractPropertyDialog extends JDialog implements KeyListe
         return supplier;
     }
 
-    protected Supplier<Boolean> addCheckBox(String string, Boolean value, GridBagLayout gridbag, GridBagConstraints c) {
-        addLabel(string, gridbag, c);
+    protected Supplier<Boolean> addCheckBox(String string, Boolean value) {
+        addLabel(string);
 
         final JCheckBox field = new JCheckBox();
         field.setBorder(BorderFactory.createEmptyBorder());
         field.setSelected(value);
         field.addKeyListener(this);
 
-        c.gridx = 2;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.weightx = 1.0;
-        c.weighty = 2.0;
-        gridbag.setConstraints(field, c);
+        constraints.gridx = 2;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.weightx = 1.0;
+        constraints.weighty = 2.0;
+        gridbag.setConstraints(field, constraints);
         add(field);
 
         Supplier<Boolean> supplier = new Supplier<Boolean>() {
@@ -206,17 +199,19 @@ public abstract class AbstractPropertyDialog extends JDialog implements KeyListe
         return supplier;
     }
 
-    private void addLabel(String string, GridBagLayout gridbag, GridBagConstraints c) {
+    private void addLabel(String string) {
         JLabel label = new JLabel(string, JLabel.RIGHT);
         label.setFont(new Font("Calibri", Font.PLAIN, 14));
-        c.gridx = 0;
-        c.gridwidth = GridBagConstraints.RELATIVE;
-        c.weightx = 2.0;
-        c.weighty = 2.0;
-        gridbag.setConstraints(label, c);
+        constraints.gridx = 0;
+        constraints.gridwidth = GridBagConstraints.RELATIVE;
+        constraints.weightx = 2.0;
+        constraints.weighty = 2.0;
+        gridbag.setConstraints(label, constraints);
         add(label);
     }
 
+    /** @see iterator.util.Dialog#showDialog() */
+    @Override
     public void showDialog() {
         pack();
 

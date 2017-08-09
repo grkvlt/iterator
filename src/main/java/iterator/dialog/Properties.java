@@ -39,6 +39,7 @@ import com.google.common.eventbus.EventBus;
 import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
+import iterator.util.AbstractPropertyDialog;
 import iterator.util.Utils;
 
 /**
@@ -55,13 +56,13 @@ public class Properties extends AbstractPropertyDialog {
         setLabel(label);
 
         AbstractFormatter doubleFormatter = new Utils.DoubleFormatter();
-        x = addProperty(messages.getText(DIALOG_PROPERTIES_X), transform.x, gridbag, c, doubleFormatter);
-        y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), transform.y, gridbag, c, doubleFormatter);
-        w = addProperty(messages.getText(DIALOG_PROPERTIES_W), transform.w, gridbag, c, doubleFormatter);
-        h = addProperty(messages.getText(DIALOG_PROPERTIES_H), transform.h, gridbag, c, doubleFormatter);
-        r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Math.toDegrees(transform.r), gridbag, c, doubleFormatter);
-        shx = addProperty(messages.getText(DIALOG_PROPERTIES_SHX), transform.shx, gridbag, c, doubleFormatter);
-        shy = addProperty(messages.getText(DIALOG_PROPERTIES_SHY), transform.shy, gridbag, c, doubleFormatter);
+        x = addProperty(messages.getText(DIALOG_PROPERTIES_X), transform.x, doubleFormatter);
+        y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), transform.y, doubleFormatter);
+        w = addProperty(messages.getText(DIALOG_PROPERTIES_W), transform.w, doubleFormatter);
+        h = addProperty(messages.getText(DIALOG_PROPERTIES_H), transform.h, doubleFormatter);
+        r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Math.toDegrees(transform.r), doubleFormatter);
+        shx = addProperty(messages.getText(DIALOG_PROPERTIES_SHX), transform.shx, doubleFormatter);
+        shy = addProperty(messages.getText(DIALOG_PROPERTIES_SHY), transform.shy, doubleFormatter);
 
         setAction(new AbstractAction(messages.getText(DIALOG_PROPERTIES_BUTTON_UPDATE)) {
             @Override

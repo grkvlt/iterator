@@ -49,6 +49,7 @@ import com.google.common.eventbus.EventBus;
 import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
+import iterator.util.Dialog;
 import iterator.util.Messages;
 import iterator.util.Utils;
 import iterator.view.Details;
@@ -56,7 +57,7 @@ import iterator.view.Details;
 /**
  * Matrix dialog.
  */
-public class Matrix extends JDialog implements KeyListener {
+public class Matrix extends JDialog implements Dialog, KeyListener {
     /** serialVersionUID */
     private static final long serialVersionUID = 2515091470183119489L;
 
@@ -187,6 +188,8 @@ public class Matrix extends JDialog implements KeyListener {
         return supplier;
     }
 
+    /** @see iterator.util.Dialog#showDialog() */
+    @Override
     public void showDialog() {
         pack();
 

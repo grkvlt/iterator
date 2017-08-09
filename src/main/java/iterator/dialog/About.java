@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iterator;
+package iterator.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog.ModalityType;
@@ -30,23 +30,26 @@ import javax.swing.JPanel;
 import com.google.common.eventbus.EventBus;
 import com.google.common.io.Resources;
 
+import iterator.Explorer;
+import iterator.util.Dialog;
 import iterator.util.Utils;
 
 /**
  * About dialog.
  */
-public class About extends JPanel implements MouseListener {
+public class About extends JPanel implements Dialog, MouseListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1378560167379537595L;
 
     private JDialog about;
-    private BufferedImage splash;
+    private BufferedImage image;
 
     public About(EventBus bus, Explorer controller) {
         super();
 
-        splash = Utils.loadImage(Resources.getResource("splash.png"));
-        setSize(splash.getWidth(), splash.getHeight());
+        image = Utils.loadImage(Resources.getResource("splash.png"));
+        Dimension size = new Dimension(image.getWidth(), image.getHeight());
+        setSize(size);
 
         about = new JDialog(controller, null, ModalityType.APPLICATION_MODAL);
 
@@ -55,16 +58,15 @@ public class About extends JPanel implements MouseListener {
         about.add(this, BorderLayout.CENTER);
         about.pack();
 
-        Dimension size = new Dimension(splash.getWidth(), splash.getHeight() + about.getInsets().top);
-
         about.setSize(size);
         about.setPreferredSize(size);
         about.setMinimumSize(size);
         about.setResizable(false);
-
         about.addMouseListener(this);
     }
 
+    /** @see iterator.util.Dialog#showDialog() */
+    @Override
     public void showDialog() {
         about.setLocationRelativeTo(null);
         about.setVisible(true);
@@ -73,7 +75,7 @@ public class About extends JPanel implements MouseListener {
     @Override
     public void paint(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
-        Splash.paintSplash(g, splash, getWidth(), getHeight());
+        Splash.paintSplash(g, image, getWidth(), getHeight());
         g.dispose();
     }
 

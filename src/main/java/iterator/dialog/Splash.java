@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iterator;
+package iterator.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -36,39 +36,42 @@ import javax.swing.Timer;
 
 import com.google.common.io.Resources;
 
+import iterator.util.Dialog;
 import iterator.util.Utils;
 import iterator.util.Version;
 
 /**
  * Splash screen.
  */
-public class Splash extends JPanel implements ActionListener {
+public class Splash extends JPanel implements Dialog, ActionListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1028745784181961863L;
 
     public static final Long SPLASH_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(3);
 
-    private JWindow parent;
-    private BufferedImage splash;
+    private JWindow splash;
+    private BufferedImage image;
 
     public Splash() {
         super();
 
-        splash = Utils.loadImage(Resources.getResource("splash.png"));
-
-        parent = new JWindow();
-        parent.getContentPane().setLayout(new BorderLayout());
-        parent.getContentPane().add(this, BorderLayout.CENTER);
-        parent.pack();
-
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-        Dimension size = new Dimension(splash.getWidth(), splash.getHeight());
 
-        parent.setSize(size);
-        parent.setPreferredSize(size);
-        parent.setMinimumSize(size);
-        parent.setLocation((screen.width / 2) - (size.width / 2), (screen.height / 2) - (size.height / 2));
-        parent.setAlwaysOnTop(true);
+        image = Utils.loadImage(Resources.getResource("splash.png"));
+        Dimension size = new Dimension(image.getWidth(), image.getHeight());
+        setSize(size);
+
+        splash = new JWindow();
+
+        splash.getContentPane().setLayout(new BorderLayout());
+        splash.getContentPane().add(this, BorderLayout.CENTER);
+        splash.pack();
+
+        splash.setSize(size);
+        splash.setPreferredSize(size);
+        splash.setMinimumSize(size);
+        splash.setLocation((screen.width / 2) - (size.width / 2), (screen.height / 2) - (size.height / 2));
+        splash.setAlwaysOnTop(true);
     }
 
     public static void paintSplash(Graphics2D g, BufferedImage image, int width, int height) {
@@ -94,18 +97,20 @@ public class Splash extends JPanel implements ActionListener {
     @Override
     public void paint(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
-        paintSplash(g, splash, getWidth(), getHeight());
+        paintSplash(g, image, getWidth(), getHeight());
         g.dispose();
     }
 
     /** @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent) */
     @Override
     public void actionPerformed(ActionEvent e) {
-        parent.setVisible(false);
+        splash.setVisible(false);
     }
 
+    /** @see iterator.util.Dialog#showDialog() */
+    @Override
     public void showDialog() {
-        parent.setVisible(true);
+        splash.setVisible(true);
 
         Timer timer = new Timer(SPLASH_TIMEOUT_MS.intValue(), this);
         timer.setRepeats(false);

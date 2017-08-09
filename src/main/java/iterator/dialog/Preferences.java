@@ -35,6 +35,7 @@ import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
 
 import iterator.Explorer;
+import iterator.util.AbstractPropertyDialog;
 import iterator.util.Config;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
@@ -57,13 +58,13 @@ public class Preferences extends AbstractPropertyDialog {
 
         setLabel(messages.getText(DIALOG_PREFERENCES_TITLE));
 
-        mode = addDropDown(messages.getText(DIALOG_PREFERENCES_MODE), controller.getMode(), gridbag, c, Mode.values());
-        render = addDropDown(messages.getText(DIALOG_PREFERENCES_RENDER), controller.getRender(), gridbag, c, Render.values());
-        paletteFile = addDropDown(messages.getText(DIALOG_PREFERENCES_PALETTE_FILE), controller.getPaletteFile(), gridbag, c, Config.PALETTE_FILES);
-        paletteSize = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), controller.getPaletteSize(), gridbag, c, new Utils.IntegerFormatter(0, 256));
-        seed = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SEED), controller.getSeed(), gridbag, c, new Utils.LongFormatter());
-        threads = addProperty(messages.getText(DIALOG_PREFERENCES_THREADS), controller.getThreads(), gridbag, c, new Utils.IntegerFormatter(Config.MIN_THREADS, 8));
-        debug = addCheckBox(messages.getText(DIALOG_PREFERENCES_DEBUG), controller.isDebug(), gridbag, c);
+        mode = addDropDown(messages.getText(DIALOG_PREFERENCES_MODE), controller.getMode(), Mode.values());
+        render = addDropDown(messages.getText(DIALOG_PREFERENCES_RENDER), controller.getRender(), Render.values());
+        paletteFile = addDropDown(messages.getText(DIALOG_PREFERENCES_PALETTE_FILE), controller.getPaletteFile(), Config.PALETTE_FILES);
+        paletteSize = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), controller.getPaletteSize(), new Utils.IntegerFormatter(0, 256));
+        seed = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SEED), controller.getSeed(), new Utils.LongFormatter());
+        threads = addProperty(messages.getText(DIALOG_PREFERENCES_THREADS), controller.getThreads(), new Utils.IntegerFormatter(Config.MIN_THREADS, 8));
+        debug = addCheckBox(messages.getText(DIALOG_PREFERENCES_DEBUG), controller.isDebug());
 
         setAction(new AbstractAction(messages.getText(DIALOG_PREFERENCES_BUTTON_UPDATE)) {
             @Override

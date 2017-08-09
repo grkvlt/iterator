@@ -118,7 +118,9 @@ import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
 import com.google.common.io.Resources;
 
+import iterator.dialog.About;
 import iterator.dialog.Preferences;
+import iterator.dialog.Splash;
 import iterator.model.IFS;
 import iterator.util.Config;
 import iterator.util.Config.Mode;
