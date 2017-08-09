@@ -25,6 +25,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -88,6 +89,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private Point2D centre;
     private Rectangle zoom;
     private ExecutorService executor = Executors.newCachedThreadPool();
+    private boolean overlay = false, info = false;
 
     public Viewer(EventBus bus, Explorer controller) {
         super();
@@ -115,6 +117,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void updated(IFS ifs) {
         this.ifs = ifs;
         if (!running.get()) {
+            overlay = false;
+            info = false;
             reset();
             rescale();
         }
@@ -147,6 +151,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             g.draw(zoom);
         }
 
+        if (overlay) {
+            for (Transform t : ifs) {
+                paintTransform(t, g);
+            }
+        }
+
         if (controller.isDebug()) {
             Color red = new Color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue(), 128);
             g.setPaint(red);
@@ -154,21 +164,44 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             g.setStroke(new BasicStroke(2f));
             g.drawLine((int) centre.getX() - 5, (int) centre.getY(), (int) centre.getX() + 5, (int) centre.getY());
             g.drawLine((int) centre.getX(), (int) centre.getY() - 5, (int) centre.getX(), (int) centre.getY() + 5);
+        }
 
-            Font font = new Font("Calibri", Font.BOLD, 20);
+        if (info || controller.isDebug()) {
+            Font font = new Font("Calibri", Font.PLAIN, 20);
             FontRenderContext frc = g.getFontRenderContext();
-            if (controller.hasPalette()) {
+            if (controller.hasPalette() && controller.isDebug()) {
                 TextLayout seedText = new TextLayout(String.format("%dS", controller.getSeed()), font, frc);
-                seedText.draw(g, getWidth() - 10f - (float) seedText.getBounds().getWidth(), getHeight() - 50f);
+                seedText.draw(g, getWidth() - 10f - (float) seedText.getBounds().getWidth(), getHeight() - 30f);
             }
-            TextLayout scaleText = new TextLayout(String.format("%.1fx", scale), font, frc);
-            scaleText.draw(g, getWidth() - 10f - (float) scaleText.getBounds().getWidth(), getHeight() - 30f);
+            TextLayout scaleText = new TextLayout(String.format("%.1fx (%.3f, %.3f)", scale, centre.getX() / getWidth(), centre.getY() / getHeight()), font, frc);
+            scaleText.draw(g, 10f, getHeight() - 10f);
             TextLayout countText = new TextLayout(String.format("%,dK", count.get()).replaceAll("[^0-9K]", " "), font, frc);
             countText.draw(g, getWidth() - 10f - (float) countText.getBounds().getWidth(), getHeight() - 10f);
+        }
 
+        if (controller.isDebug()) {
             paintGrid((Graphics2D) g.create());
         }
 
+        g.dispose();
+    }
+
+    public void paintTransform(Transform t, Graphics2D graphics) {
+        Graphics2D g = (Graphics2D) graphics.create();
+
+        // Transform unit square to view space
+        int x = (int) (-centre.getX() * scale) + (getWidth() / 2);
+        int y = (int) (-centre.getY() * scale) + (getHeight() / 2);
+        Rectangle unit = new Rectangle(getSize());
+        Shape rect = t.getTransform().createTransformedShape(unit);
+        AffineTransform view = AffineTransform.getTranslateInstance(x, y);
+        view.scale(scale, scale);
+        rect = view.createTransformedShape(rect);
+
+        // Draw the outline
+        g.setPaint(Color.BLACK);
+        g.setStroke(new BasicStroke(2f));
+        g.draw(rect);
         g.dispose();
     }
 
@@ -409,6 +442,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     }
                     reset();
                     start();
+                    break;
+                case KeyEvent.VK_I:
+                    info = !info;
+                    repaint();
+                    break;
+                case KeyEvent.VK_O:
+                    overlay = !overlay;
+                    repaint();
                     break;
             }
         }
