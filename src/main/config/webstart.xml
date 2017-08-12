@@ -26,7 +26,7 @@
     <fileSets>
         <fileSet>
             <directory>${project.basedir}/src/main/resources</directory>
-            <outputDirectory>/images/</outputDirectory>
+            <outputDirectory>/images</outputDirectory>
             <includes>
                 <include>*.png</include>
             </includes>
@@ -37,6 +37,13 @@
             <includes>
                 <include>*.png</include>
                 <include>*.html</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}/src/main/dist/data</directory>
+            <outputDirectory>/images</outputDirectory>
+            <includes>
+                <include>*.png</include>
             </includes>
         </fileSet>
         <fileSet>
