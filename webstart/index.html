@@ -1,0 +1,101 @@
+<!doctype html>
+<!--
+    Copyright 2012-2017 by Andrew Kennedy.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at:
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+<html>
+  <head>
+    <title>IFS Explorer 1.1.0</title>
+    <link rel="stylesheet" href="explorer.css" />
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  </head>
+  <body>
+    <div id="splash">
+      <h1>IFS Explorer</h1>
+      <h3>Version 1.1.0</h3>
+      <h2><a href="explorer.jnlp">Launch Application</a></h2>
+      <h2><a href="http://grkvlt.github.io/iterator/">View Documentation</a></h2>
+      <h2><a href="images/gallery/index.html">Image Gallery</a></h2>
+      <div class="copyright">
+        Copyright 2012&ndash;2017 by Andrew Donald Kennedy<br />
+        Licensed under the Apache Software License, Version 2.0
+      </div>
+    </div>
+
+    <div id="gallery">
+      <img src="images/gallery/2662x.png" />
+      <img src="images/gallery/arrow.png" />
+      <img src="images/gallery/basin.png" />
+      <img src="images/gallery/blobs.png" />
+      <img src="images/gallery/calabiyau.png" />
+      <img src="images/gallery/clouds.png" />
+      <img src="images/gallery/clouds2.png" />
+      <img src="images/gallery/cross.png" />
+      <img src="images/gallery/fern.png" />
+      <img src="images/gallery/fernzoom.png" />
+      <img src="images/gallery/forest.png" />
+      <img src="images/gallery/forest2.png" />
+      <img src="images/gallery/grass.png" />
+      <img src="images/gallery/julia.png" />
+      <img src="images/gallery/leafm781x.png" />
+      <img src="images/gallery/maple.png" />
+      <img src="images/gallery/maple2.png" />
+      <img src="images/gallery/mapler.png" />
+      <img src="images/gallery/mottled.png" />
+      <img src="images/gallery/paisley.png" />
+      <img src="images/gallery/purgatory.png" />
+      <img src="images/gallery/purgatory2.png" />
+      <img src="images/gallery/purgatory3.png" />
+      <img src="images/gallery/purgatory4.png" />
+      <img src="images/gallery/random.png" />
+      <img src="images/gallery/random2.png" />
+      <img src="images/gallery/rosette.png" />
+      <img src="images/gallery/rosette2.png" />
+      <img src="images/gallery/seahorse.png" />
+      <img src="images/gallery/shell.png" />
+      <img src="images/gallery/shrimp.png" />
+      <img src="images/gallery/spikes.png" />
+      <img src="images/gallery/splotch.png" />
+      <img src="images/gallery/star.png" />
+      <img src="images/gallery/swirls.png" />
+      <img src="images/gallery/triangle.png" />
+      <img src="images/gallery/wave.png" />
+      <img src="images/gallery/wave2.png" />
+      <img src="images/gallery/wave3.png" />
+      <img src="images/gallery/wave4.png" />
+      <img src="images/gallery/waves.png" />
+      <img src="images/gallery/wing.png" />
+      <img src="images/gallery/wing2.png" />
+      <img src="images/gallery/wings.png" />
+      <img src="images/gallery/zoom.png" />
+    </div>
+
+    <script type="text/javascript">
+      // <![CDATA[
+      $('#splash').css('z-index', 200)
+                  .css('position', 'absolute')
+                  .css('left', (document.width - 440) / 2);
+
+      $('#gallery img').each(function(i) {
+        $(this).css('opacity', Math.random() / 2)
+               .css('border', '1px solid gray')
+               .css('z-index', Math.random() * 100)
+               .css('position', 'absolute')
+               .css('width', 800)
+               .css('height', 800);
+      });
+      // ]]>
+    </script>
+  </body>
+</html>
