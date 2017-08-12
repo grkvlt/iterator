@@ -36,6 +36,7 @@
             <outputDirectory>/images/gallery</outputDirectory>
             <includes>
                 <include>*.png</include>
+                <include>*.html</include>
             </includes>
         </fileSet>
         <fileSet>
