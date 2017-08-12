@@ -140,6 +140,11 @@
         </p>
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> export JAVA_OPTS="-Dexplorer.palette.seed=1234"
 <b>$</b> ./bin/explorer.sh --colour --palette wave ./data/spikes.xml</code></pre>
+        <p>
+          The <em>Preferences...</em> menu option displays a dialog with some of the
+          available options, which can be edited and applied to the current view,
+          but will not be saved when the program exits.
+        </p>
         <h3>Options</h3>
         <p>
           The most interesting configuration properties are the <code>explorer.mode</code>,
@@ -231,9 +236,9 @@
           transforms. A transform can be removed using the <em>Delete</em>
           menu item, or its properties can be altered by chooing the
           <em>Properties</em> option. This will display a dialog allowing the
-          position, size or rotation to be editied. The <em>Matrix</em> menu
-          item allows the six affine transform matrix coefficients to be
-          altered directly.
+          position, size, rotation  or shear values to be editied. The
+          <em>Matrix</em> menu item allows the six affine transform matrix
+          coefficients to be altered directly.
         </p>
         <blockquote>
           <strong>Note</strong><em> once the affine transform matrix has been
@@ -247,7 +252,10 @@
           specific area by dragging the left mouse button, or use the keyboard
           <em>+</em> and <em>-</em> keys to to zoom in and out of the centre
           of the image by a factor of two. The <em>=</em> key will reset the
-          view to the original unmagnified and centered settings.
+          view to the original unmagnified and centered settings. To display
+          the outline of the transforms being rendered, use the <em>o</em> key,
+          and the <em>i</em> key will toggle display of the current scale and
+          viewpoint co-ordinates.
         </p>
         <blockquote>
           <strong>Note</strong><em> that when zoomed in at high magnification the
