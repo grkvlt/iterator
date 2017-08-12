@@ -269,13 +269,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
         Graphics2D g = (Graphics2D) graphics.create();
         g.translate(pf.getImageableX(), pf.getImageableY());
-        double scale = pf.getImageableWidth() / (double) getImage().getWidth();
-        if ((scale * getImage().getHeight()) > pf.getImageableHeight()) {
-            scale = pf.getImageableHeight() / (double) getImage().getHeight();
+        double scale = pf.getImageableWidth() / (double) getWidth();
+        if ((scale * getHeight()) > pf.getImageableHeight()) {
+            scale = pf.getImageableHeight() / (double) getHeight();
         }
         g.scale(scale, scale);
         printAll(g);
- 
+
         return PAGE_EXISTS;
     }
 

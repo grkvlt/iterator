@@ -17,6 +17,11 @@ package iterator.view;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
@@ -42,7 +47,7 @@ import iterator.util.Utils;
 /**
  * Detail display.
  */
-public class Details extends JTextPane implements Subscriber {
+public class Details extends JTextPane implements Printable, Subscriber {
     /** serialVersionUID */
     private static final long serialVersionUID = -1279626785145420083L;
 
@@ -179,4 +184,22 @@ public class Details extends JTextPane implements Subscriber {
 
         scrollToReference("top");
     }
+
+    /** @see java.awt.print.Printable#print(Graphics, PageFormat, int) */
+    @Override
+    public int print(Graphics graphics, PageFormat pf, int page) throws PrinterException {
+        if (page > 0) return NO_SUCH_PAGE;
+
+        Graphics2D g = (Graphics2D) graphics.create();
+        g.translate(pf.getImageableX(), pf.getImageableY());
+        double scale = pf.getImageableWidth() / (double) getWidth();
+        if ((scale * getHeight()) > pf.getImageableHeight()) {
+            scale = pf.getImageableHeight() / (double) getHeight();
+        }
+        g.scale(scale, scale);
+        printAll(g);
+
+        return PAGE_EXISTS;
+    }
+
 }
