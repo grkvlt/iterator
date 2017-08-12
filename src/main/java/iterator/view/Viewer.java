@@ -22,6 +22,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -157,22 +158,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             }
         }
 
-        if (controller.isDebug()) {
-            Color red = new Color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue(), 128);
-            g.setPaint(red);
-
-            g.setStroke(new BasicStroke(2f));
-            g.drawLine((int) centre.getX() - 5, (int) centre.getY(), (int) centre.getX() + 5, (int) centre.getY());
-            g.drawLine((int) centre.getX(), (int) centre.getY() - 5, (int) centre.getX(), (int) centre.getY() + 5);
-        }
-
-        if (info || controller.isDebug()) {
+        if (info) {
+            g.setPaint(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
             Font font = new Font("Calibri", Font.PLAIN, 20);
             FontRenderContext frc = g.getFontRenderContext();
-            if (controller.hasPalette() && controller.isDebug()) {
-                TextLayout seedText = new TextLayout(String.format("%dS", controller.getSeed()), font, frc);
-                seedText.draw(g, getWidth() - 10f - (float) seedText.getBounds().getWidth(), getHeight() - 30f);
-            }
+
             TextLayout scaleText = new TextLayout(String.format("%.1fx (%.3f, %.3f)", scale, centre.getX() / getWidth(), centre.getY() / getHeight()), font, frc);
             scaleText.draw(g, 10f, getHeight() - 10f);
             TextLayout countText = new TextLayout(String.format("%,dK", count.get()).replaceAll("[^0-9K]", " "), font, frc);
@@ -199,7 +189,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         rect = view.createTransformedShape(rect);
 
         // Draw the outline
-        g.setPaint(Color.BLACK);
+        g.setPaint(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
         g.setStroke(new BasicStroke(2f));
         g.draw(rect);
         g.dispose();
@@ -209,6 +199,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         Color red = new Color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue(), controller.getRender() == Render.MEASURE ? 64 : 16);
         g.setPaint(red);
         g.setStroke(new BasicStroke(1f));
+
+        g.drawLine((int) centre.getX() - 5, (int) centre.getY(), (int) centre.getX() + 5, (int) centre.getY());
+        g.drawLine((int) centre.getX(), (int) centre.getY() - 5, (int) centre.getX(), (int) centre.getY() + 5);
+
         int max = controller.getMaxGrid();
         for (int x = 0; x < getWidth(); x += max) {
             g.drawLine(x, 0, x, getHeight());
