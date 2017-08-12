@@ -69,6 +69,9 @@ public class Preferences extends AbstractPropertyDialog {
         setAction(new AbstractAction(messages.getText(DIALOG_PREFERENCES_BUTTON_UPDATE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
+                setVisible(false);
+                controller.getViewer().stop();
+
                 controller.setMode(mode.get().name());
                 controller.setRender(render.get().name());
                 controller.setPaletteFile(paletteFile.get());
@@ -82,8 +85,6 @@ public class Preferences extends AbstractPropertyDialog {
                 if (controller.getViewer().isVisible()) {
                     controller.getViewer().start();
                 }
-
-                setVisible(false);
             }
         });
         setCancel(messages.getText(DIALOG_PREFERENCES_BUTTON_CANCEL));
