@@ -20,8 +20,6 @@ import java.util.Locale.Category;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-import com.google.common.eventbus.EventBus;
-
 import iterator.Explorer;
 
 /**
@@ -90,14 +88,8 @@ public class Messages {
 
     private ResourceBundle resources;
 
-    private final Explorer controller;
-    private final EventBus bus;
-
-    public Messages(final EventBus bus, final Explorer controller) {
+    public Messages(final Explorer controller) {
         super();
-
-        this.bus = bus;
-        this.controller = controller;
 
         try {
             resources = ResourceBundle.getBundle("iterator.Explorer", Locale.getDefault(Category.DISPLAY));

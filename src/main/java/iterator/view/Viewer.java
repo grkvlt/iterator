@@ -397,6 +397,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         running.compareAndSet(true, false);
     }
 
+    public boolean isRunning() {
+        return running.get();
+    }
+
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override
     public void keyTyped(KeyEvent e) {

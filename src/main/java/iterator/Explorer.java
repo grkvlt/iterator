@@ -221,7 +221,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         bus = new EventBus(this);
         bus.register(this);
 
-        messages = new Messages(bus, this);
+        messages = new Messages(this);
 
         setTitle(messages.getText(TITLE));
 
@@ -544,7 +544,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         print = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_PRINT)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                viewer.stop();
+                boolean viewerStopped = false;
+                if (current.equals(VIEWER) && viewer.isRunning()) {
+                    viewer.stop();
+                    viewerStopped = true;
+                }
                 PrinterJob job = PrinterJob.getPrinterJob();
                 job.setJobName(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
                 PageFormat pf = job.defaultPage();
@@ -553,7 +557,14 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 } else {
                     pf.setOrientation(PageFormat.PORTRAIT);
                 }
-                job.setPrintable(viewer, pf);
+                switch (current) {
+                    case VIEWER:
+                        job.setPrintable(viewer, pf);
+                        break;
+                    case DETAILS:
+                        job.setPrintable(details, pf);
+                        break;
+                }
                 boolean ok = job.printDialog();
                 if (ok) {
                     try {
@@ -562,7 +573,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                         Throwables.propagate(pe);
                     }
                 }
-                viewer.start();
+                if (current.equals(VIEWER) && viewerStopped) {
+                    viewer.start();
+                }
             }
         });
         print.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));

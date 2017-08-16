@@ -198,6 +198,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
         }
         g.scale(scale, scale);
         printAll(g);
+        g.dispose();
 
         return PAGE_EXISTS;
     }

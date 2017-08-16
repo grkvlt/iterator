@@ -70,7 +70,10 @@ public class Preferences extends AbstractPropertyDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
-                controller.getViewer().stop();
+
+                if (controller.getViewer().isRunning()) {
+                    controller.getViewer().stop();
+                }
 
                 controller.setMode(mode.get().name());
                 controller.setRender(render.get().name());
