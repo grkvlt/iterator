@@ -15,6 +15,7 @@
  */
 package iterator.util;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -85,6 +86,17 @@ public class Utils {
         }
         Iterable<T> joined = Iterables.concat(initial, Optional.presentInstances(extra));
         return Lists.newArrayList(joined);
+    }
+
+    /**
+     * Returns a new {@link Color} with the same RGB value but updated alpha channel.
+     *
+     * @param c the colour to copy
+     * @param alpha the alpha channel value
+     * @return the colour
+     */
+    public static Color alpha(Color c, int alpha) {
+        return new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
     }
 
     /**

@@ -713,16 +713,16 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     @Override
     public void mouseMoved(MouseEvent e) {
         if (start == null) {
+            for (Transform t : ifs) {
+                Cursor corner = getCorner(t, e.getPoint());
+                if (corner != null) {
+                    setCursor(corner);
+                    return;
+                }
+            }
             if (getTransformAt(e.getPoint()) != null) {
                 setCursor(new Cursor(Cursor.HAND_CURSOR));
             } else {
-                for (Transform t : ifs) {
-                    Cursor corner = getCorner(t, e.getPoint());
-                    if (corner != null) {
-                        setCursor(corner);
-                        return;
-                    }
-                }
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
         }

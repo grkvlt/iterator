@@ -67,6 +67,7 @@ import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Config.Render;
 import iterator.util.Subscriber;
+import iterator.util.Utils;
 
 /**
  * Rendered IFS viewer.
@@ -89,7 +90,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private Point2D centre;
     private Rectangle zoom;
     private ExecutorService executor = Executors.newCachedThreadPool();
-    private boolean overlay = false, info = false;
+    private boolean overlay, info, grid;
 
     public Viewer(EventBus bus, Explorer controller) {
         super();
@@ -117,8 +118,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void updated(IFS ifs) {
         this.ifs = ifs;
         if (!running.get()) {
-            overlay = false;
-            info = false;
+            overlay = controller.isDebug();
+            info = controller.isDebug();
+            grid = controller.isDebug();
             reset();
             rescale();
         }
@@ -168,7 +170,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             countText.draw(g, getWidth() - 10f - (float) countText.getBounds().getWidth(), getHeight() - 10f);
         }
 
-        if (controller.isDebug()) {
+        if (grid) {
             paintGrid((Graphics2D) g.create());
         }
 
@@ -179,8 +181,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         Graphics2D g = (Graphics2D) graphics.create();
 
         // Transform unit square to view space
-        int x = (int) (-centre.getX() * scale) + (getWidth() / 2);
-        int y = (int) (-centre.getY() * scale) + (getHeight() / 2);
+        double x = (getWidth() / 2) - (centre.getX() * scale);
+        double y = (getHeight() / 2) - (centre.getY() * scale);
         Rectangle unit = new Rectangle(getSize());
         Shape rect = t.getTransform().createTransformedShape(unit);
         AffineTransform view = AffineTransform.getTranslateInstance(x, y);
@@ -188,26 +190,31 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         rect = view.createTransformedShape(rect);
 
         // Draw the outline
-        g.setPaint(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
+        Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, controller.getRender() == Render.MEASURE ? 128 : 32);
+        g.setPaint(c);
         g.setStroke(new BasicStroke(2f));
         g.draw(rect);
         g.dispose();
     }
 
     public void paintGrid(Graphics2D g) {
-        Color red = new Color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue(), controller.getRender() == Render.MEASURE ? 64 : 16);
-        g.setPaint(red);
+        Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, controller.getRender() == Render.MEASURE ? 64 : 16);
+        g.setPaint(c);
         g.setStroke(new BasicStroke(1f));
 
         g.drawLine((int) centre.getX() - 5, (int) centre.getY(), (int) centre.getX() + 5, (int) centre.getY());
         g.drawLine((int) centre.getX(), (int) centre.getY() - 5, (int) centre.getX(), (int) centre.getY() + 5);
 
-        int max = controller.getMaxGrid();
-        for (int x = 0; x < getWidth(); x += max) {
-            g.drawLine(x, 0, x, getHeight());
+        double max = controller.getMaxGrid() / scale;
+        double x0 = (getWidth() / 2) - (centre.getX() * scale);
+        double xo = (max - Math.IEEEremainder(x0, max)) * scale;
+        for (double x = xo; x < getWidth(); x += controller.getMaxGrid()) {
+            g.drawLine((int) x, 0, (int) x, getHeight());
         }
-        for (int y = 0; y < getHeight(); y += max) {
-            g.drawLine(0, y, getWidth(), y);
+        double y0 = (getHeight() / 2) - (centre.getY() * scale);
+        double yo = (max - Math.IEEEremainder(y0, max)) * scale;
+        for (double y = yo; y < getHeight(); y += controller.getMaxGrid()) {
+            g.drawLine(0, (int) y, getWidth(), (int) y);
         }
         g.dispose();
     }
@@ -335,7 +342,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
                 // Set the paint colour according to the rendering mode
                 if (controller.getRender() == Render.IFS) {
-                    g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), 255));
+                    g.setPaint(Utils.alpha(color, 255));
                 } else if (controller.getRender() == Render.MEASURE) {
                     if (top[p] == 0) {
                         color = new Color(color.getRed(), color.getGreen(), color.getBlue());
@@ -347,9 +354,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                         }
                     }
                     top[p] = color.getRGB();
-                    g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), isVisible() ? 16 : 128));
+                    g.setPaint(Utils.alpha(color, isVisible() ? 16 : 128));
                 } else {
-                    g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), a));
+                    g.setPaint(Utils.alpha(color, a));
                 }
 
                 g.fill(rect);
@@ -446,6 +453,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     break;
                 case KeyEvent.VK_O:
                     overlay = !overlay;
+                    repaint();
+                    break;
+                case KeyEvent.VK_G:
+                    grid = !grid;
                     repaint();
                     break;
             }
