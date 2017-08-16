@@ -443,8 +443,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         int[] cornerY = new int[] { 0, getHeight(), getHeight(), 0 };
         int[] cursors = new int[] { Cursor.NW_RESIZE_CURSOR, Cursor.SW_RESIZE_CURSOR, Cursor.SE_RESIZE_CURSOR, Cursor.NE_RESIZE_CURSOR };
         for (int i = 0; i < 4; i++) {
-            Point center = new Point();
-            t.getTransform().transform(new Point(cornerX[i], cornerY[i]), center);
+            Point center = new Point(cornerX[i], cornerY[i]);
+            t.getTransform().transform(center, center);
             Rectangle corner = new Rectangle(center.x - 5, center.y - 5, 10, 10);
             if (corner.contains(point)) {
                 return new Cursor(cursors[i]);
@@ -474,19 +474,19 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             if (resize != null) {
                 corner = getCorner(resize, e.getPoint());
                 setCursor(corner);
-                Point nw = new Point();
-                Point ne = new Point();
-                Point sw = new Point();
-                Point se = new Point();
-                resize.getTransform().transform(new Point(0, 0), nw);
-                resize.getTransform().transform(new Point(getWidth(), 0), ne);
-                resize.getTransform().transform(new Point(0, getHeight()), sw);
-                resize.getTransform().transform(new Point(getWidth(), getHeight()), se);
-                switch(corner.getType()) {
-                case Cursor.NW_RESIZE_CURSOR: start = nw; break;
-                case Cursor.NE_RESIZE_CURSOR: start = ne; break;
-                case Cursor.SW_RESIZE_CURSOR: start = sw; break;
-                case Cursor.SE_RESIZE_CURSOR: start = se; break;
+                Point nw = new Point(0, 0);
+                Point ne = new Point(getWidth(), 0);
+                Point sw = new Point(0, getHeight());
+                Point se = new Point(getWidth(), getHeight());
+                resize.getTransform().transform(nw, nw);
+                resize.getTransform().transform(ne, ne);
+                resize.getTransform().transform(sw, sw);
+                resize.getTransform().transform(se, se);
+                switch (corner.getType()) {
+                    case Cursor.NW_RESIZE_CURSOR: start = nw; break;
+                    case Cursor.NE_RESIZE_CURSOR: start = ne; break;
+                    case Cursor.SW_RESIZE_CURSOR: start = sw; break;
+                    case Cursor.SE_RESIZE_CURSOR: start = se; break;
                 }
                 ifs.remove(resize);
                 selected = resize;
@@ -552,8 +552,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 end = null;
 
                 int grid = controller.getSnapGrid();
-                w = Math.max(grid, w);
-                h = Math.max(grid, h);
+                if (w <= grid && h <= grid) {
+                    repaint();
+                    return;
+                }
 
                 selected = new Transform(getSize());
                 selected.x = x;
@@ -596,16 +598,20 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 int dx = end.x - start.x;
                 int dy = end.y - start.y;
 
-                Point delta = new Point();
-                Point inverseX = new Point();
-                Point inverseY = new Point();
+                Point delta = new Point(dx, dy);
                 AffineTransform reverse = new AffineTransform();
                 reverse.rotate(-resize.r);
-                reverse.transform(new Point(dx, dy), delta);
+                reverse.shear(-resize.shx, -resize.shy);
+                reverse.transform(delta, delta);
 
+                if (e.isShiftDown()) {
+                    delta.x = (int) (delta.y * (w / h));
+                }
+                Point inverseX = new Point(delta.x, 0);
+                Point inverseY = new Point(0, delta.y);
                 try {
-                    reverse.inverseTransform(new Point(delta.x, 0), inverseX);
-                    reverse.inverseTransform(new Point(0, delta.y), inverseY);
+                    reverse.inverseTransform(inverseX, inverseX);
+                    reverse.inverseTransform(inverseY, inverseY);
                 } catch (NoninvertibleTransformException e1) {
                     Throwables.propagate(e1);
                 }
@@ -613,57 +619,39 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 double x = resize.x;
                 double y = resize.y;
 
-                if (e.isShiftDown()) {
-                    double a = w / h;
-                    switch(corner.getType()) {
-                        case Cursor.NW_RESIZE_CURSOR: // OK ROT
-                            x += ((inverseX.y * a) + (inverseY.y * a));
-                            y += (inverseX.y + inverseY.y);
-                            w -= delta.y * a;
-                            h -= delta.y;
-                            break;
-                        case Cursor.NE_RESIZE_CURSOR: // OK ROT
-                            x += inverseY.x;
-                            y += inverseY.y;
-                            w -= delta.y * a;
-                            h -= delta.y;
-                            break;
-                        case Cursor.SW_RESIZE_CURSOR: // OK
-                            x -= ((inverseX.y * a) + (inverseY.y * a));
-                            y += inverseX.y;
-                            w += delta.y * a;
-                            h += delta.y;
-                            break;
-                        case Cursor.SE_RESIZE_CURSOR: // OK ROT
-                            w += delta.y * a;
-                            h += delta.y;
-                            break;
-                    }
-                } else {
-                    switch(corner.getType()) {
-                        case Cursor.NW_RESIZE_CURSOR: // OK ROT
-                            x += (inverseX.x + inverseY.x);
-                            y += (inverseX.y + inverseY.y);
+                switch(corner.getType()) {
+                    case Cursor.NW_RESIZE_CURSOR:
+                        x += (inverseX.x + inverseY.x);
+                        y += (inverseX.y + inverseY.y);
+                        w -= delta.x;
+                        h -= delta.y;
+                        break;
+                    case Cursor.NE_RESIZE_CURSOR:
+                        x += inverseY.x;
+                        y += inverseY.y;
+                        if (e.isShiftDown()) {
                             w -= delta.x;
-                            h -= delta.y;
-                            break;
-                        case Cursor.NE_RESIZE_CURSOR: // OK ROT
-                            x += inverseY.x;
-                            y += inverseY.y;
+                        } else {
                             w += delta.x;
-                            h -= delta.y;
-                            break;
-                        case Cursor.SW_RESIZE_CURSOR: // OK ROT
-                            x += (inverseX.x + inverseY.x);
+                        }
+                        h -= delta.y;
+                        break;
+                    case Cursor.SW_RESIZE_CURSOR:
+                        if (e.isShiftDown()) {
+                            x -= inverseX.x;
+                            y -= inverseX.y;
+                            w += delta.x;
+                        } else {
+                            x += inverseX.x;
                             y += inverseX.y;
                             w -= delta.x;
-                            h += delta.y;
-                            break;
-                        case Cursor.SE_RESIZE_CURSOR: // OK ROT
-                            w += delta.x;
-                            h += delta.y;
-                            break;
-                    }
+                        }
+                        h += delta.y;
+                        break;
+                    case Cursor.SE_RESIZE_CURSOR:
+                        w += delta.x;
+                        h += delta.y;
+                        break;
                 }
 
                 int grid = controller.getSnapGrid();
