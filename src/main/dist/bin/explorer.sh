@@ -22,4 +22,4 @@ JAVA_OPTS="${JAVA_OPTS} -splash:${LIB}/splash.png \
 ##
 # Exexcute Java
 ##
-java -cp ".:${LIB}/*" ${JAVA_OPTS} iterator.Explorer "$@" 2>> explorer.log
+java -cp ".:${LIB}/*" ${JAVA_OPTS} iterator.Explorer "$@" 2>> explorer.log | tee -a explorer.log
