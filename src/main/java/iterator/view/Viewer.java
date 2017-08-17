@@ -36,6 +36,7 @@ import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -171,7 +172,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         }
 
         if (grid) {
-            paintGrid((Graphics2D) g.create());
+            paintGrid(g);
         }
 
         g.dispose();
@@ -190,32 +191,42 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         rect = view.createTransformedShape(rect);
 
         // Draw the outline
-        Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, controller.getRender() == Render.MEASURE ? 128 : 32);
+        Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
         g.setPaint(c);
         g.setStroke(new BasicStroke(2f));
         g.draw(rect);
         g.dispose();
     }
 
-    public void paintGrid(Graphics2D g) {
-        Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, controller.getRender() == Render.MEASURE ? 64 : 16);
+    public void paintGrid(Graphics2D graphics) {
+        Graphics2D g = (Graphics2D) graphics.create();
+
+        // Set colour and width
+        Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
         g.setPaint(c);
         g.setStroke(new BasicStroke(1f));
 
-        g.drawLine((int) centre.getX() - 5, (int) centre.getY(), (int) centre.getX() + 5, (int) centre.getY());
-        g.drawLine((int) centre.getX(), (int) centre.getY() - 5, (int) centre.getX(), (int) centre.getY() + 5);
-
-        double max = controller.getMaxGrid() / scale;
+        // Transform unit square to view space
         double x0 = (getWidth() / 2) - (centre.getX() * scale);
-        double xo = (max - Math.IEEEremainder(x0, max)) * scale;
-        for (double x = xo; x < getWidth(); x += controller.getMaxGrid()) {
-            g.drawLine((int) x, 0, (int) x, getHeight());
-        }
         double y0 = (getHeight() / 2) - (centre.getY() * scale);
-        double yo = (max - Math.IEEEremainder(y0, max)) * scale;
-        for (double y = yo; y < getHeight(); y += controller.getMaxGrid()) {
-            g.drawLine(0, (int) y, getWidth(), (int) y);
+        double spacing = controller.getMaxGrid() / scale;
+        double cx = Math.abs(centre.getX()) + getWidth();
+        double cy = Math.abs(centre.getY()) + getHeight();
+        double ox = Math.max(getWidth() / scale, cx);
+        double oy = Math.max(getHeight() / scale, cy);
+        AffineTransform view = AffineTransform.getTranslateInstance(x0, y0);
+        view.scale(scale, scale);
+
+        // Draw grid lines
+        for (double x = -ox; x < ox + getWidth(); x += spacing) {
+            Line2D line = new Line2D.Double(x, -oy, x, oy + getHeight());
+            g.draw(view.createTransformedShape(line));
         }
+        for (double y = -oy; y < oy + getWidth(); y += spacing) {
+            Line2D line = new Line2D.Double(-ox, y, ox + getWidth(), y);
+            g.draw(view.createTransformedShape(line));
+        }
+
         g.dispose();
     }
 
