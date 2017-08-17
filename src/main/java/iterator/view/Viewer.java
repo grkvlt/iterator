@@ -497,7 +497,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             int x2 = Math.max(one.x, two.x);
             int y1 = Math.min(one.y, two.y);
             int y2 = Math.max(one.y, two.y);
-            int side = Math.max(controller.getMinGrid(), Math.min(x2 - x1,  y2 - y1));
+            int side = Math.min(x2 - x1,  y2 - y1);
+            if (side < controller.getSnapGrid()) { 
+                side = 0;
+            }
             zoom = new Rectangle(x1, y1, side, side);
             repaint();
         }
@@ -509,10 +512,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         if (SwingUtilities.isLeftMouseButton(e)) {
             if (zoom != null) {
                 stop();
+
                 // Calculate new centre point and scale
                 Point2D origin = new Point2D.Double((centre.getX() * scale) - (getWidth() / 2d), (centre.getY() * scale) - (getHeight() / 2d));
                 Point2D updated = new Point2D.Double((zoom.x + (zoom.width / 2d) + origin.getX()) / scale, (zoom.y + (zoom.height / 2d) + origin.getY()) / scale);
-                if (zoom.width == 0 && zoom.height == 0) {
+                if (zoom.width < 2 *  controller.getSnapGrid()) {
                     rescale(scale * 2f, updated);
                 } else {
                     rescale(scale * ((float) getWidth() / (float) zoom.width), updated);
