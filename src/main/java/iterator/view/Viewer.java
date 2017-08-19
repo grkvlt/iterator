@@ -140,95 +140,109 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Override
     protected void paintComponent(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-        if (image != null) {
-            g.drawImage(image, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
-        }
+        try {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-        if (zoom != null) {
-            g.setPaint(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
-            g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
-            g.draw(zoom);
-        }
-
-        if (overlay) {
-            for (Transform t : ifs) {
-                paintTransform(t, g);
+            if (image != null) {
+                g.drawImage(image, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
             }
+
+            if (zoom != null) {
+                g.setPaint(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
+                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
+                g.draw(zoom);
+            }
+
+            if (overlay) {
+                for (Transform t : ifs) {
+                    paintTransform(t, g);
+                }
+            }
+
+            if (info) {
+                g.setPaint(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
+                Font font = new Font("Calibri", Font.PLAIN, 20);
+                FontRenderContext frc = g.getFontRenderContext();
+
+                TextLayout scaleText = new TextLayout(String.format("%.1fx (%.3f, %.3f)", scale, centre.getX() / getWidth(), centre.getY() / getHeight()), font, frc);
+                scaleText.draw(g, 10f, getHeight() - 10f);
+                TextLayout countText = new TextLayout(String.format("%,dK", count.get()).replaceAll("[^0-9K]", " "), font, frc);
+                countText.draw(g, getWidth() - 10f - (float) countText.getBounds().getWidth(), getHeight() - 10f);
+            }
+
+            if (grid) {
+                paintGrid(g);
+            }
+        } catch (Exception e) {
+            controller.error(e, "Failure painting IFS");
+        } finally {
+            g.dispose();
         }
-
-        if (info) {
-            g.setPaint(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
-            Font font = new Font("Calibri", Font.PLAIN, 20);
-            FontRenderContext frc = g.getFontRenderContext();
-
-            TextLayout scaleText = new TextLayout(String.format("%.1fx (%.3f, %.3f)", scale, centre.getX() / getWidth(), centre.getY() / getHeight()), font, frc);
-            scaleText.draw(g, 10f, getHeight() - 10f);
-            TextLayout countText = new TextLayout(String.format("%,dK", count.get()).replaceAll("[^0-9K]", " "), font, frc);
-            countText.draw(g, getWidth() - 10f - (float) countText.getBounds().getWidth(), getHeight() - 10f);
-        }
-
-        if (grid) {
-            paintGrid(g);
-        }
-
-        g.dispose();
     }
 
     public void paintTransform(Transform t, Graphics2D graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
 
-        // Transform unit square to view space
-        double x = (getWidth() / 2) - (centre.getX() * scale);
-        double y = (getHeight() / 2) - (centre.getY() * scale);
-        Rectangle unit = new Rectangle(getSize());
-        Shape rect = t.getTransform().createTransformedShape(unit);
-        AffineTransform view = AffineTransform.getTranslateInstance(x, y);
-        view.scale(scale, scale);
-        rect = view.createTransformedShape(rect);
+        try {
+            // Transform unit square to view space
+            double x = (getWidth() / 2) - (centre.getX() * scale);
+            double y = (getHeight() / 2) - (centre.getY() * scale);
+            Rectangle unit = new Rectangle(getSize());
+            Shape rect = t.getTransform().createTransformedShape(unit);
+            AffineTransform view = AffineTransform.getTranslateInstance(x, y);
+            view.scale(scale, scale);
+            rect = view.createTransformedShape(rect);
 
-        // Draw the outline
-        Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
-        g.setPaint(c);
-        g.setStroke(new BasicStroke(2f));
-        g.draw(rect);
-        g.dispose();
+            // Draw the outline
+            Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
+            g.setPaint(c);
+            g.setStroke(new BasicStroke(2f));
+            g.draw(rect);
+        } catch (Exception e) {
+            controller.error(e, "Failure painting transform");
+        } finally {
+            g.dispose();
+        }
     }
 
     public void paintGrid(Graphics2D graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
 
-        // Set colour and width
-        Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
-        g.setPaint(c);
-        g.setStroke(new BasicStroke(1f));
+        try {
+            // Set colour and width
+            Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
+            g.setPaint(c);
+            g.setStroke(new BasicStroke(1f));
 
-        // Transform unit square to view space
-        double x0 = (getWidth() / 2) - (centre.getX() * scale);
-        double y0 = (getHeight() / 2) - (centre.getY() * scale);
-        double spacing = controller.getMaxGrid() / scale;
-        double cx = Math.abs(centre.getX()) + getWidth();
-        double cy = Math.abs(centre.getY()) + getHeight();
-        double ox = Math.max(getWidth() / scale, cx);
-        double oy = Math.max(getHeight() / scale, cy);
-        AffineTransform view = AffineTransform.getTranslateInstance(x0, y0);
-        view.scale(scale, scale);
+            // Transform unit square to view space
+            double x0 = (getWidth() / 2) - (centre.getX() * scale);
+            double y0 = (getHeight() / 2) - (centre.getY() * scale);
+            double spacing = controller.getMaxGrid() / scale;
+            AffineTransform view = AffineTransform.getTranslateInstance(x0, y0);
+            view.scale(scale, scale);
 
-        // Draw grid lines
-        for (double x = -ox; x < ox + getWidth(); x += spacing) {
-            Line2D line = new Line2D.Double(x, -oy, x, oy + getHeight());
-            g.draw(view.createTransformedShape(line));
+            // Draw grid lines
+            double cx = Math.abs(centre.getX()) + getWidth() / scale;
+            double cy = Math.abs(centre.getY()) + getHeight() / scale;
+            double ox = Math.max(getWidth() / scale, cx);
+            double oy = Math.max(getHeight() / scale, cy);
+            for (double x = -ox; x < ox + getWidth(); x += spacing) {
+                Line2D line = new Line2D.Double(x, -oy, x, oy + getHeight());
+                g.draw(view.createTransformedShape(line));
+            }
+            for (double y = -oy; y < oy + getWidth(); y += spacing) {
+                Line2D line = new Line2D.Double(-ox, y, ox + getWidth(), y);
+                g.draw(view.createTransformedShape(line));
+            }
+        } catch (Exception e) {
+            controller.error(e, "Failure painting grid");
+        } finally {
+            g.dispose();
         }
-        for (double y = -oy; y < oy + getWidth(); y += spacing) {
-            Line2D line = new Line2D.Double(-ox, y, ox + getWidth(), y);
-            g.draw(view.createTransformedShape(line));
-        }
-
-        g.dispose();
     }
 
     public void rescale(float scale, Point2D centre) {
@@ -247,13 +261,18 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
         image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
-        if (isVisible()) {
-            g.setColor(controller.getRender() == Render.MEASURE ? Color.BLACK : Color.WHITE);
-        } else {
-            g.setColor(new Color(1f, 1f, 1f, 0f));
+        try {
+            if (isVisible()) {
+                g.setColor(controller.getRender() == Render.MEASURE ? Color.BLACK : Color.WHITE);
+            } else {
+                g.setColor(new Color(1f, 1f, 1f, 0f));
+            }
+            g.fillRect(0, 0, getWidth(), getHeight());
+        } catch (Exception e) {
+            controller.error(e, "Failure resetting image");
+        } finally {
+            g.dispose();
         }
-        g.fillRect(0, 0, getWidth(), getHeight());
-        g.dispose();
 
         points[0] = random.nextInt(getWidth());
         points[1] = random.nextInt(getHeight());
@@ -278,7 +297,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             controller.debug("File %s: %d transforms: %.1fx scale at (%.2f, %.2f) with %,dK iterations",
                     file.getName(), ifs.size(), scale, centre.getX(), centre.getY(), count.get());
         } catch (IOException e) {
-            Throwables.propagate(e);
+            controller.error(e,  "Error saving image file %s", file.getName());
         }
     }
 
@@ -288,13 +307,19 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         if (page > 0) return NO_SUCH_PAGE;
 
         Graphics2D g = (Graphics2D) graphics.create();
-        g.translate(pf.getImageableX(), pf.getImageableY());
-        double scale = pf.getImageableWidth() / (double) getWidth();
-        if ((scale * getHeight()) > pf.getImageableHeight()) {
-            scale = pf.getImageableHeight() / (double) getHeight();
+        try {
+            g.translate(pf.getImageableX(), pf.getImageableY());
+            double scale = pf.getImageableWidth() / (double) getWidth();
+            if ((scale * getHeight()) > pf.getImageableHeight()) {
+                scale = pf.getImageableHeight() / (double) getHeight();
+            }
+            g.scale(scale, scale);
+            printAll(g);
+        } catch (Exception e) {
+            controller.error(e, "Failure printing image");
+        } finally {
+            g.dispose();
         }
-        g.scale(scale, scale);
-        printAll(g);
 
         return PAGE_EXISTS;
     }
@@ -557,7 +582,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             int y1 = Math.min(one.y, two.y);
             int y2 = Math.max(one.y, two.y);
             int side = Math.min(x2 - x1,  y2 - y1);
-            if (side < controller.getSnapGrid()) { 
+            if (side < controller.getSnapGrid()) {
                 side = 0;
             }
             zoom = new Rectangle(x1, y1, side, side);
