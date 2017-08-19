@@ -43,7 +43,6 @@ import javax.swing.JTextPane;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
-import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
 
 import iterator.Explorer;
@@ -51,6 +50,7 @@ import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Dialog;
 import iterator.util.Messages;
+import iterator.util.Property;
 import iterator.util.Utils;
 import iterator.view.Details;
 
@@ -61,15 +61,19 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
     /** serialVersionUID */
     private static final long serialVersionUID = 2515091470183119489L;
 
-    private final Supplier<Double> c0, c1, c2, c3, c4, c5;
+    private final Property<Double> c0, c1, c2, c3, c4, c5;
     private final Messages messages;
+    private final Transform transform;
+    private final IFS ifs;
 
     private Action success, failure;
 
     public Matrix(final Transform transform, final IFS ifs, final Explorer controller, final EventBus bus, final Window parent) {
         super(parent, null, ModalityType.APPLICATION_MODAL);
 
-        messages = controller.getMessages();
+        this.transform = transform;
+        this.ifs = ifs;
+        this.messages = controller.getMessages();
 
         addKeyListener(this);
         setUndecorated(true);
@@ -109,9 +113,9 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         values.setLayout(grid);
         values.setBackground(Color.WHITE);
         panel.add(values, BorderLayout.CENTER);
+
         double matrix[] = new double[6];
         transform.getTransform().getMatrix(matrix);
-
         c0 = addProperty(0, matrix[0], values);
         c1 = addProperty(1, matrix[2], values);
         c2 = addProperty(2, matrix[4], values);
@@ -169,7 +173,7 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         buttons.add(cancel);
     }
 
-    private Supplier<Double> addProperty(int number, double value, JPanel panel) {
+    private Property<Double> addProperty(int number, double value, JPanel panel) {
         final JFormattedTextField field = new JFormattedTextField(new Utils.DoubleFormatter());
         field.setHorizontalAlignment(JTextField.RIGHT);
         field.setBorder(BorderFactory.createLoweredSoftBevelBorder());
@@ -179,10 +183,14 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         field.addKeyListener(this);
         panel.add(field);
 
-        Supplier<Double> supplier = new Supplier<Double>() {
+        Property<Double> supplier = new Property<Double>() {
             @Override
             public Double get() {
                 return (Double) field.getValue();
+            }
+            @Override
+            public void set(Double value) {
+                field.setValue(value);
             }
         };
         return supplier;
@@ -191,8 +199,17 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
     /** @see iterator.util.Dialog#showDialog() */
     @Override
     public void showDialog() {
-        pack();
+        double matrix[] = new double[6];
+        transform.getTransform().getMatrix(matrix);;
 
+        c0.set(matrix[0]);
+        c1.set(matrix[1]);
+        c2.set(matrix[2]);
+        c3.set(matrix[3]);
+        c4.set(matrix[4]);
+        c5.set(matrix[5]);
+
+        pack();
         setLocationRelativeTo(getParent());
         setVisible(true);
     }

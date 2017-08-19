@@ -28,7 +28,6 @@ import static iterator.util.Messages.DIALOG_PREFERENCES_TITLE;
 
 import java.awt.Window;
 
-import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
 
 import iterator.Explorer;
@@ -36,6 +35,7 @@ import iterator.util.AbstractPropertyDialog;
 import iterator.util.Config;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
+import iterator.util.Property;
 import iterator.util.Utils;
 
 /**
@@ -43,12 +43,12 @@ import iterator.util.Utils;
  */
 public class Preferences extends AbstractPropertyDialog {
 
-    private final Supplier<Mode> mode;
-    private final Supplier<Render> render;
-    private final Supplier<String> paletteFile;
-    private final Supplier<Integer> paletteSize, threads;
-    private final Supplier<Long> seed;
-    private final Supplier<Boolean> debug;
+    private final Property<Mode> mode;
+    private final Property<Render> render;
+    private final Property<String> paletteFile;
+    private final Property<Integer> paletteSize, threads;
+    private final Property<Long> seed;
+    private final Property<Boolean> debug;
 
     private boolean running = false;
 
@@ -75,6 +75,14 @@ public class Preferences extends AbstractPropertyDialog {
         if (controller.getCurrent().equals(Explorer.VIEWER) && controller.getViewer().isRunning()) {
             running = controller.getViewer().stop();
         }
+
+        mode.set(controller.getMode());
+        render.set(controller.getRender());
+        paletteFile.set(controller.getPaletteFile());
+        paletteSize.set(controller.getPaletteSize());
+        seed.set(controller.getSeed());
+        threads.set(controller.getThreads());
+        debug.set(controller.isDebug());
 
         super.showDialog();
     }

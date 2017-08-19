@@ -31,13 +31,13 @@ import java.text.MessageFormat;
 
 import javax.swing.JFormattedTextField.AbstractFormatter;
 
-import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
 
 import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.AbstractPropertyDialog;
+import iterator.util.Property;
 import iterator.util.Utils;
 
 /**
@@ -47,7 +47,7 @@ public class Properties extends AbstractPropertyDialog {
 
     private final Transform transform;
     private final IFS ifs;
-    private final Supplier<Double> x, y, w, h, r, shx, shy;
+    private final Property<Double> x, y, w, h, r, shx, shy;
 
     public Properties(final Transform transform, final IFS ifs, final Explorer controller, final EventBus bus, final Window parent) {
         super(controller, bus, parent);
@@ -69,6 +69,20 @@ public class Properties extends AbstractPropertyDialog {
 
         setSuccess(messages.getText(DIALOG_PROPERTIES_BUTTON_UPDATE));
         setCancel(messages.getText(DIALOG_PROPERTIES_BUTTON_CANCEL));
+    }
+
+    /** @see iterator.util.Dialog#showDialog() */
+    @Override
+    public void showDialog() {
+        x.set(transform.x);
+        y.set(transform.y);
+        w.set(transform.w);
+        h.set(transform.h);
+        r.set(Math.toDegrees(transform.r));
+        shx.set(transform.shx);
+        shy.set(transform.shy);
+
+        super.showDialog();
     }
 
     @Override

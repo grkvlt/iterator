@@ -41,7 +41,6 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
-import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
 
 import iterator.Explorer;
@@ -122,7 +121,7 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         add(cancel);
     }
 
-    protected <T> Supplier<T> addProperty(String string, T value, AbstractFormatter formatter) {
+    protected <T> Property<T> addProperty(String string, T value, AbstractFormatter formatter) {
         addLabel(string);
 
         final JFormattedTextField field = new JFormattedTextField(formatter);
@@ -140,17 +139,21 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         gridbag.setConstraints(field, constraints);
         add(field);
 
-        Supplier<T> supplier = new Supplier<T>() {
+        Property<T> property = new Property<T>() {
             @SuppressWarnings("unchecked")
             @Override
             public T get() {
                 return (T) field.getValue();
             }
+            @Override
+            public void set(T value) {
+                field.setValue(value);
+            }
         };
-        return supplier;
+        return property;
     }
 
-    protected <T> Supplier<T> addDropDown(String string, T value, T...items) {
+    protected <T> Property<T> addDropDown(String string, T value, T...items) {
         addLabel(string);
 
         final JComboBox field = new JComboBox<T>(items);
@@ -167,17 +170,21 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         gridbag.setConstraints(field, constraints);
         add(field);
 
-        Supplier<T> supplier = new Supplier<T>() {
+        Property<T> property = new Property<T>() {
             @SuppressWarnings("unchecked")
             @Override
             public T get() {
                 return (T) field.getSelectedItem();
             }
+            @Override
+            public void set(T value) {
+                field.setSelectedItem(value);
+            }
         };
-        return supplier;
+        return property;
     }
 
-    protected Supplier<Integer> addSpinner(String string, int value, int min, int max) {
+    protected Property<Integer> addSpinner(String string, int value, int min, int max) {
         addLabel(string);
 
         SpinnerNumberModel model = new SpinnerNumberModel(value, min, max, 1);
@@ -192,17 +199,21 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         gridbag.setConstraints(field, constraints);
         add(field);
 
-        Supplier<Integer> supplier = new Supplier<Integer>() {
+        Property<Integer> property = new Property<Integer>() {
             @SuppressWarnings("unchecked")
             @Override
             public Integer get() {
                 return (Integer) field.getValue();
             }
+            @Override
+            public void set(Integer value) {
+                field.setValue(value);
+            }
         };
-        return supplier;
+        return property;
     }
 
-    protected Supplier<Boolean> addCheckBox(String string, Boolean value) {
+    protected Property<Boolean> addCheckBox(String string, Boolean value) {
         addLabel(string);
 
         final JCheckBox field = new JCheckBox();
@@ -217,13 +228,17 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         gridbag.setConstraints(field, constraints);
         add(field);
 
-        Supplier<Boolean> supplier = new Supplier<Boolean>() {
+        Property<Boolean> property = new Property<Boolean>() {
             @Override
             public Boolean get() {
                 return field.isSelected();
             }
+            @Override
+            public void set(Boolean value) {
+                field.setSelected(value);
+            }
         };
-        return supplier;
+        return property;
     }
 
     private void addLabel(String string) {
