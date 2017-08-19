@@ -545,9 +545,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             @Override
             public void actionPerformed(ActionEvent e) {
                 boolean viewerStopped = false;
-                if (current.equals(VIEWER) && viewer.isRunning()) {
-                    viewer.stop();
-                    viewerStopped = true;
+                if (current.equals(VIEWER)) {
+                    viewerStopped = viewer.stop();
                 }
                 PrinterJob job = PrinterJob.getPrinterJob();
                 job.setJobName(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));

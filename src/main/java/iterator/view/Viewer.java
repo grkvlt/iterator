@@ -49,7 +49,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.imageio.ImageIO;
@@ -58,7 +60,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
@@ -86,6 +87,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private Timer timer;
     private double points[] = new double[4];
     private AtomicLong count = new AtomicLong(0);
+    private AtomicInteger task = new AtomicInteger(0);
     private AtomicBoolean running = new AtomicBoolean(false);
     private Random random = new Random();
     private float scale = 1.0f;
@@ -99,7 +101,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
         this.controller = controller;
 
-        timer = new Timer(100, this);
+        timer = new Timer(250, this);
         timer.setCoalesce(true);
         timer.setInitialDelay(0);
 
@@ -255,8 +257,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     }
 
     public void reset() {
-        boolean wasRunning = isRunning();
-        stop();
         if (getWidth() <= 0 && getHeight() <= 0) return;
 
         image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -285,9 +285,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         max = 1;
 
         count.set(0l);
-        if (wasRunning) {
-            start();
-        }
     }
 
     public void save(File file) {
@@ -393,7 +390,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     // Set the paint colour according to the rendering mode
                     if (controller.getRender() == Render.IFS) {
                         g.setPaint(Utils.alpha(color, 255));
-                    } else if (controller.getRender() == Render.DENSITY) {
+                    } else if (isVisible() && controller.getRender() == Render.DENSITY) {
                         rgb[p] = color.getRGB();
                         continue;
                     } else if (controller.getRender() == Render.MEASURE) {
@@ -478,9 +475,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
      */
     @Override
     public void run() {
+        int id = task.incrementAndGet();
+        controller.debug("Started task %d", id);;
         do {
             iterate(25_000, scale, centre);
         } while (running.get());
+        controller.debug("Stopped task %d", id);;
     }
 
     public void start() {
@@ -492,11 +492,19 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         }
     }
 
-    public void stop() {
+    public boolean stop() {
+        boolean status = running.compareAndSet(true, false);
         if (timer.isRunning()) {
             timer.stop();
         }
-        running.compareAndSet(true, false);
+        try {
+            boolean stopped = executor.awaitTermination(1, TimeUnit.SECONDS);
+            controller.debug("Executor %s all tasks", stopped ? "stopped" : "failed to stop");;
+        } catch (InterruptedException e) {
+            Thread.interrupted();
+            controller.debug("Executor interrupted stopping tasks");
+        }
+        return status;
     }
 
     public boolean isRunning() {
