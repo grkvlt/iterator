@@ -356,7 +356,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     if (controller.getRender() == Render.TOP) {
                         if (j > top[p]) top[p] = j;
                     }
-                    if (controller.getRender() == Render.DENSITY) {
+                    if (controller.getRender() == Render.DENSITY || controller.getRender() == Render.LOG_DENSITY) {
                         density[p]++;
                         max = Math.max(max, density[p]);
                     }
@@ -390,7 +390,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     // Set the paint colour according to the rendering mode
                     if (controller.getRender() == Render.IFS) {
                         g.setPaint(Utils.alpha(color, 255));
-                    } else if (isVisible() && controller.getRender() == Render.DENSITY) {
+                    } else if (isVisible() && (controller.getRender() == Render.DENSITY || controller.getRender() == Render.LOG_DENSITY)) {
                         rgb[p] = color.getRGB();
                         continue;
                     } else if (controller.getRender() == Render.MEASURE) {
@@ -431,11 +431,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
         try {
             int r = isVisible() ? 2 : 4;
+            boolean log = controller.getRender() == Render.LOG_DENSITY;
             for (int x = 0; x < getWidth(); x++) {
                 for (int y = 0; y < getHeight(); y++) {
                     int p = x + y * getWidth();
                     if (density[p] > 0) {
-                        float gray = 1f - Math.min(1f, (float) density[p] / (float) max);
+                        float ratio = log ? (float) (Math.log(density[p]) / Math.log(max)) : ((float) density[p] / (float) max);
+                        float gray = 1f - Math.min(1f, ratio);
                         if (controller.isColour()) {
                             Color color = new Color(rgb[p]);
                             float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
@@ -462,7 +464,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (controller.getRender() == Render.DENSITY) {
+        if (controller.getRender() == Render.DENSITY || controller.getRender() == Render.LOG_DENSITY) {
             plotDensity();
         }
         repaint();
@@ -478,7 +480,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         int id = task.incrementAndGet();
         controller.debug("Started task %d", id);;
         do {
-            iterate(50_000, scale, centre);
+            iterate(25_000, scale, centre);
         } while (running.get());
         controller.debug("Stopped task %d", id);;
     }

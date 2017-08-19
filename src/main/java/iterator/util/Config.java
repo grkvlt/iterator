@@ -77,7 +77,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Mode DEFAULT_MODE = Mode.GRAY;
 
     public static enum Render {
-        STANDARD, TOP, MEASURE, IFS, DENSITY;
+        STANDARD, TOP, MEASURE, IFS, DENSITY, LOG_DENSITY;
 
         @Override
         public String toString() {
