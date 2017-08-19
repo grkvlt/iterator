@@ -81,7 +81,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
     private IFS ifs;
     private BufferedImage image;
-    private int top[];
+    private int top[], density[], rgb[];
+    private int max;
     private Timer timer;
     private double points[] = new double[4];
     private AtomicLong count = new AtomicLong(0);
@@ -240,6 +241,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     }
 
     public void reset() {
+        boolean wasRunning = isRunning();
+        stop();
         if (getWidth() <= 0 && getHeight() <= 0) return;
 
         image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -258,8 +261,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         points[3] = random.nextInt(getHeight());
 
         top = new int[getWidth() * getHeight()];
+        density = new int[getWidth() * getHeight()];
+        rgb = new int[getWidth() * getHeight()];
+        max = 1;
 
         count.set(0l);
+        if (wasRunning) {
+            start();
+        }
     }
 
     public void save(File file) {
@@ -292,89 +301,136 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
     public void iterate(int k, float scale, Point2D centre) {
         Graphics2D g = image.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-        g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
-        g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+        try {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+            g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
 
-        List<Transform> transforms = controller.getEditor().getTransforms();
-        double weight = controller.getEditor().getWeight(transforms);
+            List<Transform> transforms = controller.getEditor().getTransforms();
+            double weight = controller.getEditor().getWeight(transforms);
 
-        int n = transforms.size();
-        int r = isVisible() ? 1 : 2;
-        int a = isVisible() ? 8 : (int) Math.min(128d, Math.pow(n,  1.2) * 16d);
-        for (int i = 0; i < k; i++) {
-            if (i % 1000 == 0) count.incrementAndGet();
-            int j = random.nextInt(transforms.size());
-            Transform t = transforms.get(j);
-            if (t.getDeterminant() < random.nextDouble() * weight) continue;
+            int n = transforms.size();
+            int r = isVisible() ? 1 : 2;
+            int a = isVisible() ? 8 : (int) Math.min(128d, Math.pow(n,  1.2) * 16d);
+            for (int i = 0; i < k; i++) {
+                if (i % 1000 == 0) count.incrementAndGet();
+                int j = random.nextInt(transforms.size());
+                Transform t = transforms.get(j);
+                if (t.getDeterminant() < random.nextDouble() * weight) continue;
 
-            Point2D old = new Point2D.Double(points[2], points[3]);
-            t.getTransform().transform(points, 0, points, 0, 2);
+                Point2D old = new Point2D.Double(points[2], points[3]);
+                t.getTransform().transform(points, 0, points, 0, 2);
 
-            if (isVisible() && count.get() < 10) continue; // discard first 10K points
+                if (isVisible() && count.get() < 10) continue; // discard first 10K points
 
-            int x = (int) ((points[0] - centre.getX()) * scale) + (getWidth() / 2);
-            int y = (int) ((points[1] - centre.getY()) * scale) + (getHeight() / 2);
-            if (x >= 0 && y >= 0 && x < getWidth() && y < getWidth()) {
-                int p = x + y * getWidth();
+                int x = (int) ((points[0] - centre.getX()) * scale) + (getWidth() / 2);
+                int y = (int) ((points[1] - centre.getY()) * scale) + (getHeight() / 2);
+                if (x >= 0 && y >= 0 && x < getWidth() && y < getWidth()) {
+                    int p = x + y * getWidth();
 
-                if (controller.getRender() == Render.TOP) {
-                    if (j > top[p]) top[p] = j;
-                }
+                    if (controller.getRender() == Render.TOP) {
+                        if (j > top[p]) top[p] = j;
+                    }
+                    if (controller.getRender() == Render.DENSITY) {
+                        density[p]++;
+                        max = Math.max(max, density[p]);
+                    }
 
-                Rectangle rect = new Rectangle(x, y, r, r);
+                    Rectangle rect = new Rectangle(x, y, r, r);
 
-                // Choose the colour based on the display mode
-                Color color = Color.BLACK;
-                if (controller.isColour()) {
-                    if (controller.isIFSColour()) {
-                        color = Color.getHSBColor((float) old.getX() / getWidth(), (float) old.getY() / getHeight(), 0.8f);
-                    } else if (controller.hasPalette()) {
-                        if (controller.isStealing()) {
-                            color = controller.getPixel(old.getX(), old.getY());
+                    // Choose the colour based on the display mode
+                    Color color = Color.BLACK;
+                    if (controller.isColour()) {
+                        if (controller.isIFSColour()) {
+                            color = Color.getHSBColor((float) old.getX() / getWidth(), (float) old.getY() / getHeight(), 0.8f);
+                        } else if (controller.hasPalette()) {
+                            if (controller.isStealing()) {
+                                color = controller.getPixel(old.getX(), old.getY());
+                            } else {
+                                if (controller.getRender() == Render.TOP) {
+                                    color = Iterables.get(controller.getColours(), top[p] % controller.getPaletteSize());
+                                } else {
+                                    color = Iterables.get(controller.getColours(), j % controller.getPaletteSize());
+                                }
+                            }
                         } else {
                             if (controller.getRender() == Render.TOP) {
-                                color = Iterables.get(controller.getColours(), top[p] % controller.getPaletteSize());
+                                color = Color.getHSBColor((float) top[p] / (float) transforms.size(), 0.8f, 0.8f);
                             } else {
-                                color = Iterables.get(controller.getColours(), j % controller.getPaletteSize());
+                                color = Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f);
                             }
                         }
-                    } else {
-                        if (controller.getRender() == Render.TOP) {
-                            color = Color.getHSBColor((float) top[p] / (float) transforms.size(), 0.8f, 0.8f);
+                    }
+
+                    // Set the paint colour according to the rendering mode
+                    if (controller.getRender() == Render.IFS) {
+                        g.setPaint(Utils.alpha(color, 255));
+                    } else if (controller.getRender() == Render.DENSITY) {
+                        rgb[p] = color.getRGB();
+                        continue;
+                    } else if (controller.getRender() == Render.MEASURE) {
+                        if (top[p] == 0) {
+                            color = new Color(color.getRed(), color.getGreen(), color.getBlue());
                         } else {
-                            color = Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f);
+                            color = new Color(top[p]);
+                            float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+                            if (hsb[2] < 0.66f) {
+                                color = color.brighter();
+                            }
                         }
-                    }
-                }
-
-                // Set the paint colour according to the rendering mode
-                if (controller.getRender() == Render.IFS) {
-                    g.setPaint(Utils.alpha(color, 255));
-                } else if (controller.getRender() == Render.MEASURE) {
-                    if (top[p] == 0) {
-                        color = new Color(color.getRed(), color.getGreen(), color.getBlue());
+                        top[p] = color.getRGB();
+                        g.setPaint(Utils.alpha(color, isVisible() ? 16 : 128));
                     } else {
-                        color = new Color(top[p]);
-                        float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
-                        if (hsb[2] < 0.66f) {
-                            color = color.brighter();
-                        }
+                        g.setPaint(Utils.alpha(color, a));
                     }
-                    top[p] = color.getRGB();
-                    g.setPaint(Utils.alpha(color, isVisible() ? 16 : 128));
-                } else {
-                    g.setPaint(Utils.alpha(color, a));
+
+                    g.fill(rect);
                 }
-
-                g.fill(rect);
             }
+        } catch (Exception e) {
+            controller.error(e, "Failure iterating IFS");
+        } finally {
+            g.dispose();
         }
+    }
 
-        g.dispose();
+    public void plotDensity() {
+        Graphics2D g = image.createGraphics();
+
+        if (isVisible()) {
+            g.setColor(Color.WHITE);
+        } else {
+            g.setColor(new Color(1f, 1f, 1f, 0f));
+        }
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        try {
+            int r = isVisible() ? 2 : 4;
+            for (int x = 0; x < getWidth(); x++) {
+                for (int y = 0; y < getHeight(); y++) {
+                    int p = x + y * getWidth();
+                    if (density[p] > 0) {
+                        float gray = 1f - Math.min(1f, (float) density[p] / (float) max);
+                        if (controller.isColour()) {
+                            Color color = new Color(rgb[p]);
+                            float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+                            g.setPaint(Utils.alpha(new Color(Color.HSBtoRGB(hsb[0], hsb[1], gray)), (int) ((1f - gray) * 255f)));
+                        } else {
+                            g.setPaint(new Color(gray, gray, gray, 1f - gray));
+                        }
+                        Rectangle rect = new Rectangle(x, y, r, r);
+                        g.fill(rect);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            controller.error(e, "Failure plotting density map");
+        } finally {
+            g.dispose();
+        }
     }
 
     /**
@@ -384,6 +440,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
      */
     @Override
     public void actionPerformed(ActionEvent e) {
+        if (controller.getRender() == Render.DENSITY) {
+            plotDensity();
+        }
         repaint();
     }
 
