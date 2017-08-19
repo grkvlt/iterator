@@ -23,6 +23,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -48,7 +49,7 @@ import iterator.Explorer;
 /**
  * Abstract dialog box for setting properties.
  */
-public abstract class AbstractPropertyDialog extends JDialog implements Dialog, KeyListener {
+public abstract class AbstractPropertyDialog extends JDialog implements Dialog, KeyListener, ActionListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -7626627964747215623L;
 
@@ -57,8 +58,6 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     protected final EventBus bus;
     protected final GridBagLayout gridbag = new GridBagLayout();
     protected final GridBagConstraints constraints = new GridBagConstraints();
-
-    private Action success, failure;
 
     public AbstractPropertyDialog(final Explorer controller, final EventBus bus, final Window parent) {
         super(parent, null, ModalityType.APPLICATION_MODAL);
@@ -92,9 +91,9 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         add(title);
     }
 
-    protected void setAction(Action action) {
-        success = action;
-        JButton select = new JButton(action);
+    protected void setSuccess(String text) {
+        JButton select = new JButton(text);
+        select.addActionListener(this);
         select.setFont(new Font("Calibri", Font.PLAIN, 14));
         select.addKeyListener(this);
         constraints.fill = GridBagConstraints.NONE;
@@ -107,10 +106,11 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     }
 
     protected void setCancel(String text) {
-        failure = new AbstractAction(text) {
+        Action failure = new AbstractAction(text) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
+                onCancel();
             }
         };
         JButton cancel = new JButton(failure);
@@ -246,6 +246,17 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         setVisible(true);
     }
 
+    /** @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent) */
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        setVisible(false);
+        onSuccess();
+    }
+
+    public void onCancel() { }
+
+    public void onSuccess() { }
+
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override
     public void keyTyped(KeyEvent e) { }
@@ -256,11 +267,13 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         switch (e.getKeyCode()) {
             case KeyEvent.VK_ENTER:
                 if (e.isMetaDown()) {
-                    success.actionPerformed(new ActionEvent(e.getSource(), e.getID(), null));
+                    setVisible(false);
+                    onSuccess();
                 }
                 break;
             case KeyEvent.VK_ESCAPE:
-                failure.actionPerformed(new ActionEvent(e.getSource(), e.getID(), null));
+                setVisible(false);
+                onCancel();
                 break;
         }
     }

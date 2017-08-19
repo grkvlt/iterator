@@ -27,9 +27,6 @@ import static iterator.util.Messages.DIALOG_PREFERENCES_THREADS;
 import static iterator.util.Messages.DIALOG_PREFERENCES_TITLE;
 
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractAction;
 
 import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
@@ -53,6 +50,8 @@ public class Preferences extends AbstractPropertyDialog {
     private final Supplier<Long> seed;
     private final Supplier<Boolean> debug;
 
+    private boolean running = false;
+
     public Preferences(final Explorer controller, final EventBus bus, final Window parent) {
         super(controller, bus, parent);
 
@@ -66,30 +65,41 @@ public class Preferences extends AbstractPropertyDialog {
         threads = addSpinner(messages.getText(DIALOG_PREFERENCES_THREADS), controller.getThreads(), Config.MIN_THREADS, 8);
         debug = addCheckBox(messages.getText(DIALOG_PREFERENCES_DEBUG), controller.isDebug());
 
-        setAction(new AbstractAction(messages.getText(DIALOG_PREFERENCES_BUTTON_UPDATE)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-
-                if (controller.getViewer().isRunning()) {
-                    controller.getViewer().stop();
-                }
-
-                controller.setMode(mode.get().name());
-                controller.setRender(render.get().name());
-                controller.setPaletteFile(paletteFile.get());
-                controller.setPaletteSize(paletteSize.get());
-                controller.setSeed(seed.get());
-                controller.setThreads(threads.get());
-                controller.setDebug(debug.get());
-                controller.loadColours();
-
-                controller.getViewer().reset();
-                if (controller.getViewer().isVisible()) {
-                    controller.getViewer().start();
-                }
-            }
-        });
+        setSuccess(messages.getText(DIALOG_PREFERENCES_BUTTON_UPDATE));
         setCancel(messages.getText(DIALOG_PREFERENCES_BUTTON_CANCEL));
+    }
+
+    /** @see iterator.util.Dialog#showDialog() */
+    @Override
+    public void showDialog() {
+        if (controller.getCurrent().equals(Explorer.VIEWER) && controller.getViewer().isRunning()) {
+            running = controller.getViewer().stop();
+        }
+
+        super.showDialog();
+    }
+
+    @Override
+    public void onSuccess() {
+        controller.setMode(mode.get().name());
+        controller.setRender(render.get().name());
+        controller.setPaletteFile(paletteFile.get());
+        controller.setPaletteSize(paletteSize.get());
+        controller.setSeed(seed.get());
+        controller.setThreads(threads.get());
+        controller.setDebug(debug.get());
+        controller.loadColours();
+
+        controller.getViewer().reset();
+        if (controller.getCurrent().equals(Explorer.VIEWER)) {
+            controller.getViewer().start();
+        }
+    }
+
+    @Override
+    public void onCancel() {
+        if (controller.getCurrent().equals(Explorer.VIEWER) && running) {
+            controller.getViewer().start();
+        }
     }
 }

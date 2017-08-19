@@ -88,6 +88,7 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -798,6 +799,17 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public BufferedImage getIcon() { return icon; }
 
     public JScrollPane getScroll() { return scroll; }
+
+    public String getCurrent() { return current; }
+
+    public JComponent getCurrentComponent() {
+        switch (current) {
+            case EDITOR: return editor;
+            case VIEWER: return viewer;
+            case DETAILS: return details;
+            default: return null;
+        }
+    }
 
     public Viewer getViewer() { return viewer; }
 

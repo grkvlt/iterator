@@ -27,10 +27,8 @@ import static iterator.util.Messages.DIALOG_PROPERTIES_X;
 import static iterator.util.Messages.DIALOG_PROPERTIES_Y;
 
 import java.awt.Window;
-import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 
-import javax.swing.AbstractAction;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 
 import com.google.common.base.Supplier;
@@ -47,10 +45,15 @@ import iterator.util.Utils;
  */
 public class Properties extends AbstractPropertyDialog {
 
+    private final Transform transform;
+    private final IFS ifs;
     private final Supplier<Double> x, y, w, h, r, shx, shy;
 
     public Properties(final Transform transform, final IFS ifs, final Explorer controller, final EventBus bus, final Window parent) {
         super(controller, bus, parent);
+
+        this.transform = transform;
+        this.ifs = ifs;
 
         String label = MessageFormat.format(messages.getText(DIALOG_PROPERTIES_TITLE), transform.getId());
         setLabel(label);
@@ -64,21 +67,20 @@ public class Properties extends AbstractPropertyDialog {
         shx = addProperty(messages.getText(DIALOG_PROPERTIES_SHX), transform.shx, doubleFormatter);
         shy = addProperty(messages.getText(DIALOG_PROPERTIES_SHY), transform.shy, doubleFormatter);
 
-        setAction(new AbstractAction(messages.getText(DIALOG_PROPERTIES_BUTTON_UPDATE)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                transform.x = x.get();
-                transform.y = y.get();
-                transform.w = w.get();
-                transform.h = h.get();
-                transform.r = Math.toRadians(r.get());
-                transform.shx = shx.get();
-                transform.shy = shy.get();
-                bus.post(ifs);
-                setVisible(false);
-            }
-        });
+        setSuccess(messages.getText(DIALOG_PROPERTIES_BUTTON_UPDATE));
         setCancel(messages.getText(DIALOG_PROPERTIES_BUTTON_CANCEL));
+    }
+
+    @Override
+    public void onSuccess() {
+        transform.x = x.get();
+        transform.y = y.get();
+        transform.w = w.get();
+        transform.h = h.get();
+        transform.r = Math.toRadians(r.get());
+        transform.shx = shx.get();
+        transform.shy = shy.get();
+        bus.post(ifs);
     }
 
 }
