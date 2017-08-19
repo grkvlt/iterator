@@ -61,9 +61,9 @@ public class Preferences extends AbstractPropertyDialog {
         mode = addDropDown(messages.getText(DIALOG_PREFERENCES_MODE), controller.getMode(), Mode.values());
         render = addDropDown(messages.getText(DIALOG_PREFERENCES_RENDER), controller.getRender(), Render.values());
         paletteFile = addDropDown(messages.getText(DIALOG_PREFERENCES_PALETTE_FILE), controller.getPaletteFile(), Config.PALETTE_FILES);
-        paletteSize = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), controller.getPaletteSize(), new Utils.IntegerFormatter(0, 256));
+        paletteSize = addSpinner(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), controller.getPaletteSize(), 0, 256);
         seed = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SEED), controller.getSeed(), new Utils.LongFormatter());
-        threads = addProperty(messages.getText(DIALOG_PREFERENCES_THREADS), controller.getThreads(), new Utils.IntegerFormatter(Config.MIN_THREADS, 8));
+        threads = addSpinner(messages.getText(DIALOG_PREFERENCES_THREADS), controller.getThreads(), Config.MIN_THREADS, 8);
         debug = addCheckBox(messages.getText(DIALOG_PREFERENCES_DEBUG), controller.isDebug());
 
         setAction(new AbstractAction(messages.getText(DIALOG_PREFERENCES_BUTTON_UPDATE)) {

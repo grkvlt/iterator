@@ -36,7 +36,9 @@ import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JLabel;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 
 import com.google.common.base.Supplier;
 import com.google.common.eventbus.EventBus;
@@ -170,6 +172,31 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
             @Override
             public T get() {
                 return (T) field.getSelectedItem();
+            }
+        };
+        return supplier;
+    }
+
+    protected Supplier<Integer> addSpinner(String string, int value, int min, int max) {
+        addLabel(string);
+
+        SpinnerNumberModel model = new SpinnerNumberModel(value, min, max, 1);
+        final JSpinner field = new JSpinner(model);
+        field.setBorder(BorderFactory.createEmptyBorder());
+        field.addKeyListener(this);
+
+        constraints.gridx = 2;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.weightx = 1.0;
+        constraints.weighty = 2.0;
+        gridbag.setConstraints(field, constraints);
+        add(field);
+
+        Supplier<Integer> supplier = new Supplier<Integer>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public Integer get() {
+                return (Integer) field.getValue();
             }
         };
         return supplier;
