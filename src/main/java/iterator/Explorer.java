@@ -893,7 +893,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public void error(Optional<Throwable> t, String format, Object...varargs) {
         output(System.err, format, varargs);
-        if (t.isPresent() && isDebug()) {
+        if (t.isPresent()) {
             t.get().printStackTrace(System.err);
         }
         System.exit(1);
