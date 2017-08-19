@@ -478,7 +478,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         int id = task.incrementAndGet();
         controller.debug("Started task %d", id);;
         do {
-            iterate(25_000, scale, centre);
+            iterate(50_000, scale, centre);
         } while (running.get());
         controller.debug("Stopped task %d", id);;
     }
