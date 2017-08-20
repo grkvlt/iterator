@@ -58,6 +58,11 @@ public class Messages {
     public static final String MENU_EDITOR_NEW = "explorer.menu.editor.new";
 
     public static final String MENU_VIEWER_ZOOM = "explorer.menu.viewer.zoom";
+    public static final String MENU_VIEWER_PAUSE = "explorer.menu.viewer.pause";
+    public static final String MENU_VIEWER_RESUME = "explorer.menu.viewer.resume";
+    public static final String MENU_VIEWER_GRID = "explorer.menu.viewer.grid";
+    public static final String MENU_VIEWER_OVERLAY = "explorer.menu.viewer.overlay";
+    public static final String MENU_VIEWER_INFO = "explorer.menu.viewer.info";
 
     public static final String DIALOG_FILES_XML = "explorer.dialog.files.xml";
     public static final String DIALOG_FILES_PNG = "explorer.dialog.files.png";

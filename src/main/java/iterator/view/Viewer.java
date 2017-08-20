@@ -15,6 +15,11 @@
  */
 package iterator.view;
 
+import static iterator.util.Messages.MENU_VIEWER_GRID;
+import static iterator.util.Messages.MENU_VIEWER_INFO;
+import static iterator.util.Messages.MENU_VIEWER_OVERLAY;
+import static iterator.util.Messages.MENU_VIEWER_PAUSE;
+import static iterator.util.Messages.MENU_VIEWER_RESUME;
 import static iterator.util.Messages.MENU_VIEWER_ZOOM;
 
 import java.awt.AlphaComposite;
@@ -58,6 +63,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -104,6 +111,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private boolean overlay, info, grid;
     private JPopupMenu viewer;
     private Zoom properties;
+    private JCheckBoxMenuItem showGrid, showOverlay, showInfo;
+    private JMenuItem pause, resume;
 
     public Viewer(EventBus bus, Explorer controller) {
         super();
@@ -123,6 +132,41 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 properties.showDialog();
             }
         });
+        pause = new JMenuItem(new AbstractAction(messages.getText(MENU_VIEWER_PAUSE)) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                stop();
+            }
+        });
+        viewer.add(pause);
+        resume = new JMenuItem(new AbstractAction(messages.getText(MENU_VIEWER_RESUME)) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                start();
+            }
+        });
+        viewer.add(resume);
+        showGrid = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_VIEWER_GRID)) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setGrid(!grid);
+            }
+        });
+        viewer.add(showGrid);
+        showOverlay = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_VIEWER_OVERLAY)) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setOverlay(!overlay);
+            }
+        });
+        viewer.add(showOverlay);
+        showInfo = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_VIEWER_INFO)) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setInfo(!info);
+            }
+        });
+        viewer.add(showInfo);
         add(viewer);
 
         addMouseListener(this);
@@ -146,9 +190,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void updated(IFS ifs) {
         this.ifs = ifs;
         if (!running.get()) {
-            overlay = controller.isDebug();
-            info = controller.isDebug();
-            grid = controller.isDebug();
+            setOverlay(controller.isDebug());
+            setInfo(controller.isDebug());
+            setGrid(controller.isDebug());
             reset();
             rescale();
         }
@@ -515,6 +559,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             for (int i = 0; i < controller.getThreads(); i++) {
                 executor.submit(this);
             }
+            pause.setEnabled(true);
+            resume.setEnabled(false);
         }
     }
 
@@ -522,6 +568,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         boolean status = running.compareAndSet(true, false);
         if (timer.isRunning()) {
             timer.stop();
+        }
+        if (status) {
+            pause.setEnabled(false);
+            resume.setEnabled(true);
         }
         try {
             boolean stopped = executor.awaitTermination(1, TimeUnit.SECONDS);
@@ -577,19 +627,34 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     start();
                     break;
                 case KeyEvent.VK_I:
-                    info = !info;
-                    repaint();
+                    setInfo(!info);
                     break;
                 case KeyEvent.VK_O:
-                    overlay = !overlay;
-                    repaint();
+                    setOverlay(!overlay);
                     break;
                 case KeyEvent.VK_G:
-                    grid = !grid;
-                    repaint();
+                    setGrid(!grid);
                     break;
             }
         }
+    }
+
+    private void setInfo(boolean state) {
+        info = state;
+        showInfo.setSelected(state);
+        repaint();
+    }
+
+    private void setOverlay(boolean state) {
+        overlay = state;
+        showOverlay.setSelected(state);
+        repaint();
+    }
+
+    private void setGrid(boolean state) {
+        grid = state;
+        showGrid.setSelected(state);
+        repaint();
     }
 
     /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
