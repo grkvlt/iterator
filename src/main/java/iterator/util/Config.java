@@ -70,7 +70,7 @@ public class Config extends ForwardingSortedMap<String, String> {
 
         @Override
         public String toString() {
-            return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name()).toLowerCase(Locale.UK);
+            return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, name());
         }
     }
 
@@ -81,7 +81,7 @@ public class Config extends ForwardingSortedMap<String, String> {
 
         @Override
         public String toString() {
-            return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name()).toLowerCase(Locale.UK);
+            return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, name());
         }
     }
 

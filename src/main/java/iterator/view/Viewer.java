@@ -238,7 +238,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 Font font = new Font("Calibri", Font.PLAIN, 20);
                 FontRenderContext frc = g.getFontRenderContext();
 
-                TextLayout scaleText = new TextLayout(String.format("%.1fx (%.3f, %.3f)", scale, centre.getX() / getWidth(), centre.getY() / getHeight()), font, frc);
+                TextLayout scaleText = new TextLayout(String.format("%.1fx (%.3f, %.3f) %s/%s", scale, centre.getX() / getWidth(), centre.getY() / getHeight(), controller.getMode(), controller.getRender()), font, frc);
                 scaleText.draw(g, 10f, getHeight() - 10f);
                 TextLayout countText = new TextLayout(String.format("%,dK", count.get()).replaceAll("[^0-9K]", " "), font, frc);
                 countText.draw(g, getWidth() - 10f - (float) countText.getBounds().getWidth(), getHeight() - 10f);
