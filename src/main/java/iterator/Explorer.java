@@ -56,6 +56,7 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.awt.SplashScreen;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
@@ -121,7 +122,6 @@ import com.google.common.io.Resources;
 
 import iterator.dialog.About;
 import iterator.dialog.Preferences;
-import iterator.dialog.Splash;
 import iterator.model.IFS;
 import iterator.util.Config;
 import iterator.util.Config.Mode;
@@ -944,8 +944,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         System.out.printf(banner, version.get());
 
         // Load splash screen first
-        Splash splashScreen = new Splash();
-        splashScreen.showDialog();
+        SplashScreen splash = SplashScreen.getSplashScreen();
+        if (splash.isVisible()) {
+            Utils.paintSplash(splash.createGraphics(), splash.getSize().width, splash.getSize().height);
+            splash.update();
+        }
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override

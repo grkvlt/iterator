@@ -22,6 +22,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JDialog;
@@ -75,7 +76,8 @@ public class About extends JPanel implements Dialog, MouseListener {
     @Override
     public void paint(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
-        Splash.paintSplash(g, image, getWidth(), getHeight());
+        g.drawImage(image, new AffineTransform(1f, 0f, 0f, 1f, 0, 0), null);
+        Utils.paintSplash(g, getWidth(), getHeight());
         g.dispose();
     }
 

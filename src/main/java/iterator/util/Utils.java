@@ -16,6 +16,8 @@
 package iterator.util;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -86,6 +88,21 @@ public class Utils {
         }
         Iterable<T> joined = Iterables.concat(initial, Optional.presentInstances(extra));
         return Lists.newArrayList(joined);
+    }
+
+    /**
+     * Paints text over the spash screen image.
+     */
+    public static void paintSplash(Graphics2D g, int width, int height) {
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Calibri", Font.BOLD, 80));
+        g.drawString("IFS Explorer", 10, 65);
+        g.setFont(new Font("Calibri", Font.BOLD, 25));
+        g.drawString("Version " + Version.instance().get(), 10, 100);
+        g.setFont(new Font("Calibri", Font.BOLD, 13));
+        g.drawString("Copyright 2012-2017 by Andrew Kennedy", 10, height - 15);
+        g.setFont(new Font("Consolas", Font.BOLD, 12));
+        g.drawString("http://grkvlt.github.io/iterator/", 260, height - 15);
     }
 
     /**
