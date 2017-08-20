@@ -148,7 +148,7 @@ public class Transform {
     }
 
     public void setSize(Dimension size) {
-        Point2D scale = new Point2D.Double(size.getWidth() / sw, size.getHeight()/ sh);
+        Point2D scale = new Point2D.Double(size.getWidth() / sw, size.getHeight() / sh);
         sw = size.getWidth();
         sh = size.getHeight();
         
@@ -205,6 +205,14 @@ public class Transform {
 
     public double getShearY() {
         return getTransform().getShearY();
+    }
+
+    public double getWidth() {
+        return getTransform().getScaleX() * sw;
+    }
+
+    public double getHeight() {
+        return getTransform().getScaleY() * sh;
     }
 
     @Override

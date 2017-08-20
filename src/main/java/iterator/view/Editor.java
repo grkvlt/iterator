@@ -240,7 +240,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     }
 
     public double getArea(List<Transform> transforms) {
-        return transforms.stream().map(t -> t.w * t.h).reduce(0d, Double::sum);
+        return transforms.stream().map(t -> t.getWidth() * t.getHeight()).reduce(0d, Double::sum);
     }
 
     public double getWidth(List<Transform> transforms) {
