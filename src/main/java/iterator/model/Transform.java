@@ -58,16 +58,15 @@ public class Transform {
     @XmlAttribute(required = false)
     private double matrix[] = null;
 
-    @SuppressWarnings("unused")
     private Transform() {
         // JAXB
     }
 
-    public Transform(Dimension size) {
+    private Transform(Dimension size) {
         this(-1, 0, size);
     }
 
-    public Transform(int id, int zIndex, Dimension size) {
+    private Transform(int id, int zIndex, Dimension size) {
         this.id = id;
         this.zIndex = zIndex;
         this.sw = size.getWidth();
@@ -79,6 +78,36 @@ public class Transform {
         this.r = 0d;
         this.shx = 0d;
         this.shy = 0d;
+    }
+
+    public static Transform create(Dimension size) {
+        return new Transform(size);
+    }
+
+    public static Transform create(int id, int zIndex, Dimension size) {
+        return new Transform(id, zIndex, size);
+    }
+
+    public static Transform copy(Transform original) {
+        Transform copy = new Transform(original.getSize());
+        copy.duplicate(original);
+        return copy;
+    }
+
+    public static Transform clone(Transform original) {
+        Transform copy = new Transform(original.id, original.zIndex, original.getSize());
+        copy.duplicate(original);
+        return copy;
+    }
+
+    public void duplicate(Transform original) {
+        this.x = original.x;
+        this.y = original.y;
+        this.w = original.w;
+        this.h = original.h;
+        this.r = original.r;
+        this.shx = original.shx;
+        this.shy = original.shy;
     }
 
     public int getId() {
@@ -95,6 +124,10 @@ public class Transform {
 
     public void setZIndex(int zIndex) {
         this.zIndex = zIndex;
+    }
+
+    public Dimension getSize() {
+        return new Dimension((int) sw, (int) sh);
     }
 
     public void setMatrix(double[] matrix) {

@@ -124,21 +124,17 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_DUPLICATE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Transform copy = new Transform(getSize());
+                Transform copy = Transform.create(getSize());
                 if (selected.isMatrix()) {
                     double[] matrix = new double[6];
                     AffineTransform tmp = selected.getTransform();
-                    tmp.translate(50d, 50d);
+                    tmp.translate(controller.getMinGrid(), controller.getMinGrid());
                     tmp.getMatrix(matrix);
                     copy.setMatrix(matrix);
                 } else {
-                    copy.x = selected.x + 50d;
-                    copy.y = selected.y + 50d;
-                    copy.w = selected.w;
-                    copy.h = selected.h;
-                    copy.r = selected.r;
-                    copy.shx = selected.shx;
-                    copy.shy = selected.shy;
+                    copy.duplicate(selected);
+                    copy.x += controller.getMinGrid();
+                    copy.y += controller.getMinGrid();
                 }
                 ifs.add(copy);
                 selected = copy;
@@ -179,7 +175,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         editor.add(new AbstractAction(messages.getText(MENU_EDITOR_NEW)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Transform t = new Transform(getSize());
+                Transform t = Transform.create(getSize());
                 double side = getSize().getWidth() / 4;
                 double origin = (getSize().getWidth() - side) / 2;
                 t.x = origin;
@@ -220,7 +216,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             w = Math.max(grid, w);
             h = Math.max(grid, h);
 
-            ants = new Transform(Integer.MIN_VALUE, 0, getSize());
+            ants = Transform.create(Integer.MIN_VALUE, 0, getSize());
             ants.x = x;
             ants.y = y;
             ants.w = w;
@@ -500,14 +496,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 } else {
                     selected = clicked;
                     if (e.isAltDown()) {
-                        Transform copy = new Transform(getSize());
-                        copy.x = selected.x;
-                        copy.y = selected.y;
-                        copy.w = selected.w;
-                        copy.h = selected.h;
-                        copy.r = selected.r;
-                        copy.shx = selected.shx;
-                        copy.shy = selected.shy;
+                        Transform copy = Transform.copy(selected);
                         selected = copy;
                     }
                     move = selected;
@@ -557,7 +546,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     return;
                 }
 
-                selected = new Transform(getSize());
+                selected = Transform.create(getSize());
                 selected.x = x;
                 selected.y = y;
                 selected.w = w;
@@ -658,19 +647,17 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 w = Math.max(grid, w);
                 h = Math.max(grid, h);
 
-                selected = new Transform(selected.getId(), selected.getZIndex(), getSize());
+                selected = Transform.clone(selected);
+                selected.duplicate(resize);
                 selected.x = x;
                 selected.y = y;
                 selected.w = w;
                 selected.h = h;
-                selected.r = resize.r;
-                selected.shx = resize.shx;
-                selected.shy = resize.shy;
             } else if (selected != null && move != null) {
                 int dx = end.x - start.x;
                 int dy = end.y - start.y;
 
-                selected = new Transform(selected.getId(), selected.getZIndex(), getSize());
+                selected = Transform.clone(selected);
                 if (move.isMatrix()) {
                     AffineTransform moved = AffineTransform.getTranslateInstance(dx, dy);
                     moved.concatenate(move.getTransform());
@@ -681,13 +668,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     double x = move.x + dx;
                     double y = move.y + dy;
 
+                    selected.duplicate(move);
                     selected.x = x;
                     selected.y = y;
-                    selected.w = move.w;
-                    selected.h = move.h;
-                    selected.r = move.r;
-                    selected.shx = move.shx;
-                    selected.shy = move.shy;
                 }
             } else if (selected != null && rotate != null) {
                 Point origin = new Point();
@@ -696,14 +679,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 int dy = end.y - origin.y;
                 double r = Math.atan2(dy - (selected.shy * dx), dx - (selected.shx * dy));
 
-                selected = new Transform(selected.getId(), selected.getZIndex(), getSize());
-                selected.x = rotate.x;
-                selected.y = rotate.y;
-                selected.w = rotate.w;
-                selected.h = rotate.h;
+                selected = Transform.clone(selected);
+                selected.duplicate(rotate);
                 selected.r = r;
-                selected.shx = rotate.shx;
-                selected.shy = rotate.shy;
             }
             repaint();
         }
