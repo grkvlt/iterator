@@ -236,11 +236,23 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     }
 
     public double getWeight(List<Transform> transforms) {
-        return transforms.stream().map(Transform::getDeterminant).reduce((x, y) -> x + y).get();
+        return transforms.stream().map(Transform::getDeterminant).reduce(0d, Double::sum);
     }
 
     public double getArea(List<Transform> transforms) {
-        return transforms.stream().map(t -> t.w * t.h).reduce((x, y) -> x + y).get();
+        return transforms.stream().map(t -> t.w * t.h).reduce(0d, Double::sum);
+    }
+
+    public double getWidth(List<Transform> transforms) {
+        double min = transforms.stream().map(Transform::getTranslateX).reduce(0d, Double::min);
+        double max = transforms.stream().map(Transform::getTranslateX).reduce(0d, Double::max);
+        return max - min;
+    }
+
+    public double getHeight(List<Transform> transforms) {
+        double min = transforms.stream().map(Transform::getTranslateY).reduce(0d, Double::min);
+        double max = transforms.stream().map(Transform::getTranslateY).reduce(0d, Double::max);
+        return max - min;
     }
 
     /** @see Subscriber#updated(IFS) */
@@ -297,8 +309,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 Viewer viewer = controller.getViewer();
                 viewer.reset();
                 List<Transform> transforms = controller.getEditor().getTransforms();
-                double ratio = controller.getEditor().getArea(transforms) / (getWidth() * getHeight());
-                int k = (int) (250_000 * ratio * ratio);
+                double areaRatio = controller.getEditor().getArea(transforms) / (getWidth() * getHeight());
+                double sizeRatio = (controller.getEditor().getWidth(transforms) * controller.getEditor().getHeight(transforms)) / (getWidth() * getHeight());
+                int k = (int) (1_000_000 * areaRatio * sizeRatio);
                 viewer.iterate(k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
                 g.setComposite(AlphaComposite.SrcOver.derive(0.8f));
                 g.drawImage(viewer.getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);

@@ -120,7 +120,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         this.controller = controller;
         this.messages = controller.getMessages();
 
-        timer = new Timer(250, this);
+        timer = new Timer(200, this);
         timer.setCoalesce(true);
         timer.setInitialDelay(0);
 
@@ -555,7 +555,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         int id = task.incrementAndGet();
         controller.debug("Started task %d", id);;
         do {
-            iterate(25_000, scale, centre);
+            iterate(10_000, scale, centre);
         } while (running.get());
         controller.debug("Stopped task %d", id);;
     }
