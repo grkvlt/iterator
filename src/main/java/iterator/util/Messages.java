@@ -57,6 +57,8 @@ public class Messages {
 
     public static final String MENU_EDITOR_NEW = "explorer.menu.editor.new";
 
+    public static final String MENU_VIEWER_ZOOM = "explorer.menu.viewer.zoom";
+
     public static final String DIALOG_FILES_XML = "explorer.dialog.files.xml";
     public static final String DIALOG_FILES_PNG = "explorer.dialog.files.png";
 
@@ -85,6 +87,13 @@ public class Messages {
     public static final String DIALOG_PREFERENCES_DEBUG = "explorer.dialog.preferences.debug";
     public static final String DIALOG_PREFERENCES_BUTTON_UPDATE = "explorer.dialog.preferences.button.update";
     public static final String DIALOG_PREFERENCES_BUTTON_CANCEL = "explorer.dialog.preferences.button.cancel";
+
+    public static final String DIALOG_ZOOM_TITLE = "explorer.dialog.zoom.title";
+    public static final String DIALOG_ZOOM_X = "explorer.dialog.zoom.x";
+    public static final String DIALOG_ZOOM_Y = "explorer.dialog.zoom.y";
+    public static final String DIALOG_ZOOM_SCALE = "explorer.dialog.zoom.scale";
+    public static final String DIALOG_ZOOM_BUTTON_UPDATE = "explorer.dialog.zoom.button.update";
+    public static final String DIALOG_ZOOM_BUTTON_CANCEL = "explorer.dialog.zoom.button.cancel";
 
     private ResourceBundle resources;
 

@@ -15,6 +15,8 @@
  */
 package iterator.view;
 
+import static iterator.util.Messages.MENU_VIEWER_ZOOM;
+
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -55,7 +57,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
@@ -65,9 +69,11 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 import iterator.Explorer;
+import iterator.dialog.Zoom;
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Config.Render;
+import iterator.util.Messages;
 import iterator.util.Subscriber;
 import iterator.util.Utils;
 
@@ -79,6 +85,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private static final long serialVersionUID = -3294847597249688714L;
 
     private final Explorer controller;
+    private final Messages messages;
 
     private IFS ifs;
     private BufferedImage image;
@@ -95,15 +102,28 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private Rectangle zoom;
     private ExecutorService executor = Executors.newCachedThreadPool();
     private boolean overlay, info, grid;
+    private JPopupMenu viewer;
+    private Zoom properties;
 
     public Viewer(EventBus bus, Explorer controller) {
         super();
 
         this.controller = controller;
+        this.messages = controller.getMessages();
 
         timer = new Timer(250, this);
         timer.setCoalesce(true);
         timer.setInitialDelay(0);
+
+        properties = new Zoom(controller, bus, controller);
+        viewer = new JPopupMenu();
+        viewer.add(new AbstractAction(messages.getText(MENU_VIEWER_ZOOM)) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                properties.showDialog();
+            }
+        });
+        add(viewer);
 
         addMouseListener(this);
         addMouseMotionListener(this);
@@ -115,6 +135,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public BufferedImage getImage() { return image; }
 
     public long getCount() { return count.get(); }
+
+    public Point2D getCentre() { return centre; }
+
+    public float getScale() { return scale; }
 
     /** @see Subscriber#updated(IFS) */
     @Override
@@ -579,6 +603,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         if (SwingUtilities.isLeftMouseButton(e)) {
             zoom = new Rectangle(e.getX(), e.getY(), 0, 0);
             repaint();
+        } else if (SwingUtilities.isRightMouseButton(e)) {
+            viewer.show(e.getComponent(), e.getX(), e.getY());
         }
     }
 
@@ -667,4 +693,5 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void componentHidden(ComponentEvent e) {
        stop();
     }
+
 }

@@ -119,6 +119,25 @@ public class Utils {
     }
 
     /**
+     * Formatter for {@link Float} values in {@link JFormattedTextField}s.
+     */
+    public static class FloatFormatter extends AbstractFormatter {
+        @Override
+        public Object stringToValue(String text) throws ParseException {
+            try {
+                return Float.valueOf(text);
+            } catch (NumberFormatException e) {
+                return 0f;
+            }
+        }
+
+        @Override
+        public String valueToString(Object value) throws ParseException {
+            return String.format("%.4f", value);
+        }
+    }
+
+    /**
      * Formatter for {@link Integer} values in {@link JFormattedTextField}s.
      */
     public static class IntegerFormatter extends AbstractFormatter {
