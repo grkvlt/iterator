@@ -105,23 +105,21 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         left.setText("<div class=\"bracketl\" height=\"60px\" width=\"10px\">&nbsp;</div>");
         panel.add(left, BorderLayout.WEST);
 
-        JPanel values = new JPanel();
-        values.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel matrix = new JPanel();
+        matrix.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         GridLayout grid = new GridLayout(0, 3);
         grid.setHgap(10);
         grid.setVgap(4);
-        values.setLayout(grid);
-        values.setBackground(Color.WHITE);
-        panel.add(values, BorderLayout.CENTER);
+        matrix.setLayout(grid);
+        matrix.setBackground(Color.WHITE);
+        panel.add(matrix, BorderLayout.CENTER);
 
-        double matrix[] = new double[6];
-        transform.getTransform().getMatrix(matrix);
-        c0 = addProperty(0, matrix[0], values);
-        c1 = addProperty(1, matrix[2], values);
-        c2 = addProperty(2, matrix[4], values);
-        c3 = addProperty(3, matrix[1], values);
-        c4 = addProperty(4, matrix[3], values);
-        c5 = addProperty(5, matrix[5], values);
+        c0 = addProperty(matrix);
+        c1 = addProperty(matrix);
+        c2 = addProperty(matrix);
+        c3 = addProperty(matrix);
+        c4 = addProperty(matrix);
+        c5 = addProperty(matrix);
 
         JTextPane right = new JTextPane();
         right.setBackground(Color.WHITE);
@@ -173,11 +171,10 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         buttons.add(cancel);
     }
 
-    private Property<Double> addProperty(int number, double value, JPanel panel) {
+    private Property<Double> addProperty(JPanel panel) {
         final JFormattedTextField field = new JFormattedTextField(new Utils.DoubleFormatter());
         field.setHorizontalAlignment(JTextField.RIGHT);
         field.setBorder(BorderFactory.createLoweredSoftBevelBorder());
-        field.setValue(value);
         field.setFont(new Font("Cambria", Font.ITALIC, 14));
         field.setColumns(8);
         field.addKeyListener(this);
@@ -203,10 +200,10 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         transform.getTransform().getMatrix(matrix);;
 
         c0.set(matrix[0]);
-        c1.set(matrix[1]);
-        c2.set(matrix[2]);
-        c3.set(matrix[3]);
-        c4.set(matrix[4]);
+        c1.set(matrix[2]);
+        c2.set(matrix[4]);
+        c3.set(matrix[1]);
+        c4.set(matrix[3]);
         c5.set(matrix[5]);
 
         pack();
