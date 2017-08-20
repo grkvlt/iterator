@@ -418,14 +418,21 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
                 int x = (int) ((points[0] - centre.getX()) * scale) + (getWidth() / 2);
                 int y = (int) ((points[1] - centre.getY()) * scale) + (getHeight() / 2);
+                int l = getWidth() * getHeight();
                 if (x >= 0 && y >= 0 && x < getWidth() && y < getWidth()) {
                     int p = x + y * getWidth();
 
                     if (controller.getRender() == Render.TOP) {
                         if (j > top[p]) top[p] = j;
                     }
-                    if (controller.getRender() == Render.DENSITY || controller.getRender() == Render.LOG_DENSITY) {
+                    if (controller.getRender() == Render.DENSITY || controller.getRender() == Render.LOG_DENSITY || controller.getRender() == Render.LOG_DENSITY_BLUR) {
                         density[p]++;
+                        if (controller.getRender() == Render.LOG_DENSITY_BLUR) {
+                            density[p]++;
+                            density[(p + 1) % l]++;
+                            density[(p + getWidth()) % l]++;
+                            density[(p + 1 + getWidth()) % l]++;
+                        }
                         max = Math.max(max, density[p]);
                     }
 
@@ -458,7 +465,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     // Set the paint colour according to the rendering mode
                     if (controller.getRender() == Render.IFS) {
                         g.setPaint(Utils.alpha(color, 255));
-                    } else if (isVisible() && (controller.getRender() == Render.DENSITY || controller.getRender() == Render.LOG_DENSITY)) {
+                    } else if (isVisible() && (controller.getRender() == Render.DENSITY || controller.getRender() == Render.LOG_DENSITY || controller.getRender() == Render.LOG_DENSITY_BLUR)) {
                         rgb[p] = color.getRGB();
                         continue;
                     } else if (controller.getRender() == Render.MEASURE) {
@@ -498,8 +505,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         g.fillRect(0, 0, getWidth(), getHeight());
 
         try {
-            int r = isVisible() ? 2 : 4;
-            boolean log = controller.getRender() == Render.LOG_DENSITY;
+            int r = (isVisible() ? 1 : 2) * (controller.getRender() == Render.LOG_DENSITY_BLUR ? 1 : 2);
+            boolean log = (controller.getRender() == Render.LOG_DENSITY || controller.getRender() == Render.LOG_DENSITY_BLUR);
             for (int x = 0; x < getWidth(); x++) {
                 for (int y = 0; y < getHeight(); y++) {
                     int p = x + y * getWidth();
@@ -532,7 +539,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (controller.getRender() == Render.DENSITY || controller.getRender() == Render.LOG_DENSITY) {
+        if (controller.getRender() == Render.DENSITY || controller.getRender() == Render.LOG_DENSITY || controller.getRender() == Render.LOG_DENSITY_BLUR) {
             plotDensity();
         }
         repaint();
