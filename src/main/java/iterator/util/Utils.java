@@ -32,6 +32,7 @@ import javax.swing.JFormattedTextField.AbstractFormatter;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
@@ -132,6 +133,33 @@ public class Utils {
         @Override
         public String valueToString(Object value) throws ParseException {
             return String.format("%.4f", value);
+        }
+    }
+
+    /**
+     * Formatter for {@link Optional<Double>} values in {@link JFormattedTextField}s.
+     */
+    public static class OptionalDoubleFormatter extends AbstractFormatter {
+        @Override
+        public Object stringToValue(String text) throws ParseException {
+            if (Strings.isNullOrEmpty(text)) {
+                return Optional.absent();
+            }
+            try {
+                return Optional.of(Double.valueOf(text));
+            } catch (NumberFormatException e) {
+                return Optional.absent();
+            }
+        }
+
+        @Override
+        public String valueToString(Object value) throws ParseException {
+            Optional<Double> optional = (Optional<Double>) value;
+            if (optional.isPresent()) {
+                return String.format("%.4f", optional.get());
+            } else {
+                return "";
+            }
         }
     }
 

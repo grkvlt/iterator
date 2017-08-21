@@ -51,6 +51,8 @@ public class Transform {
     public Double shx = 0d;
     @XmlAttribute(required = false)
     public Double shy = 0d;
+    @XmlAttribute(required = false)
+    public Double weight;
     @XmlAttribute
     private double sw;
     @XmlAttribute
@@ -108,6 +110,7 @@ public class Transform {
         this.r = original.r;
         this.shx = original.shx;
         this.shy = original.shy;
+        this.weight = original.weight;
     }
 
     public int getId() {
@@ -144,14 +147,22 @@ public class Transform {
     public boolean isMatrix() { return matrix != null; }
 
     public double getDeterminant() {
-        return this.getTransform().getDeterminant();
+        return getTransform().getDeterminant();
+    }
+
+    public void setWeight(Double weight) {
+        this.weight = weight;
+    }
+
+    public Double getWeight() {
+        return weight != null ? weight : getTransform().getDeterminant();
     }
 
     public void setSize(Dimension size) {
         Point2D scale = new Point2D.Double(size.getWidth() / sw, size.getHeight() / sh);
         sw = size.getWidth();
         sh = size.getHeight();
-        
+
         if (isMatrix()) {
             AffineTransform transform = getTransform();
             double tx = transform.getTranslateX();

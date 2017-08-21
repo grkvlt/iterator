@@ -25,12 +25,14 @@ import static iterator.util.Messages.DIALOG_PROPERTIES_TITLE;
 import static iterator.util.Messages.DIALOG_PROPERTIES_W;
 import static iterator.util.Messages.DIALOG_PROPERTIES_X;
 import static iterator.util.Messages.DIALOG_PROPERTIES_Y;
+import static iterator.util.Messages.DIALOG_PROPERTIES_WEIGHT;
 
 import java.awt.Window;
 import java.text.MessageFormat;
 
 import javax.swing.JFormattedTextField.AbstractFormatter;
 
+import com.google.common.base.Optional;
 import com.google.common.eventbus.EventBus;
 
 import iterator.Explorer;
@@ -48,6 +50,7 @@ public class Properties extends AbstractPropertyDialog {
     private final Transform transform;
     private final IFS ifs;
     private final Property<Double> x, y, w, h, r, shx, shy;
+    private final Property<Optional<Double>> weight;
 
     public Properties(final Transform transform, final IFS ifs, final Explorer controller, final EventBus bus, final Window parent) {
         super(controller, bus, parent);
@@ -66,6 +69,8 @@ public class Properties extends AbstractPropertyDialog {
         r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Math.toDegrees(transform.r), doubleFormatter);
         shx = addProperty(messages.getText(DIALOG_PROPERTIES_SHX), transform.shx, doubleFormatter);
         shy = addProperty(messages.getText(DIALOG_PROPERTIES_SHY), transform.shy, doubleFormatter);
+        AbstractFormatter optionalDoubleFormatter = new Utils.OptionalDoubleFormatter();
+        weight = addProperty(messages.getText(DIALOG_PROPERTIES_WEIGHT), Optional.fromNullable(transform.weight), optionalDoubleFormatter);
 
         setSuccess(messages.getText(DIALOG_PROPERTIES_BUTTON_UPDATE));
         setCancel(messages.getText(DIALOG_PROPERTIES_BUTTON_CANCEL));
@@ -81,6 +86,7 @@ public class Properties extends AbstractPropertyDialog {
         r.set(Math.toDegrees(transform.r));
         shx.set(transform.shx);
         shy.set(transform.shy);
+        weight.set(Optional.fromNullable(transform.weight));
 
         super.showDialog();
     }
@@ -94,6 +100,9 @@ public class Properties extends AbstractPropertyDialog {
         transform.r = Math.toRadians(r.get());
         transform.shx = shx.get();
         transform.shy = shy.get();
+        if (weight.get().isPresent()) {
+            transform.weight = weight.get().get();
+        }
         bus.post(ifs);
     }
 

@@ -236,7 +236,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     }
 
     public double getWeight(List<Transform> transforms) {
-        return transforms.stream().map(Transform::getDeterminant).reduce(0d, Double::sum);
+        return transforms.stream().map(Transform::getWeight).reduce(0d, Double::sum);
     }
 
     public double getArea(List<Transform> transforms) {

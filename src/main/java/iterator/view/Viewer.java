@@ -413,7 +413,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 }
                 int j = random.nextInt(transforms.size());
                 Transform t = transforms.get(j);
-                if (t.getDeterminant() < random.nextDouble() * weight) continue;
+                if (t.getWeight() < random.nextDouble() * weight) {
+                    continue;
+                }
 
                 Point2D old = new Point2D.Double(points[2], points[3]);
                 t.getTransform().transform(points, 0, points, 0, 2);
