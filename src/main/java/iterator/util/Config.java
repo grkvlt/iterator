@@ -66,7 +66,28 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Integer MIN_THREADS = 2;
 
     public static enum Mode {
-        COLOUR, PALETTE, STEALING, IFS_COLOUR, GRAY;
+        COLOUR(true, false, false, false),
+        PALETTE(true, true, false, false),
+        STEALING(true, true, true, false),
+        IFS_COLOUR(true, false, false, true),
+        GRAY(false, false, false, false);
+
+        private final boolean colour, palette, stealing, ifscolour;
+
+        public boolean isColour() { return colour; }
+
+        public boolean isPalette() { return palette; }
+
+        public boolean isStealing() { return stealing; }
+
+        public boolean isIFSColour() { return ifscolour; }
+
+        private Mode(boolean colour, boolean palette, boolean stealing, boolean ifscolour) {
+            this.colour = colour;
+            this.palette = palette;
+            this.stealing = stealing;
+            this.ifscolour = ifscolour;
+        }
 
         @Override
         public String toString() {
@@ -77,7 +98,21 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Mode DEFAULT_MODE = Mode.GRAY;
 
     public static enum Render {
-        STANDARD, TOP, MEASURE, IFS, DENSITY, LOG_DENSITY, LOG_DENSITY_BLUR;
+        STANDARD(false),
+        TOP(false),
+        MEASURE(false),
+        IFS(false),
+        DENSITY(true),
+        LOG_DENSITY(true),
+        LOG_DENSITY_BLUR(true);
+
+        private final boolean density;
+
+        public boolean isDensity() { return density; }
+
+        private Render(boolean density) {
+            this.density = density;
+        }
 
         @Override
         public String toString() {

@@ -425,10 +425,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     if (controller.getRender() == Render.TOP) {
                         if (j > top[p]) top[p] = j;
                     }
-                    if (controller.getRender() == Render.DENSITY || controller.getRender() == Render.LOG_DENSITY || controller.getRender() == Render.LOG_DENSITY_BLUR) {
+
+                    if (controller.getRender().isDensity()) {
                         density[p]++;
                         if (controller.getRender() == Render.LOG_DENSITY_BLUR) {
-                            density[p]++;
+                            density[p] += 3;
                             density[(p + 1) % l]++;
                             density[(p + getWidth()) % l]++;
                             density[(p + 1 + getWidth()) % l]++;
@@ -460,14 +461,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                                 color = Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f);
                             }
                         }
+                        if (controller.getRender().isDensity()) {
+                            rgb[p] = color.getRGB();
+                        }
                     }
 
                     // Set the paint colour according to the rendering mode
                     if (controller.getRender() == Render.IFS) {
                         g.setPaint(Utils.alpha(color, 255));
-                    } else if (isVisible() && (controller.getRender() == Render.DENSITY || controller.getRender() == Render.LOG_DENSITY || controller.getRender() == Render.LOG_DENSITY_BLUR)) {
-                        rgb[p] = color.getRGB();
-                        continue;
                     } else if (controller.getRender() == Render.MEASURE) {
                         if (top[p] == 0) {
                             color = new Color(color.getRed(), color.getGreen(), color.getBlue());
@@ -484,7 +485,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                         g.setPaint(Utils.alpha(color, a));
                     }
 
-                    g.fill(rect);
+                    // Don't paint when using density rendering in viewer
+                    if (!(controller.getRender().isDensity() && isVisible())) {
+                        g.fill(rect);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -539,7 +543,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (controller.getRender() == Render.DENSITY || controller.getRender() == Render.LOG_DENSITY || controller.getRender() == Render.LOG_DENSITY_BLUR) {
+        if (controller.getRender().isDensity()) {
             plotDensity();
         }
         repaint();

@@ -375,40 +375,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public void setMode(String value) {
         mode = Mode.valueOf(CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_UNDERSCORE, value));
-        switch (mode) {
-            case COLOUR:
-                colour = true;
-                palette = false;
-                stealing = false;
-                ifscolour = false;
-                break;
-            case PALETTE:
-                colour = true;
-                palette = true;
-                stealing = false;
-                ifscolour = false;
-                break;
-            case STEALING:
-                colour = true;
-                palette = true;
-                stealing = true;
-                ifscolour = false;
-                break;
-            case IFS_COLOUR:
-                colour = true;
-                palette = false;
-                stealing = false;
-                ifscolour = true;
-                break;
-            case GRAY:
-                colour = false;
-                palette = false;
-                stealing = false;
-                ifscolour = false;
-                break;
-            default:
-                error("Cannot set colour mode: %s", mode);
-        }
+        colour = mode.isColour();
+        palette = mode.isPalette();
+        stealing = mode.isStealing();
+        ifscolour = mode.isIFSColour();
     }
 
     public void loadColours() {
