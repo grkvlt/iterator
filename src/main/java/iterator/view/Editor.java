@@ -288,144 +288,173 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     @Override
     protected void paintComponent(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        paintGrid((Graphics2D) g.create());
+        try {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        if (ifs != null) {
-            for (Transform t : ifs) {
-                if (!t.equals(selected)) {
-                    paintTransform(t, false, (Graphics2D) g.create());
+            paintGrid(g);
+
+            if (ifs != null) {
+                for (Transform t : ifs) {
+                    if (!t.equals(selected)) {
+                        paintTransform(t, false, g);
+                    }
+                }
+                if (selected != null) {
+                    paintTransform(selected, true, g);
+                }
+
+                if (selected == null && start != null && end != null) {
+                    g.setPaint(Color.BLACK);
+                    g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
+                    Transform ants = getAnts();
+                    g.draw(new Rectangle(ants.x.intValue(), ants.y.intValue(), ants.w.intValue(), ants.h.intValue()));
+                }
+
+                if (!ifs.isEmpty()) {
+                    Viewer viewer = controller.getViewer();
+                    viewer.reset();
+                    List<Transform> transforms = controller.getEditor().getTransforms();
+                    double areaRatio = controller.getEditor().getArea(transforms) / (getWidth() * getHeight());
+                    double sizeRatio = (controller.getEditor().getWidth(transforms) * controller.getEditor().getHeight(transforms)) / (getWidth() * getHeight());
+                    int k = (int) (1_000_000 * areaRatio * sizeRatio);
+                    viewer.iterate(k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
+
+                    g.setComposite(AlphaComposite.SrcOver.derive(0.8f));
+                    g.drawImage(viewer.getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
                 }
             }
-            if (selected != null) {
-                paintTransform(selected, true, (Graphics2D) g.create());
-            }
-
-            if (selected == null && start != null && end != null) {
-                g.setPaint(Color.BLACK);
-                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
-                Transform ants = getAnts();
-                g.draw(new Rectangle(ants.x.intValue(), ants.y.intValue(), ants.w.intValue(), ants.h.intValue()));
-            }
-
-            if (!ifs.isEmpty()) {
-                Viewer viewer = controller.getViewer();
-                viewer.reset();
-                List<Transform> transforms = controller.getEditor().getTransforms();
-                double areaRatio = controller.getEditor().getArea(transforms) / (getWidth() * getHeight());
-                double sizeRatio = (controller.getEditor().getWidth(transforms) * controller.getEditor().getHeight(transforms)) / (getWidth() * getHeight());
-                int k = (int) (1_000_000 * areaRatio * sizeRatio);
-                viewer.iterate(k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
-                g.setComposite(AlphaComposite.SrcOver.derive(0.8f));
-                g.drawImage(viewer.getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
-            }
+        } catch (Exception e) {
+            controller.error(e, "Failure painting IFS editor");
+        } finally {
+            g.dispose();
         }
-
-        g.dispose();
+;
     }
 
-    public void paintTransform(Transform t, boolean highlight, Graphics2D g) {
+    public void paintTransform(Transform t, boolean highlight, Graphics2D graphics) {
         Rectangle unit = new Rectangle(getSize());
         Shape rect = t.getTransform().createTransformedShape(unit);
+        Graphics2D g = (Graphics2D) graphics.create();
 
-        // Draw the outline
-        g.setPaint(Color.BLACK);
-        if (highlight) {
-            g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 10f, 10f }, 0f));
-        } else {
-            g.setStroke(new BasicStroke(2f));
-        }
-        g.draw(rect);
-
-        // Fill the rectangle
-        if (highlight) {
-            if (t.isMatrix()) {
-                g.setPaint(new Color(Color.GREEN.getRed(), Color.GREEN.getGreen(), Color.GREEN.getBlue(), 16));
-            } else {
-                g.setPaint(new Color(Color.BLUE.getRed(), Color.BLUE.getGreen(), Color.BLUE.getBlue(), 16));
-            }
-        } else {
-            g.setPaint(new Color(Color.GRAY.getRed(), Color.GRAY.getGreen(), Color.GRAY.getBlue(), 8));
-        }
-        g.fill(rect);
-
-        if (!t.isMatrix()) {
-            // Draw the resize handles
-            g.setStroke(new BasicStroke(2f));
+        try {
+            // Draw the outline
             g.setPaint(Color.BLACK);
-            int[] cornerX = new int[] { 0, 0, getWidth(), getWidth() };
-            int[] cornerY = new int[] { 0, getHeight(), getHeight(), 0 };
-            for (int i = 0; i < 4; i++) {
-                Point center = new Point();
-                t.getTransform().transform(new Point(cornerX[i], cornerY[i]), center);
-                Rectangle corner = new Rectangle(center.x - 4, center.y - 4, 8, 8);
-                g.fill(corner);
+            if (highlight) {
+                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 10f, 10f }, 0f));
+            } else {
+                g.setStroke(new BasicStroke(2f));
             }
-    
-            // And rotate handle
-            int rotateX = getWidth() / 2, rotateY = 0;
-            Point center = new Point();
-            t.getTransform().transform(new Point(rotateX, rotateY), center);
-            Arc2D handle = new Arc2D.Double(center.getX() - 6d, center.getY() - 6d, 12d, 12d, 0d, 360d, Arc2D.OPEN);
-            g.draw(handle);
-        }
+            g.draw(rect);
 
-        // Draw the number
-        Graphics2D gr = (Graphics2D) g.create();
-        if (highlight) {
-            gr.setPaint(Color.BLACK);
-        } else {
-            gr.setPaint(new Color(Color.BLACK.getRed(), Color.BLACK.getGreen(), Color.BLACK.getBlue(), 128));
-        }
-        gr.setFont(new Font("Calibri", Font.BOLD, 25));
-        Point text = new Point();
-        t.getTransform().transform(new Point(0, 0), text);
-        AffineTransform rotation = new AffineTransform();
-        if (t.isMatrix()) {
-            rotation = t.getTransform();
-            rotation.scale(1 / t.getScaleX(), 1 / t.getScaleY());
-            rotation.translate(-t.getTranslateX(), -t.getTranslateY());
-        } else {
-            rotation.translate(text.x, text.y);
-            rotation.shear(t.shx, t.shy);
-            rotation.rotate(t.r);
-            rotation.translate(-text.x, -text.y);
-        }
-        gr.setTransform(rotation);
-        String id = String.format("TR%s %.1f%% %s",
-                (t.getId() == -1 ? "--" : String.format("%02d", t.getId())),
-                100d * t.getWeight() / getWeight(Utils.concatenate(ifs, ifs.contains(selected) ? null : selected)),
-                ((highlight && rotate != null) ? String.format("(%+d)", (int) Math.toDegrees(t.r)) : ""));
-        gr.drawString(id, text.x + 5, text.y + 25);
-        gr.dispose();
+            // Fill the rectangle
+            if (highlight) {
+                if (t.isMatrix()) {
+                    g.setPaint(new Color(Color.GREEN.getRed(), Color.GREEN.getGreen(), Color.GREEN.getBlue(), 16));
+                } else {
+                    g.setPaint(new Color(Color.BLUE.getRed(), Color.BLUE.getGreen(), Color.BLUE.getBlue(), 16));
+                }
+            } else {
+                g.setPaint(new Color(Color.GRAY.getRed(), Color.GRAY.getGreen(), Color.GRAY.getBlue(), 8));
+            }
+            g.fill(rect);
 
-        g.dispose();
+            if (!t.isMatrix()) {
+                // Draw the resize handles
+                g.setStroke(new BasicStroke(2f));
+                g.setPaint(Color.BLACK);
+                int[] cornerX = new int[] { 0, 0, getWidth(), getWidth() };
+                int[] cornerY = new int[] { 0, getHeight(), getHeight(), 0 };
+                for (int i = 0; i < 4; i++) {
+                    Point center = new Point();
+                    t.getTransform().transform(new Point(cornerX[i], cornerY[i]), center);
+                    Rectangle corner = new Rectangle(center.x - 4, center.y - 4, 8, 8);
+                    g.fill(corner);
+                }
+
+                // And rotate handle
+                int rotateX = getWidth() / 2, rotateY = 0;
+                Point center = new Point();
+                t.getTransform().transform(new Point(rotateX, rotateY), center);
+                Arc2D handle = new Arc2D.Double(center.getX() - 6d, center.getY() - 6d, 12d, 12d, 0d, 360d, Arc2D.OPEN);
+                g.draw(handle);
+            }
+
+            // Draw the number
+            paintTransformNumber(t, highlight, g);
+        } catch (Exception e) {
+            controller.error(e, "Failure painting transform");
+        } finally {
+            g.dispose();
+        }
     }
 
-    public void paintGrid(Graphics2D g) {
-        int min = controller.getMinGrid();
-        int max = controller.getMaxGrid();
-        Rectangle s = new Rectangle(getSize());
-        g.setPaint(Color.WHITE);
-        g.fill(s);
-        g.setPaint(Color.LIGHT_GRAY);
-        g.setStroke(new BasicStroke(1f));
-        for (int x = 0; x < getWidth(); x += min) {
-            g.drawLine(x, 0, x, getHeight());
+    public void paintTransformNumber(Transform t, boolean highlight, Graphics2D graphics) {
+        Graphics2D g = (Graphics2D) graphics.create();
+
+        try {
+            if (highlight) {
+                g.setPaint(Color.BLACK);
+            } else {
+                g.setPaint(new Color(Color.BLACK.getRed(), Color.BLACK.getGreen(), Color.BLACK.getBlue(), 128));
+            }
+            g.setFont(new Font("Calibri", Font.BOLD, 25));
+            Point text = new Point();
+            t.getTransform().transform(new Point(0, 0), text);
+            AffineTransform rotation = new AffineTransform();
+            if (t.isMatrix()) {
+                rotation = t.getTransform();
+                rotation.scale(1 / t.getScaleX(), 1 / t.getScaleY());
+                rotation.translate(-t.getTranslateX(), -t.getTranslateY());
+            } else {
+                rotation.translate(text.x, text.y);
+                rotation.shear(t.shx, t.shy);
+                rotation.rotate(t.r);
+                rotation.translate(-text.x, -text.y);
+            }
+            g.setTransform(rotation);
+            String id = String.format("TR%s %.1f%% %s",
+                    (t.getId() == -1 ? "--" : String.format("%02d", t.getId())),
+                    100d * t.getWeight() / getWeight(Utils.concatenate(ifs, ifs.contains(selected) ? null : selected)),
+                    ((highlight && rotate != null) ? String.format("(%+d)", (int) Math.toDegrees(t.r)) : ""));
+            g.drawString(id, text.x + 5, text.y + 25);
+        } catch (Exception e) {
+            controller.error(e, "Failure painting transform number");
+        } finally {
+            g.dispose();
         }
-        for (int y = 0; y < getHeight(); y += min) {
-            g.drawLine(0, y, getWidth(), y);
+    }
+
+    public void paintGrid(Graphics2D graphics) {
+        Graphics2D g = (Graphics2D) graphics.create();
+
+        try {
+            int min = controller.getMinGrid();
+            int max = controller.getMaxGrid();
+            Rectangle s = new Rectangle(getSize());
+            g.setPaint(Color.WHITE);
+            g.fill(s);
+            g.setPaint(Color.LIGHT_GRAY);
+            g.setStroke(new BasicStroke(1f));
+            for (int x = 0; x < getWidth(); x += min) {
+                g.drawLine(x, 0, x, getHeight());
+            }
+            for (int y = 0; y < getHeight(); y += min) {
+                g.drawLine(0, y, getWidth(), y);
+            }
+            g.setPaint(Color.GRAY);
+            g.setStroke(new BasicStroke(2f));
+            for (int x = 0; x < getWidth(); x += max) {
+                g.drawLine(x, 0, x, getHeight());
+            }
+            for (int y = 0; y < getHeight(); y += max) {
+                g.drawLine(0, y, getWidth(), y);
+            }
+        } catch (Exception e) {
+            controller.error(e, "Failure painting grid");
+        } finally {
+            g.dispose();
         }
-        g.setPaint(Color.GRAY);
-        g.setStroke(new BasicStroke(2f));
-        for (int x = 0; x < getWidth(); x += max) {
-            g.drawLine(x, 0, x, getHeight());
-        }
-        for (int y = 0; y < getHeight(); y += max) {
-            g.drawLine(0, y, getWidth(), y);
-        }
-        g.dispose();
     }
 
     public Transform getTransformAt(int x, int y) {

@@ -57,6 +57,7 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.SplashScreen;
 import java.awt.Toolkit;
@@ -918,11 +919,21 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         String banner = Joiner.on(StandardSystemProperty.LINE_SEPARATOR.value()).join(BANNER);
         System.out.printf(banner, version.get());
 
-        // Load splash screen first
+        // Load splash screen text
         SplashScreen splash = SplashScreen.getSplashScreen();
         if (splash.isVisible()) {
-            Utils.paintSplash(splash.createGraphics(), splash.getSize().width, splash.getSize().height);
-            splash.update();
+            Graphics2D g = splash.createGraphics();
+
+            try {
+                Utils.paintSplashText(g, splash.getSize().width, splash.getSize().height);
+                splash.update();
+            } catch (Exception e) {
+                System.err.println("Failure painting splash text");
+                e.printStackTrace(System.err);
+                System.exit(0);
+            } finally {
+                g.dispose();
+            }
         }
 
         SwingUtilities.invokeLater(new Runnable() {

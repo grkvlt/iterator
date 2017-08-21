@@ -94,7 +94,7 @@ public class Utils {
     /**
      * Paints text over the spash screen image.
      */
-    public static void paintSplash(Graphics2D g, int width, int height) {
+    public static void paintSplashText(Graphics2D g, int width, int height) {
         g.setColor(Color.BLACK);
         g.setFont(new Font("Calibri", Font.BOLD, 80));
         g.drawString("IFS Explorer", 10, 65);

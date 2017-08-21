@@ -191,14 +191,20 @@ public class Details extends JTextPane implements Printable, Subscriber {
         if (page > 0) return NO_SUCH_PAGE;
 
         Graphics2D g = (Graphics2D) graphics.create();
-        g.translate(pf.getImageableX(), pf.getImageableY());
-        double scale = pf.getImageableWidth() / (double) getWidth();
-        if ((scale * getHeight()) > pf.getImageableHeight()) {
-            scale = pf.getImageableHeight() / (double) getHeight();
+
+        try {
+            g.translate(pf.getImageableX(), pf.getImageableY());
+            double scale = pf.getImageableWidth() / (double) getWidth();
+            if ((scale * getHeight()) > pf.getImageableHeight()) {
+                scale = pf.getImageableHeight() / (double) getHeight();
+            }
+            g.scale(scale, scale);
+            printAll(g);
+        } catch (Exception e) {
+            controller.error(e, "Failure printing details");
+        } finally {
+            g.dispose();
         }
-        g.scale(scale, scale);
-        printAll(g);
-        g.dispose();
 
         return PAGE_EXISTS;
     }

@@ -42,11 +42,14 @@ public class About extends JPanel implements Dialog, MouseListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1378560167379537595L;
 
+    private Explorer controller;
     private JDialog about;
     private BufferedImage image;
 
     public About(EventBus bus, Explorer controller) {
         super();
+
+        this.controller = controller;
 
         image = Utils.loadImage(Resources.getResource("splash.png"));
         Dimension size = new Dimension(image.getWidth(), image.getHeight());
@@ -76,9 +79,15 @@ public class About extends JPanel implements Dialog, MouseListener {
     @Override
     public void paint(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
-        g.drawImage(image, new AffineTransform(1f, 0f, 0f, 1f, 0, 0), null);
-        Utils.paintSplash(g, getWidth(), getHeight());
-        g.dispose();
+
+        try {
+            g.drawImage(image, AffineTransform.getTranslateInstance(0d, 0d), null);
+            Utils.paintSplashText(g, getWidth(), getHeight());
+        } catch (Exception e) {
+            controller.error(e, "Failure painting splash text");
+        } finally {
+            g.dispose();
+        }
     }
 
     /** @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent) */
