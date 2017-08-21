@@ -163,7 +163,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                             "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
                             t.getId(),
                             f.valueToString(matrix[0]), f.valueToString(matrix[1]), f.valueToString(matrix[2]),
-                            100d * t.getDeterminant() / ifs.getWeight(),
+                            100d * t.getWeight() / controller.getEditor().getWeight(ifs),
                             controller.isColour() ? "black" : "white",
                             c.getRed(), c.getGreen(), c.getBlue(),
                             f.valueToString(matrix[3]), f.valueToString(matrix[4]), f.valueToString(matrix[5]));

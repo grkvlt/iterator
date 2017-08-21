@@ -107,12 +107,6 @@ public class IFS extends ForwardingList<Transform> {
         }
     }
 
-    public double getWeight() {
-        double weight = 0;
-        for (Transform t : transforms) weight += t.getDeterminant();
-        return weight;
-    }
-
     @Override
     protected List<Transform> delegate() {
         return transforms;

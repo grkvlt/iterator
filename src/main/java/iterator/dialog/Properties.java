@@ -26,6 +26,7 @@ import static iterator.util.Messages.DIALOG_PROPERTIES_W;
 import static iterator.util.Messages.DIALOG_PROPERTIES_X;
 import static iterator.util.Messages.DIALOG_PROPERTIES_Y;
 import static iterator.util.Messages.DIALOG_PROPERTIES_WEIGHT;
+import static iterator.util.Messages.DIALOG_PROPERTIES_DETERMINANT;
 
 import java.awt.Window;
 import java.text.MessageFormat;
@@ -49,7 +50,7 @@ public class Properties extends AbstractPropertyDialog {
 
     private final Transform transform;
     private final IFS ifs;
-    private final Property<Double> x, y, w, h, r, shx, shy;
+    private final Property<Double> x, y, w, h, r, shx, shy, det;
     private final Property<Optional<Double>> weight;
 
     public Properties(final Transform transform, final IFS ifs, final Explorer controller, final EventBus bus, final Window parent) {
@@ -69,6 +70,7 @@ public class Properties extends AbstractPropertyDialog {
         r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Math.toDegrees(transform.r), doubleFormatter);
         shx = addProperty(messages.getText(DIALOG_PROPERTIES_SHX), transform.shx, doubleFormatter);
         shy = addProperty(messages.getText(DIALOG_PROPERTIES_SHY), transform.shy, doubleFormatter);
+        det = addReadOnlyProperty(messages.getText(DIALOG_PROPERTIES_DETERMINANT), transform.getDeterminant(), doubleFormatter);
         AbstractFormatter optionalDoubleFormatter = new Utils.OptionalDoubleFormatter();
         weight = addProperty(messages.getText(DIALOG_PROPERTIES_WEIGHT), Optional.fromNullable(transform.weight), optionalDoubleFormatter);
 
@@ -86,6 +88,7 @@ public class Properties extends AbstractPropertyDialog {
         r.set(Math.toDegrees(transform.r));
         shx.set(transform.shx);
         shy.set(transform.shy);
+        det.set(transform.getDeterminant());
         weight.set(Optional.fromNullable(transform.weight));
 
         super.showDialog();
@@ -100,9 +103,7 @@ public class Properties extends AbstractPropertyDialog {
         transform.r = Math.toRadians(r.get());
         transform.shx = shx.get();
         transform.shy = shy.get();
-        if (weight.get().isPresent()) {
-            transform.weight = weight.get().get();
-        }
+        transform.weight = weight.get().orNull();
         bus.post(ifs);
     }
 

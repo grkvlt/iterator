@@ -150,10 +150,6 @@ public class Transform {
         return getTransform().getDeterminant();
     }
 
-    public void setWeight(Double weight) {
-        this.weight = weight;
-    }
-
     public Double getWeight() {
         return weight != null ? weight : getTransform().getDeterminant();
     }

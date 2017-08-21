@@ -33,6 +33,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
@@ -51,6 +52,11 @@ import iterator.Explorer;
 public abstract class AbstractPropertyDialog extends JDialog implements Dialog, KeyListener, ActionListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -7626627964747215623L;
+
+    protected static final Font CALIBRI_PLAIN_14 = new Font("Calibri", Font.PLAIN, 14);
+    protected static final Font CALIBRI_ITALIC_14 = new Font("Calibri", Font.ITALIC, 14);
+    protected static final Font CALIBRI_BOLD_14 = new Font("Calibri", Font.BOLD, 14);
+    protected static final Font CALIBRI_BOLD_16 = new Font("Calibri", Font.BOLD, 16);
 
     protected final Messages messages;
     protected final Explorer controller;
@@ -71,7 +77,7 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         setResizable(false);
         setUndecorated(true);
 
-        setFont(new Font("Calibri", Font.PLAIN, 14));
+        setFont(CALIBRI_PLAIN_14);
         getContentPane().setBackground(Color.WHITE);
         setLayout(gridbag);
 
@@ -85,7 +91,7 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
 
     protected void setLabel(String text) {
         JLabel title = new JLabel(text, JLabel.CENTER);
-        title.setFont(new Font("Calibri", Font.BOLD, 16));
+        title.setFont(CALIBRI_BOLD_16);
         gridbag.setConstraints(title, constraints);
         add(title);
     }
@@ -93,14 +99,16 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     protected void setSuccess(String text) {
         JButton select = new JButton(text);
         select.addActionListener(this);
-        select.setFont(new Font("Calibri", Font.PLAIN, 14));
+        select.setFont(CALIBRI_PLAIN_14);
         select.addKeyListener(this);
+
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.EAST;
         constraints.gridx = 0;
         constraints.gridwidth = 1;
         constraints.weighty = 1.0;
         gridbag.setConstraints(select, constraints);
+
         add(select);
     }
 
@@ -112,31 +120,39 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
                 onCancel();
             }
         };
+
         JButton cancel = new JButton(failure);
-        cancel.setFont(new Font("Calibri", Font.PLAIN, 14));
+        cancel.setFont(CALIBRI_PLAIN_14);
         cancel.addKeyListener(this);
+
         constraints.gridx = 1;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         gridbag.setConstraints(cancel, constraints);
+
         add(cancel);
     }
 
     protected <T> Property<T> addProperty(String string, T value, AbstractFormatter formatter) {
-        addLabel(string);
+        return addFormattedTextField(string, value, formatter, true);
+    }
+
+    protected <T> Property<T> addReadOnlyProperty(String string, T value, AbstractFormatter formatter) {
+        return addFormattedTextField(string, value, formatter, false);
+    }
+
+    protected <T> Property<T> addFormattedTextField(String string, T value, AbstractFormatter formatter, boolean editable) {
+        addLabel(string, editable ? CALIBRI_PLAIN_14 : CALIBRI_ITALIC_14);
 
         final JFormattedTextField field = new JFormattedTextField(formatter);
         field.setHorizontalAlignment(JTextField.LEFT);
-        field.setBorder(BorderFactory.createLoweredSoftBevelBorder());
+        field.setBorder(editable ? BorderFactory.createLoweredSoftBevelBorder() : BorderFactory.createEmptyBorder(3, 3, 3, 3));
         field.setMargin(new Insets(2, 2, 2, 2));
         field.setValue(value);
-        field.setFont(new Font("Cambria", Font.ITALIC, 14));
+        field.setFont(CALIBRI_ITALIC_14);
         field.addKeyListener(this);
+        field.setEditable(editable);
 
-        constraints.gridx = 2;
-        constraints.gridwidth = GridBagConstraints.REMAINDER;
-        constraints.weightx = 1.0;
-        constraints.weighty = 2.0;
-        gridbag.setConstraints(field, constraints);
+        setConstraints(field);
         add(field);
 
         Property<T> property = new Property<T>() {
@@ -160,14 +176,10 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         field.setBorder(BorderFactory.createEmptyBorder());
         field.setSelectedItem(value);
         field.setEditable(false);
-        field.setFont(new Font("Cambria", Font.ITALIC, 14));
+        field.setFont(CALIBRI_ITALIC_14);
         field.addKeyListener(this);
 
-        constraints.gridx = 2;
-        constraints.gridwidth = GridBagConstraints.REMAINDER;
-        constraints.weightx = 1.0;
-        constraints.weighty = 2.0;
-        gridbag.setConstraints(field, constraints);
+        setConstraints(field);
         add(field);
 
         Property<T> property = new Property<T>() {
@@ -191,12 +203,9 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         final JSpinner field = new JSpinner(model);
         field.setBorder(BorderFactory.createEmptyBorder());
         field.addKeyListener(this);
+        field.setFont(CALIBRI_ITALIC_14);
 
-        constraints.gridx = 2;
-        constraints.gridwidth = GridBagConstraints.REMAINDER;
-        constraints.weightx = 1.0;
-        constraints.weighty = 2.0;
-        gridbag.setConstraints(field, constraints);
+        setConstraints(field);
         add(field);
 
         Property<Integer> property = new Property<Integer>() {
@@ -220,12 +229,9 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         field.setBorder(BorderFactory.createEmptyBorder());
         field.setSelected(value);
         field.addKeyListener(this);
+        field.setFont(CALIBRI_ITALIC_14);
 
-        constraints.gridx = 2;
-        constraints.gridwidth = GridBagConstraints.REMAINDER;
-        constraints.weightx = 1.0;
-        constraints.weighty = 2.0;
-        gridbag.setConstraints(field, constraints);
+        setConstraints(field);
         add(field);
 
         Property<Boolean> property = new Property<Boolean>() {
@@ -242,14 +248,28 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     }
 
     private void addLabel(String string) {
+        addLabel(string, CALIBRI_PLAIN_14);
+    }
+
+    private void addLabel(String string, Font font) {
         JLabel label = new JLabel(string, JLabel.RIGHT);
-        label.setFont(new Font("Calibri", Font.PLAIN, 14));
+        label.setFont(font);
+
         constraints.gridx = 0;
         constraints.gridwidth = GridBagConstraints.RELATIVE;
         constraints.weightx = 2.0;
         constraints.weighty = 2.0;
         gridbag.setConstraints(label, constraints);
+
         add(label);
+    }
+
+    private void setConstraints(JComponent component) {
+        constraints.gridx = 2;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.weightx = 1.0;
+        constraints.weighty = 2.0;
+        gridbag.setConstraints(component, constraints);
     }
 
     /** @see iterator.util.Dialog#showDialog() */

@@ -155,7 +155,7 @@ public class Utils {
         @Override
         public String valueToString(Object value) throws ParseException {
             Optional<Double> optional = (Optional<Double>) value;
-            if (optional.isPresent()) {
+            if (value instanceof Optional && optional.isPresent()) {
                 return String.format("%.4f", optional.get());
             } else {
                 return "";

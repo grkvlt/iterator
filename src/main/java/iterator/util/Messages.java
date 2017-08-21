@@ -76,6 +76,7 @@ public class Messages {
     public static final String DIALOG_PROPERTIES_SHX = "explorer.dialog.properties.shx";
     public static final String DIALOG_PROPERTIES_SHY = "explorer.dialog.properties.shy";
     public static final String DIALOG_PROPERTIES_WEIGHT = "explorer.dialog.properties.weight";
+    public static final String DIALOG_PROPERTIES_DETERMINANT = "explorer.dialog.properties.determinant";
     public static final String DIALOG_PROPERTIES_BUTTON_UPDATE = "explorer.dialog.properties.button.update";
     public static final String DIALOG_PROPERTIES_BUTTON_CANCEL = "explorer.dialog.properties.button.cancel";
 
