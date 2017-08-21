@@ -393,7 +393,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             rotation.translate(-text.x, -text.y);
         }
         gr.setTransform(rotation);
-        gr.drawString(String.format("T%02d%s", t.getId(), (highlight && rotate != null) ? String.format(" (%d)", (int) Math.toDegrees(t.r)) : ""), text.x + 5, text.y + 25);
+        String id = String.format("TR%s %.1f%% %s",
+                (t.getId() == -1 ? "--" : String.format("%02d", t.getId())),
+                100d * t.getWeight() / getWeight(Utils.concatenate(ifs, ifs.contains(selected) ? null : selected)),
+                ((highlight && rotate != null) ? String.format("(%+d)", (int) Math.toDegrees(t.r)) : ""));
+        gr.drawString(id, text.x + 5, text.y + 25);
         gr.dispose();
 
         g.dispose();
