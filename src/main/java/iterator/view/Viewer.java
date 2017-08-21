@@ -146,6 +146,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             }
         });
         viewer.add(resume);
+        JMenuItem separator = new JMenuItem("-");
+        separator.setEnabled(false);
+        viewer.add(separator);
         showGrid = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_VIEWER_GRID)) {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -372,6 +375,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         if (page > 0) return NO_SUCH_PAGE;
 
         Graphics2D g = (Graphics2D) graphics.create();
+
         try {
             g.translate(pf.getImageableX(), pf.getImageableY());
             double scale = pf.getImageableWidth() / (double) getWidth();

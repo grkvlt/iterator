@@ -51,6 +51,7 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -141,6 +142,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 Editor.this.bus.post(ifs);
             }
         });
+        JMenuItem separator = new JMenuItem("-");
+        separator.setEnabled(false);
+        transform.add(separator);
         transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_RAISE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
