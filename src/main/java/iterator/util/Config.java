@@ -53,6 +53,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String MODE_PROPERTY = EXPLORER_PROPERTY + ".mode";
     public static final String THREADS_PROPERTY = EXPLORER_PROPERTY + ".threads";
     public static final String RENDER_PROPERTY = EXPLORER_PROPERTY + ".render";
+    public static final String ITERATIONS_PROPERTY =  EXPLORER_PROPERTY + ".iteractions";
 
     public static final String[] PALETTE_FILES = { "abstract", "autumn", "car", "car2", "forest", "lego", "night", "trees", "wave" };
     public static final String DEFAULT_PALETTE_FILE = "abstract";
@@ -62,6 +63,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Integer DEFAULT_GRID_MAX = 50;
     public static final Integer DEFAULT_GRID_SNAP = 5;
     public static final Integer DEFAULT_WINDOW_SIZE = 600;
+    public static final Long DEFAULT_ITERATIONS = 10_000L;
     public static final Integer MIN_WINDOW_SIZE = 400; // Details view requires 350px
     public static final Integer MIN_THREADS = 2;
 

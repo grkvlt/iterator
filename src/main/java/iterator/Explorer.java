@@ -19,6 +19,7 @@ import static iterator.util.Config.DEBUG_PROPERTY;
 import static iterator.util.Config.DEFAULT_GRID_MAX;
 import static iterator.util.Config.DEFAULT_GRID_MIN;
 import static iterator.util.Config.DEFAULT_GRID_SNAP;
+import static iterator.util.Config.DEFAULT_ITERATIONS;
 import static iterator.util.Config.DEFAULT_MODE;
 import static iterator.util.Config.DEFAULT_PALETTE_FILE;
 import static iterator.util.Config.DEFAULT_PALETTE_SEED;
@@ -26,6 +27,7 @@ import static iterator.util.Config.DEFAULT_PALETTE_SIZE;
 import static iterator.util.Config.DEFAULT_RENDER;
 import static iterator.util.Config.DEFAULT_WINDOW_SIZE;
 import static iterator.util.Config.GRID_PROPERTY;
+import static iterator.util.Config.ITERATIONS_PROPERTY;
 import static iterator.util.Config.MIN_THREADS;
 import static iterator.util.Config.MIN_WINDOW_SIZE;
 import static iterator.util.Config.MODE_PROPERTY;
@@ -794,6 +796,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public EventBus getEventBus() { return bus; }
 
     public int getThreads() { return threads; }
+
+    /** Number of iterations each thread loop. */
+    public long getIterations() { return config.get(ITERATIONS_PROPERTY, DEFAULT_ITERATIONS); }
 
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override

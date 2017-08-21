@@ -389,8 +389,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         return PAGE_EXISTS;
     }
 
-    public void iterate(int k, float scale, Point2D centre) {
+    public void iterate(long k, float scale, Point2D centre) {
         Graphics2D g = image.createGraphics();
+
         try {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -405,8 +406,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             int n = transforms.size();
             int r = isVisible() ? 1 : 2;
             int a = isVisible() ? 8 : (int) Math.min(128d, Math.pow(n,  1.2) * 16d);
-            for (int i = 0; i < k; i++) {
-                if (i % 1000 == 0) count.incrementAndGet();
+            int l = getWidth() * getHeight();
+            for (long i = 0L; i < k; i++) {
+                if (i % 1000L == 0L) {
+                    count.incrementAndGet();
+                }
                 int j = random.nextInt(transforms.size());
                 Transform t = transforms.get(j);
                 if (t.getDeterminant() < random.nextDouble() * weight) continue;
@@ -414,11 +418,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 Point2D old = new Point2D.Double(points[2], points[3]);
                 t.getTransform().transform(points, 0, points, 0, 2);
 
-                if (isVisible() && count.get() < 10) continue; // discard first 10K points
+                // Discard first 10K points
+                if (isVisible() && count.get() < 10) {
+                    continue;
+                }
 
                 int x = (int) ((points[0] - centre.getX()) * scale) + (getWidth() / 2);
                 int y = (int) ((points[1] - centre.getY()) * scale) + (getHeight() / 2);
-                int l = getWidth() * getHeight();
                 if (x >= 0 && y >= 0 && x < getWidth() && y < getWidth()) {
                     int p = x + y * getWidth();
 
@@ -559,7 +565,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         int id = task.incrementAndGet();
         controller.debug("Started task %d", id);;
         do {
-            iterate(10_000, scale, centre);
+            iterate(controller.getIterations(), scale, centre);
         } while (running.get());
         controller.debug("Stopped task %d", id);;
     }
