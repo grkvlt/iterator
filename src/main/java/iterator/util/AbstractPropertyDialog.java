@@ -21,7 +21,6 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -64,11 +63,11 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     protected final GridBagLayout gridbag = new GridBagLayout();
     protected final GridBagConstraints constraints = new GridBagConstraints();
 
-    public AbstractPropertyDialog(final Explorer controller, final EventBus bus, final Window parent) {
-        super(parent, null, ModalityType.APPLICATION_MODAL);
+    public AbstractPropertyDialog(final Explorer controller) {
+        super(controller, null, ModalityType.APPLICATION_MODAL);
 
         this.controller = controller;
-        this.bus = bus;
+        this.bus = controller.getEventBus();
         this.messages = controller.getMessages();
 
         addKeyListener(this);

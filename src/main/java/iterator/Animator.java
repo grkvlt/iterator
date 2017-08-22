@@ -31,7 +31,6 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.swing.SwingUtilities;
 
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;

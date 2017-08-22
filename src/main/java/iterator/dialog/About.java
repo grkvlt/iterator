@@ -28,7 +28,6 @@ import java.awt.image.BufferedImage;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.io.Resources;
 
 import iterator.Explorer;
@@ -46,7 +45,7 @@ public class About extends JPanel implements Dialog, MouseListener {
     private JDialog about;
     private BufferedImage image;
 
-    public About(EventBus bus, Explorer controller) {
+    public About(Explorer controller) {
         super();
 
         this.controller = controller;

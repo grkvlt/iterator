@@ -17,24 +17,22 @@ package iterator.dialog;
 
 import static iterator.util.Messages.DIALOG_PROPERTIES_BUTTON_CANCEL;
 import static iterator.util.Messages.DIALOG_PROPERTIES_BUTTON_UPDATE;
+import static iterator.util.Messages.DIALOG_PROPERTIES_DETERMINANT;
 import static iterator.util.Messages.DIALOG_PROPERTIES_H;
 import static iterator.util.Messages.DIALOG_PROPERTIES_R;
 import static iterator.util.Messages.DIALOG_PROPERTIES_SHX;
 import static iterator.util.Messages.DIALOG_PROPERTIES_SHY;
 import static iterator.util.Messages.DIALOG_PROPERTIES_TITLE;
 import static iterator.util.Messages.DIALOG_PROPERTIES_W;
+import static iterator.util.Messages.DIALOG_PROPERTIES_WEIGHT;
 import static iterator.util.Messages.DIALOG_PROPERTIES_X;
 import static iterator.util.Messages.DIALOG_PROPERTIES_Y;
-import static iterator.util.Messages.DIALOG_PROPERTIES_WEIGHT;
-import static iterator.util.Messages.DIALOG_PROPERTIES_DETERMINANT;
 
-import java.awt.Window;
 import java.text.MessageFormat;
 
 import javax.swing.JFormattedTextField.AbstractFormatter;
 
 import com.google.common.base.Optional;
-import com.google.common.eventbus.EventBus;
 
 import iterator.Explorer;
 import iterator.model.IFS;
@@ -53,8 +51,8 @@ public class Properties extends AbstractPropertyDialog {
     private final Property<Double> x, y, w, h, r, shx, shy, det;
     private final Property<Optional<Double>> weight;
 
-    public Properties(final Transform transform, final IFS ifs, final Explorer controller, final EventBus bus, final Window parent) {
-        super(controller, bus, parent);
+    public Properties(final Transform transform, final IFS ifs, final Explorer controller) {
+        super(controller);
 
         this.transform = transform;
         this.ifs = ifs;

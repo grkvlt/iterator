@@ -92,26 +92,29 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     private Cursor corner;
 
     @SuppressWarnings("serial")
-    public Editor(EventBus bus, Explorer controller) {
+    public Editor(Explorer controller) {
         super();
-        this.bus = bus;
+
         this.controller = controller;
+        this.bus = controller.getEventBus();
         this.messages = controller.getMessages();
 
         transform = new JPopupMenu();
         properties = new AbstractAction(messages.getText(MENU_TRANSFORM_PROPERTIES)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Properties properties = new Properties(getSelected(), Editor.this.ifs, Editor.this.controller, Editor.this.bus, Editor.this.controller);
+                Properties properties = new Properties(getSelected(), ifs, controller);
                 properties.showDialog();
+                properties.dispose();
             }
         };
         transform.add(properties);
         transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_MATRIX)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Matrix matrix = new Matrix(getSelected(), Editor.this.ifs, Editor.this.controller, Editor.this.bus, Editor.this.controller);
+                Matrix matrix = new Matrix(getSelected(), ifs, controller);
                 matrix.showDialog();
+                matrix.dispose();
             }
         });
         transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_DELETE)) {
@@ -119,7 +122,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             public void actionPerformed(ActionEvent e) {
                 ifs.remove(selected);
                 selected = null;
-                Editor.this.bus.post(ifs);
+                bus.post(ifs);
             }
         });
         transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_DUPLICATE)) {
@@ -139,7 +142,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 }
                 ifs.add(copy);
                 selected = copy;
-                Editor.this.bus.post(ifs);
+                bus.post(ifs);
             }
         });
         JMenuItem separator = new JMenuItem("-");
@@ -149,28 +152,28 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             @Override
             public void actionPerformed(ActionEvent e) {
                 selected.setZIndex(selected.getZIndex() + 1);
-                Editor.this.bus.post(ifs);
+                bus.post(ifs);
             }
         });
         transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_LOWER)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selected.setZIndex(selected.getZIndex() - 1);
-                Editor.this.bus.post(ifs);
+                bus.post(ifs);
             }
         });
         transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_FRONT)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selected.setZIndex(Ordering.from(IFS.Z_ORDER).max(ifs).getZIndex() + 1);
-                Editor.this.bus.post(ifs);
+                bus.post(ifs);
             }
         });
         transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_BACK)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selected.setZIndex(Ordering.from(IFS.Z_ORDER).min(ifs).getZIndex() - 1);
-                Editor.this.bus.post(ifs);
+                bus.post(ifs);
             }
         });
         add(transform);
@@ -189,7 +192,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 t.r = 0d;
                 ifs.add(t);
                 selected = t;
-                Editor.this.bus.post(ifs);
+                bus.post(ifs);
             }
         });
         add(editor);

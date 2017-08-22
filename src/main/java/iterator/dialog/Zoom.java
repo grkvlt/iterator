@@ -22,12 +22,9 @@ import static iterator.util.Messages.DIALOG_ZOOM_TITLE;
 import static iterator.util.Messages.DIALOG_ZOOM_X;
 import static iterator.util.Messages.DIALOG_ZOOM_Y;
 
-import java.awt.Window;
 import java.awt.geom.Point2D;
 
 import javax.swing.JFormattedTextField.AbstractFormatter;
-
-import com.google.common.eventbus.EventBus;
 
 import iterator.Explorer;
 import iterator.util.AbstractPropertyDialog;
@@ -44,8 +41,8 @@ public class Zoom extends AbstractPropertyDialog {
 
     private boolean running = false;
 
-    public Zoom(final Explorer controller, final EventBus bus, final Window parent) {
-        super(controller, bus, parent);
+    public Zoom(final Explorer controller) {
+        super(controller);
 
         setLabel(messages.getText(DIALOG_ZOOM_TITLE));
 

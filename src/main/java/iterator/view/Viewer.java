@@ -92,6 +92,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private static final long serialVersionUID = -3294847597249688714L;
 
     private final Explorer controller;
+    private final EventBus bus;
     private final Messages messages;
 
     private IFS ifs;
@@ -114,17 +115,18 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private JCheckBoxMenuItem showGrid, showOverlay, showInfo;
     private JMenuItem pause, resume;
 
-    public Viewer(EventBus bus, Explorer controller) {
+    public Viewer(Explorer controller) {
         super();
 
         this.controller = controller;
+        this.bus = controller.getEventBus();
         this.messages = controller.getMessages();
 
         timer = new Timer(200, this);
         timer.setCoalesce(true);
         timer.setInitialDelay(0);
 
-        properties = new Zoom(controller, bus, controller);
+        properties = new Zoom(controller);
         viewer = new JPopupMenu();
         viewer.add(new AbstractAction(messages.getText(MENU_VIEWER_ZOOM)) {
             @Override

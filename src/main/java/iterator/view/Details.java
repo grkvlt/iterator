@@ -52,6 +52,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
     private static final long serialVersionUID = -1279626785145420083L;
 
     private final Explorer controller;
+    private final EventBus bus;
 
     private IFS ifs;
 
@@ -72,10 +73,11 @@ public class Details extends JTextPane implements Printable, Subscriber {
         ".bracketr { width: 5px; padding: 0; margin-right: 2px; border-right: 2px solid black; border-top: 2px solid black; border-bottom: 2px solid black; }"
     );
 
-    public Details(EventBus bus, Explorer controller) {
+    public Details(Explorer controller) {
         super();
 
         this.controller = controller;
+        this.bus = controller.getEventBus();
 
         setEditable(false);
         setContentType(HTML_MIME_TYPE);

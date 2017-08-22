@@ -328,8 +328,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
 
         // Load dialogs
-        prefs = new Preferences(this, bus, this);
-        about = new About(bus, this);
+        prefs = new Preferences(this);
+        about = new About(this);
 
         // Setup platform specifics
         if (platform == Platform.MAC_OS_X) {
@@ -610,9 +610,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             }
         });
 
-        editor = new Editor(bus, this);
-        viewer = new Viewer(bus, this);
-        details = new Details(bus, this);
+        editor = new Editor(this);
+        viewer = new Viewer(this);
+        details = new Details(this);
         scroll = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setViewportView(details);
 

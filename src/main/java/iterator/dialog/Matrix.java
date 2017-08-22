@@ -24,7 +24,6 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -65,15 +64,17 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
     private final Messages messages;
     private final Transform transform;
     private final IFS ifs;
+    private final EventBus bus;
 
     private Action success, failure;
 
-    public Matrix(final Transform transform, final IFS ifs, final Explorer controller, final EventBus bus, final Window parent) {
-        super(parent, null, ModalityType.APPLICATION_MODAL);
+    public Matrix(final Transform transform, final IFS ifs, final Explorer controller) {
+        super(controller, null, ModalityType.APPLICATION_MODAL);
 
         this.transform = transform;
         this.ifs = ifs;
         this.messages = controller.getMessages();
+        this.bus = controller.getEventBus();
 
         addKeyListener(this);
         setUndecorated(true);
@@ -159,16 +160,20 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         update.addKeyListener(this);
         buttons.add(update);
 
-        failure = new AbstractAction(messages.getText(DIALOG_MATRIX_BUTTON_CANCEL)) {
+        failure = cancelAction(messages.getText(DIALOG_MATRIX_BUTTON_CANCEL));
+        JButton cancel = new JButton(failure);
+        cancel.setFont(new Font("Calibri", Font.PLAIN, 14));
+        cancel.addKeyListener(this);
+        buttons.add(cancel);
+    }
+
+    private Action cancelAction(String text) {
+        return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
             }
         };
-        JButton cancel = new JButton(failure);
-        cancel.setFont(new Font("Calibri", Font.PLAIN, 14));
-        cancel.addKeyListener(this);
-        buttons.add(cancel);
     }
 
     private Property<Double> addProperty(JPanel panel) {

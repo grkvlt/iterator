@@ -26,10 +26,6 @@ import static iterator.util.Messages.DIALOG_PREFERENCES_RENDER;
 import static iterator.util.Messages.DIALOG_PREFERENCES_THREADS;
 import static iterator.util.Messages.DIALOG_PREFERENCES_TITLE;
 
-import java.awt.Window;
-
-import com.google.common.eventbus.EventBus;
-
 import iterator.Explorer;
 import iterator.util.AbstractPropertyDialog;
 import iterator.util.Config;
@@ -52,8 +48,8 @@ public class Preferences extends AbstractPropertyDialog {
 
     private boolean running = false;
 
-    public Preferences(final Explorer controller, final EventBus bus, final Window parent) {
-        super(controller, bus, parent);
+    public Preferences(final Explorer controller) {
+        super(controller);
 
         setLabel(messages.getText(DIALOG_PREFERENCES_TITLE));
 
