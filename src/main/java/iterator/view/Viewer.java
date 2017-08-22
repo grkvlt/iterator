@@ -79,6 +79,7 @@ import iterator.Explorer;
 import iterator.dialog.Zoom;
 import iterator.model.IFS;
 import iterator.model.Transform;
+import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
@@ -97,7 +98,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
     private IFS ifs;
     private BufferedImage image;
-    private int top[], density[], rgb[];
+    private int top[], density[];
+    private double rgb[];
     private int max;
     private Timer timer;
     private double points[] = new double[4];
@@ -354,7 +356,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
         top = new int[getWidth() * getHeight()];
         density = new int[getWidth() * getHeight()];
-        rgb = new int[getWidth() * getHeight()];
+        rgb = new double[getWidth() * getHeight()];
         max = 1;
 
         count.set(0l);
@@ -476,7 +478,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                             }
                         }
                         if (controller.getRender().isDensity()) {
-                            rgb[p] = color.getRGB();
+                            if (controller.isIFSColour()) {
+                                rgb[p] = (double) color.getRGB() / (double) (2 << 24);
+                            } else {
+                                rgb[p] = (rgb[p] + (double) color.getRGB() / (double) (2 << 24)) / 2d;
+                            }
                         }
                     }
 
@@ -530,11 +536,16 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     int p = x + y * getWidth();
                     if (density[p] > 0) {
                         float ratio = log ? (float) (Math.log(density[p]) / Math.log(max)) : ((float) density[p] / (float) max);
+                        float alpha = (float) (Math.log(density[p]) / density[p]);
                         float gray = 1f - Math.min(1f, ratio);
                         if (controller.isColour()) {
-                            Color color = new Color(rgb[p]);
-                            float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
-                            g.setPaint(Utils.alpha(new Color(Color.HSBtoRGB(hsb[0], hsb[1], gray)), (int) ((1f - gray) * 255f)));
+                            Color color = new Color((int) (rgb[p] * (2 << 24)));
+                            if (controller.getRender() == Render.LOG_DENSITY_FLAME) {
+                                g.setPaint(new Color((int) (alpha * color.getRed()), (int) (alpha * color.getGreen()), (int) (alpha * color.getBlue()), (int) ((1f - gray) * 255f)));
+                            } else {
+                                float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+                                g.setPaint(Utils.alpha(new Color(Color.HSBtoRGB(hsb[0], hsb[1], gray)), (int) ((1f - gray) * 255f)));
+                            }
                         } else {
                             g.setPaint(new Color(gray, gray, gray, 1f - gray));
                         }

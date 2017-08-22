@@ -105,7 +105,8 @@ public class Config extends ForwardingSortedMap<String, String> {
         IFS(false),
         DENSITY(true),
         LOG_DENSITY(true),
-        LOG_DENSITY_BLUR(true);
+        LOG_DENSITY_BLUR(true),
+        LOG_DENSITY_FLAME(true);
 
         private final boolean density;
 
