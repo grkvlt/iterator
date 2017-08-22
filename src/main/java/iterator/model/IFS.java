@@ -66,6 +66,9 @@ public class IFS extends ForwardingList<Transform> {
     @XmlElementWrapper(name = "Transforms")
     @XmlElement(name = "Transform")
     private List<Transform> transforms = Lists.newArrayList();
+    @XmlElementWrapper(name = "Reflections")
+    @XmlElement(name = "Reflection")
+    private List<Reflection> reflections = Lists.newArrayList();
 
     public IFS() { }
 
@@ -101,9 +104,21 @@ public class IFS extends ForwardingList<Transform> {
         this.transforms.addAll(transforms);
     }
 
+    public void setReflections(Collection<Reflection> reflections) {
+        this.reflections.clear();
+        this.reflections.addAll(reflections);
+    }
+
+    public Collection<Reflection> getReflections() {
+        return reflections;
+    }
+
     public void setSize(Dimension size) {
         for (Transform t : transforms) {
             t.setSize(size);
+        }
+        for (Reflection r : reflections) {
+            r.setSize(size);
         }
     }
 
@@ -114,17 +129,26 @@ public class IFS extends ForwardingList<Transform> {
 
     @Override
     public String toString() {
-        StringBuilder data = new StringBuilder("[");
-        if (!isEmpty()) {
-            data.append("\n\t");
-            Joiner.on(",\n\t").appendTo(data, transforms);
-            data.append("\n");
+        StringBuilder td = new StringBuilder("[");
+        if (!transforms.isEmpty()) {
+            td.append("\n\t");
+            Joiner.on(",\n\t").appendTo(td, transforms);
+            td.append("\n");
         }
-        data.append("]");
+        td.append("]");
+
+        StringBuilder rd = new StringBuilder("[");
+        if (!reflections.isEmpty()) {
+            rd.append("\n\t");
+            Joiner.on(",\n\t").appendTo(rd, reflections);
+            rd.append("\n");
+        }
+        rd.append("]");
 
         return MoreObjects.toStringHelper(this)
                 .add("name", name)
-                .add("transforms", data.toString())
+                .add("transforms", td.toString())
+                .add("reflections", rd.toString())
                 .omitNullValues()
                 .toString();
     }

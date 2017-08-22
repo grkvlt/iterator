@@ -15,7 +15,8 @@
  */
 package iterator.view;
 
-import static iterator.util.Messages.MENU_EDITOR_NEW;
+import static iterator.util.Messages.MENU_EDITOR_NEW_REFLECTION;
+import static iterator.util.Messages.MENU_EDITOR_NEW_TRANSFORM;
 import static iterator.util.Messages.MENU_TRANSFORM_BACK;
 import static iterator.util.Messages.MENU_TRANSFORM_DELETE;
 import static iterator.util.Messages.MENU_TRANSFORM_DUPLICATE;
@@ -66,6 +67,7 @@ import iterator.Explorer;
 import iterator.dialog.Matrix;
 import iterator.dialog.Properties;
 import iterator.model.IFS;
+import iterator.model.Reflection;
 import iterator.model.Transform;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
@@ -86,6 +88,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     private Action properties;
 
     private IFS ifs;
+    private Reflection reflection;
     private Transform selected;
     private Transform resize, move, rotate;
     private Point start, end;
@@ -179,12 +182,12 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         add(transform);
 
         editor = new JPopupMenu();
-        editor.add(new AbstractAction(messages.getText(MENU_EDITOR_NEW)) {
+        editor.add(new AbstractAction(messages.getText(MENU_EDITOR_NEW_TRANSFORM)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Transform t = Transform.create(getSize());
-                double side = getSize().getWidth() / 4;
-                double origin = (getSize().getWidth() - side) / 2;
+                double side = getSize().getWidth() / 4d;
+                double origin = (getSize().getWidth() - side) / 2d;
                 t.x = origin;
                 t.y = origin;
                 t.w = side;
@@ -192,6 +195,19 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 t.r = 0d;
                 ifs.add(t);
                 selected = t;
+                bus.post(ifs);
+            }
+        });
+        editor.add(new AbstractAction(messages.getText(MENU_EDITOR_NEW_REFLECTION)) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Reflection r = Reflection.create(getSize());
+                double origin = getSize().getWidth() / 2d;
+                r.x = origin;
+                r.y = origin;
+                r.r = 0d;
+                ifs.getReflections().add(r);
+                reflection = r;
                 bus.post(ifs);
             }
         });
@@ -305,6 +321,15 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 }
                 if (selected != null) {
                     paintTransform(selected, true, g);
+                }
+
+                for (Reflection r : ifs.getReflections()) {
+                    if (!r.equals(reflection)) {
+                        paintReflection(r, false, g);
+                    }
+                }
+                if (reflection != null) {
+                    paintReflection(reflection, true, g);
                 }
 
                 if (selected == null && start != null && end != null) {
@@ -426,6 +451,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         } finally {
             g.dispose();
         }
+    }
+
+    public void paintReflection(Reflection r, boolean highlight, Graphics2D graphics) {
+        
     }
 
     public void paintGrid(Graphics2D graphics) {
