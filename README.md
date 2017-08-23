@@ -12,12 +12,16 @@ Iterated Function System Explorer.
   - Edit transform properties
   - Set affine matrix
   - Update configuration
+- Live reflection editor
 - IFS renderer
   - Colour and greyscale
   - IFS, measure set and fractal top modes
+  - Density estimation and Fractal Flame
   - Printing and export to PNG
-- IFS matrix view
-  - Save and load as XML
+- IFS details view
+  - Transform matrix and reflection co-ordinates
+  - HTML rendering
+- Save and load as XML
 - Animated changes to IFS
 
 ## Program Requirements
@@ -34,6 +38,9 @@ Iterated Function System Explorer.
   - Support native windowing system features
 - Better editing UI
   - Fix bugs in resize operation
+- More rendering modes
+  - Fractal flame
+  - Other function types
 - Improved co-ordinate system
   - Allow non-square aspect ratio
   - Use unit vectors as basis
@@ -41,7 +48,6 @@ Iterated Function System Explorer.
 - Extend platform support
   - Embedded applet
   - Android application (?)
-- Refactor UI using JavaFX API
 - Animator enhancements
   - Document usage
   - JSON configuration file parser

@@ -27,7 +27,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.text.MessageFormat;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -83,8 +82,7 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         setFont(new Font("Calibri", Font.PLAIN, 14));
         getContentPane().setBackground(Color.WHITE);
 
-        String label = MessageFormat.format(messages.getText(DIALOG_MATRIX_TITLE), transform.getId());
-        JLabel title = new JLabel(label, JLabel.CENTER);
+        JLabel title = new JLabel(messages.getText(DIALOG_MATRIX_TITLE), JLabel.CENTER);
         title.setFont(new Font("Calibri", Font.BOLD, 16));
         add(title, BorderLayout.NORTH);
 
@@ -115,12 +113,12 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         matrix.setBackground(Color.WHITE);
         panel.add(matrix, BorderLayout.CENTER);
 
-        c0 = addProperty(matrix);
-        c1 = addProperty(matrix);
-        c2 = addProperty(matrix);
-        c3 = addProperty(matrix);
-        c4 = addProperty(matrix);
-        c5 = addProperty(matrix);
+        c0 = addProperty(matrix, 4);
+        c1 = addProperty(matrix, 4);
+        c2 = addProperty(matrix, 4);
+        c3 = addProperty(matrix, 4);
+        c4 = addProperty(matrix, 1);
+        c5 = addProperty(matrix, 1);
 
         JTextPane right = new JTextPane();
         right.setBackground(Color.WHITE);
@@ -176,8 +174,8 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         };
     }
 
-    private Property<Double> addProperty(JPanel panel) {
-        final JFormattedTextField field = new JFormattedTextField(new Utils.DoubleFormatter());
+    private Property<Double> addProperty(JPanel panel, int digits) {
+        final JFormattedTextField field = new JFormattedTextField(new Utils.DoubleFormatter(digits));
         field.setHorizontalAlignment(JTextField.RIGHT);
         field.setBorder(BorderFactory.createLoweredSoftBevelBorder());
         field.setFont(new Font("Cambria", Font.ITALIC, 14));

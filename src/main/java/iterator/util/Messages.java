@@ -55,7 +55,11 @@ public class Messages {
     public static final String MENU_TRANSFORM_FRONT = "explorer.menu.transform.front";
     public static final String MENU_TRANSFORM_BACK = "explorer.menu.transform.back";
 
-    public static final String MENU_EDITOR_NEW = "explorer.menu.editor.new";
+    public static final String MENU_REFLECTION_PROPERTIES = "explorer.menu.reflection.properties";
+    public static final String MENU_REFLECTION_DELETE = "explorer.menu.reflection.delete";
+
+    public static final String MENU_EDITOR_NEW_TRANSFORM = "explorer.menu.editor.new.transform";
+    public static final String MENU_EDITOR_NEW_REFLECTION = "explorer.menu.editor.new.reflection";
 
     public static final String MENU_VIEWER_ZOOM = "explorer.menu.viewer.zoom";
     public static final String MENU_VIEWER_PAUSE = "explorer.menu.viewer.pause";

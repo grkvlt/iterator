@@ -32,7 +32,7 @@ import com.google.common.base.Objects;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Transform")
-public class Transform {
+public class Transform implements Function {
     @XmlAttribute
     private int id;
     @XmlAttribute
@@ -113,10 +113,12 @@ public class Transform {
         this.weight = original.weight;
     }
 
+    @Override
     public int getId() {
         return this.id;
     }
 
+    @Override
     public void setId(int id) {
         this.id = id;
     }
@@ -129,6 +131,7 @@ public class Transform {
         this.zIndex = zIndex;
     }
 
+    @Override
     public Dimension getSize() {
         return new Dimension((int) sw, (int) sh);
     }
@@ -177,6 +180,7 @@ public class Transform {
         }
     }
 
+    @Override
     public AffineTransform getTransform() {
         AffineTransform transform = new AffineTransform();
         if (isMatrix()) {

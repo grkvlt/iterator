@@ -30,7 +30,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ForwardingList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
@@ -39,7 +41,7 @@ import com.google.common.collect.Ordering;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "IFS")
-public class IFS extends ForwardingList<Transform> {
+public class IFS extends ForwardingList<Function> {
     public static final String UNTITLED = "Untitled";
 
     public static final Comparator<Transform> Z_ORDER = new Comparator<Transform>() {
@@ -52,9 +54,9 @@ public class IFS extends ForwardingList<Transform> {
         }
     };
 
-    public static final Comparator<Transform> IDENTITY = new Comparator<Transform>() {
+    public static final Comparator<Function> IDENTITY = new Comparator<Function>() {
         @Override
-        public int compare(Transform left, Transform right) {
+        public int compare(Function left, Function right) {
             return ComparisonChain.start()
                     .compare(left.getId(), right.getId())
                     .result();
@@ -66,26 +68,35 @@ public class IFS extends ForwardingList<Transform> {
     @XmlElementWrapper(name = "Transforms")
     @XmlElement(name = "Transform")
     private List<Transform> transforms = Lists.newArrayList();
+    @XmlElementWrapper(name = "Reflections")
+    @XmlElement(name = "Reflection")
+    private List<Reflection> reflections = Lists.newArrayList();
 
     public IFS() { }
 
-    @Override
     public boolean contains(Object object) {
         if (object == null) {
             return false;
         } else {
-            return super.contains(object);
+            return transforms.contains(object) || reflections.contains(object);
         }
     }
 
-    @Override
     public boolean add(Transform element) {
         if (element.getId() < 0) {
-            element.setId(isEmpty() ? 1 : Ordering.from(IDENTITY).max(this).getId() + 1);
-            element.setZIndex(isEmpty() ? 0 : Ordering.from(Z_ORDER).max(this).getZIndex() + 1);
+            element.setId(transforms.isEmpty() ? 1 : Ordering.from(IDENTITY).max(transforms).getId() + 1);
+            element.setZIndex(transforms.isEmpty() ? 0 : Ordering.from(Z_ORDER).max(transforms).getZIndex() + 1);
         }
 
-        return super.add(element);
+        return transforms.add(element);
+    }
+
+    public boolean add(Reflection element) {
+        if (element.getId() < 0) {
+            element.setId(reflections.isEmpty() ? 1 : Ordering.from(IDENTITY).max(reflections).getId() + 1);
+        }
+
+        return reflections.add(element);
     }
 
     public String getName() {
@@ -101,30 +112,55 @@ public class IFS extends ForwardingList<Transform> {
         this.transforms.addAll(transforms);
     }
 
+    public void setReflections(Collection<Reflection> reflections) {
+        this.reflections.clear();
+        this.reflections.addAll(reflections);
+    }
+
+    public List<Transform> getTransforms() {
+        return transforms;
+    }
+
+    public List<Reflection> getReflections() {
+        return reflections;
+    }
+
     public void setSize(Dimension size) {
         for (Transform t : transforms) {
             t.setSize(size);
         }
+        for (Reflection r : reflections) {
+            r.setSize(size);
+        }
     }
 
     @Override
-    protected List<Transform> delegate() {
-        return transforms;
+    protected List<Function> delegate() {
+        return FluentIterable.from(Iterables.concat(transforms, reflections)).toList();
     }
 
     @Override
     public String toString() {
-        StringBuilder data = new StringBuilder("[");
-        if (!isEmpty()) {
-            data.append("\n\t");
-            Joiner.on(",\n\t").appendTo(data, transforms);
-            data.append("\n");
+        StringBuilder td = new StringBuilder("[");
+        if (!transforms.isEmpty()) {
+            td.append("\n\t");
+            Joiner.on(",\n\t").appendTo(td, transforms);
+            td.append("\n");
         }
-        data.append("]");
+        td.append("]");
+
+        StringBuilder rd = new StringBuilder("[");
+        if (!reflections.isEmpty()) {
+            rd.append("\n\t");
+            Joiner.on(",\n\t").appendTo(rd, reflections);
+            rd.append("\n");
+        }
+        rd.append("]");
 
         return MoreObjects.toStringHelper(this)
                 .add("name", name)
-                .add("transforms", data.toString())
+                .add("transforms", td.toString())
+                .add("reflections", rd.toString())
                 .omitNullValues()
                 .toString();
     }

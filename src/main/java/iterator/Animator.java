@@ -271,7 +271,7 @@ public class Animator implements Subscriber {
 
                 // Set of changes for a single frame
                 for (Change change : segment.getKey()) {
-                    Transform transform = ifs.get(change.transform);
+                    Transform transform = ifs.getTransforms().get(change.transform);
                     if (transform.isMatrix()) {
                         throw new UnsupportedOperationException("Cannot animate matrix transforms currently");
                     }
