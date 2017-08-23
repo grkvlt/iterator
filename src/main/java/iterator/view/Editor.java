@@ -501,7 +501,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
 
             // Draw the label
             g.setFont(new Font("Calibri", Font.BOLD, 25));
-            String id = String.format("R%02d %s", r.getId(), highlight ? String.format("(%+d)", (int) Math.toDegrees(r.r)) : "");
+            String id = String.format("R%s %s",
+                    (r.getId() == -1 ? "--" : String.format("%02d", r.getId())),
+                    highlight ? String.format("(%+d)", (int) Math.toDegrees(r.r)) : "");
             g.drawString(id, (int) (r.x + 10), (int) (r.y + 10));
 
             // Add the select handle
@@ -614,9 +616,15 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             if (clickReflection != null) {
                 selected = null;
                 clickTransform = null;
-                ifs.getReflections().remove(clickReflection);
-                reflection = clickReflection;
+                if (e.isAltDown()) {
+                    Reflection copy = Reflection.copy(clickReflection);
+                    reflection = copy;
+                } else {
+                    ifs.getReflections().remove(clickReflection);
+                    reflection = clickReflection;
+                }
                 start = snap(e.getPoint());
+                setCursor(new Cursor(Cursor.MOVE_CURSOR));
             } else {
                 resize = null;
                 for (Transform t : ifs.getTransforms()) {
@@ -721,7 +729,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     if (e.isControlDown()) {
                         reflection.r = Math.atan2(dx, dy);
                     }
-                    ifs.getReflections().add(reflection);
+                    ifs.add(reflection);
                     reflection = null;
                 } else {
                     selected = Transform.create(getSize());
@@ -736,7 +744,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 ifs.add(selected);
                 bus.post(ifs);
             } else if (reflection != null  && start != null && end != null) {
-                ifs.getReflections().add(reflection);
+                ifs.add(reflection);
                 bus.post(ifs);
             }
         }
