@@ -159,8 +159,8 @@ public class Details extends JTextPane implements Printable, Subscriber {
                                 "background: #%02x%02x%02x; padding: 0; margin: 0;\">&nbsp;</div>" +
                             "</td>" +
                             "<td class=\"matrixr2\" align=\"right\">%.3f</td>" +
-                            "<td class=\"matrixr2\" align=\"right\">%.3f</td>" +
-                            "<td class=\"matrixr2\" align=\"right\">%.3f</td>" +
+                            "<td class=\"matrixr2\" align=\"right\">%.0f</td>" +
+                            "<td class=\"matrixr2\" align=\"right\">%.0f</td>" +
                         "</tr>" +
                         "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
                         t.getId(),
@@ -199,7 +199,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                                     "<div style=\"width: 15px; height: 10px; border: 1px solid %s; " +
                                     "background: #%02x%02x%02x; padding: 0; margin: 0;\">&nbsp;</div>" +
                                 "</td>" +
-                                "<td class=\"reflect\" align=\"right\" colspan=\"3\">(%.1f, %.1f)</td>" +
+                                "<td class=\"reflect\" align=\"right\" colspan=\"3\">(%.0f, %.0f)</td>" +
                                 "<td class=\"reflect\" align=\"right\" colspan=\"2\">%.0f °</td>" +
                             "</tr>" +
                             "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",

@@ -46,10 +46,10 @@ public class Zoom extends AbstractPropertyDialog {
 
         setLabel(messages.getText(DIALOG_ZOOM_TITLE));
 
-        AbstractFormatter doubleFormatter = new Utils.DoubleFormatter();
+        AbstractFormatter doubleFormatter = new Utils.DoubleFormatter(1);
         x = addProperty(messages.getText(DIALOG_ZOOM_X), 0d, doubleFormatter);
         y = addProperty(messages.getText(DIALOG_ZOOM_Y), 0d, doubleFormatter);
-        AbstractFormatter floatFormatter = new Utils.FloatFormatter();
+        AbstractFormatter floatFormatter = new Utils.FloatFormatter(2);
         scale = addProperty(messages.getText(DIALOG_ZOOM_SCALE), 1f, floatFormatter);
 
         setSuccess(messages.getText(DIALOG_ZOOM_BUTTON_UPDATE));

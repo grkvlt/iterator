@@ -121,6 +121,16 @@ public class Utils {
      * Formatter for {@link Double} values in {@link JFormattedTextField}s.
      */
     public static class DoubleFormatter extends AbstractFormatter {
+        private final int digits;
+
+        public DoubleFormatter() {
+            this(3);
+        }
+
+        public DoubleFormatter(int digits) {
+            this.digits = digits;
+        }
+
         @Override
         public Object stringToValue(String text) throws ParseException {
             try {
@@ -132,7 +142,7 @@ public class Utils {
 
         @Override
         public String valueToString(Object value) throws ParseException {
-            return String.format("%.4f", value);
+            return String.format("%." + digits + "f", value);
         }
     }
 
@@ -140,6 +150,16 @@ public class Utils {
      * Formatter for {@link Optional<Double>} values in {@link JFormattedTextField}s.
      */
     public static class OptionalDoubleFormatter extends AbstractFormatter {
+        private final int digits;
+
+        public OptionalDoubleFormatter() {
+            this(3);
+        }
+
+        public OptionalDoubleFormatter(int digits) {
+            this.digits = digits;
+        }
+
         @Override
         public Object stringToValue(String text) throws ParseException {
             if (Strings.isNullOrEmpty(text)) {
@@ -156,7 +176,7 @@ public class Utils {
         public String valueToString(Object value) throws ParseException {
             Optional<Double> optional = (Optional<Double>) value;
             if (value instanceof Optional && optional.isPresent()) {
-                return String.format("%.4f", optional.get());
+                return String.format("%." + digits + "f", optional.get());
             } else {
                 return "";
             }
@@ -167,6 +187,16 @@ public class Utils {
      * Formatter for {@link Float} values in {@link JFormattedTextField}s.
      */
     public static class FloatFormatter extends AbstractFormatter {
+        private final int digits;
+
+        public FloatFormatter() {
+            this(3);
+        }
+
+        public FloatFormatter(int digits) {
+            this.digits = digits;
+        }
+
         @Override
         public Object stringToValue(String text) throws ParseException {
             try {
@@ -178,7 +208,7 @@ public class Utils {
 
         @Override
         public String valueToString(Object value) throws ParseException {
-            return String.format("%.4f", value);
+            return String.format("%." + digits + "f", value);
         }
     }
 
