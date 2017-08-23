@@ -35,7 +35,9 @@ import javax.swing.JFormattedTextField.AbstractFormatter;
 import com.google.common.base.Optional;
 
 import iterator.Explorer;
+import iterator.model.Function;
 import iterator.model.IFS;
+import iterator.model.Reflection;
 import iterator.model.Transform;
 import iterator.util.AbstractPropertyDialog;
 import iterator.util.Property;
@@ -47,30 +49,45 @@ import iterator.util.Utils;
 public class Properties extends AbstractPropertyDialog {
 
     private final Transform transform;
+    private final Reflection reflection;
     private final IFS ifs;
-    private final Property<Double> x, y, w, h, r, shx, shy, det;
-    private final Property<Optional<Double>> weight;
 
-    public Properties(final Transform transform, final IFS ifs, final Explorer controller) {
+    private Property<Double> x, y, w, h, r, shx, shy, det;
+    private Property<Optional<Double>> weight;
+
+    public Properties(final Function function, final IFS ifs, final Explorer controller) {
         super(controller);
 
-        this.transform = transform;
+        if (function instanceof Transform) {
+            this.transform = (Transform) function;
+            this.reflection = null;
+        } else {
+            this.transform =  null;
+            this.reflection = (Reflection) function;
+        }
         this.ifs = ifs;
 
-        String label = MessageFormat.format(messages.getText(DIALOG_PROPERTIES_TITLE), transform.getId());
+        String label = MessageFormat.format(messages.getText(DIALOG_PROPERTIES_TITLE), function.getClass().getSimpleName());
         setLabel(label);
 
         AbstractFormatter doubleFormatter = new Utils.DoubleFormatter();
-        x = addProperty(messages.getText(DIALOG_PROPERTIES_X), transform.x, doubleFormatter);
-        y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), transform.y, doubleFormatter);
-        w = addProperty(messages.getText(DIALOG_PROPERTIES_W), transform.w, doubleFormatter);
-        h = addProperty(messages.getText(DIALOG_PROPERTIES_H), transform.h, doubleFormatter);
-        r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Math.toDegrees(transform.r), doubleFormatter);
-        shx = addProperty(messages.getText(DIALOG_PROPERTIES_SHX), transform.shx, doubleFormatter);
-        shy = addProperty(messages.getText(DIALOG_PROPERTIES_SHY), transform.shy, doubleFormatter);
-        det = addReadOnlyProperty(messages.getText(DIALOG_PROPERTIES_DETERMINANT), transform.getDeterminant(), doubleFormatter);
         AbstractFormatter optionalDoubleFormatter = new Utils.OptionalDoubleFormatter();
-        weight = addProperty(messages.getText(DIALOG_PROPERTIES_WEIGHT), Optional.fromNullable(transform.weight), optionalDoubleFormatter);
+        if (transform != null) {
+            x = addProperty(messages.getText(DIALOG_PROPERTIES_X), transform.x, doubleFormatter);
+            y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), transform.y, doubleFormatter);
+            r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Math.toDegrees(transform.r), doubleFormatter);
+            w = addProperty(messages.getText(DIALOG_PROPERTIES_W), transform.w, doubleFormatter);
+            h = addProperty(messages.getText(DIALOG_PROPERTIES_H), transform.h, doubleFormatter);
+            shx = addProperty(messages.getText(DIALOG_PROPERTIES_SHX), transform.shx, doubleFormatter);
+            shy = addProperty(messages.getText(DIALOG_PROPERTIES_SHY), transform.shy, doubleFormatter);
+            det = addReadOnlyProperty(messages.getText(DIALOG_PROPERTIES_DETERMINANT), transform.getDeterminant(), doubleFormatter);
+            weight = addProperty(messages.getText(DIALOG_PROPERTIES_WEIGHT), Optional.fromNullable(transform.weight), optionalDoubleFormatter);
+        }
+        if (reflection != null) {
+            x = addProperty(messages.getText(DIALOG_PROPERTIES_X), reflection.x, doubleFormatter);
+            y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), reflection.y, doubleFormatter);
+            r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Math.toDegrees(reflection.r), doubleFormatter);
+        }
 
         setSuccess(messages.getText(DIALOG_PROPERTIES_BUTTON_UPDATE));
         setCancel(messages.getText(DIALOG_PROPERTIES_BUTTON_CANCEL));
@@ -79,29 +96,44 @@ public class Properties extends AbstractPropertyDialog {
     /** @see iterator.util.Dialog#showDialog() */
     @Override
     public void showDialog() {
-        x.set(transform.x);
-        y.set(transform.y);
-        w.set(transform.w);
-        h.set(transform.h);
-        r.set(Math.toDegrees(transform.r));
-        shx.set(transform.shx);
-        shy.set(transform.shy);
-        det.set(transform.getDeterminant());
-        weight.set(Optional.fromNullable(transform.weight));
+        if (transform != null) {
+            x.set(transform.x);
+            y.set(transform.y);
+            r.set(Math.toDegrees(transform.r));
+            w.set(transform.w);
+            h.set(transform.h);
+            shx.set(transform.shx);
+            shy.set(transform.shy);
+            det.set(transform.getDeterminant());
+            weight.set(Optional.fromNullable(transform.weight));
+        }
+        if (reflection != null) {
+            x.set(reflection.x);
+            y.set(reflection.y);
+            r.set(Math.toDegrees(reflection.r));
+        }
 
         super.showDialog();
     }
 
     @Override
     public void onSuccess() {
-        transform.x = x.get();
-        transform.y = y.get();
-        transform.w = w.get();
-        transform.h = h.get();
-        transform.r = Math.toRadians(r.get());
-        transform.shx = shx.get();
-        transform.shy = shy.get();
-        transform.weight = weight.get().orNull();
+        if (transform != null) {
+            transform.x = x.get();
+            transform.y = y.get();
+            transform.r = Math.toRadians(r.get());
+            transform.w = w.get();
+            transform.h = h.get();
+            transform.shx = shx.get();
+            transform.shy = shy.get();
+            transform.weight = weight.get().orNull();
+        }
+        if (reflection != null) {
+            reflection.x = x.get();
+            reflection.y = y.get();
+            reflection.r = Math.toRadians(r.get());
+        }
+
         bus.post(ifs);
     }
 

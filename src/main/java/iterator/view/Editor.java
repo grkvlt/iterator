@@ -69,7 +69,6 @@ import com.google.common.eventbus.Subscribe;
 import iterator.Explorer;
 import iterator.dialog.Matrix;
 import iterator.dialog.Properties;
-import iterator.model.Function;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
@@ -110,7 +109,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         properties = new AbstractAction(messages.getText(MENU_TRANSFORM_PROPERTIES)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Properties properties = new Properties(getSelected(), ifs, controller);
+                Properties properties = new Properties(selected, ifs, controller);
                 properties.showDialog();
                 properties.dispose();
             }
@@ -119,7 +118,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_MATRIX)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Matrix matrix = new Matrix(getSelected(), ifs, controller);
+                Matrix matrix = new Matrix(selected, ifs, controller);
                 matrix.showDialog();
                 matrix.dispose();
             }
@@ -189,7 +188,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         reflectionMenu.add(new AbstractAction(messages.getText(MENU_REFLECTION_PROPERTIES)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Show reflection properties dialog
+                Properties properties = new Properties(reflection, ifs, controller);
+                properties.showDialog();
+                properties.dispose();
             }
         });
         reflectionMenu.add(new AbstractAction(messages.getText(MENU_REFLECTION_DELETE)) {

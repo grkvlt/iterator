@@ -27,7 +27,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.text.MessageFormat;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -83,8 +82,7 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         setFont(new Font("Calibri", Font.PLAIN, 14));
         getContentPane().setBackground(Color.WHITE);
 
-        String label = MessageFormat.format(messages.getText(DIALOG_MATRIX_TITLE), transform.getId());
-        JLabel title = new JLabel(label, JLabel.CENTER);
+        JLabel title = new JLabel(messages.getText(DIALOG_MATRIX_TITLE), JLabel.CENTER);
         title.setFont(new Font("Calibri", Font.BOLD, 16));
         add(title, BorderLayout.NORTH);
 
