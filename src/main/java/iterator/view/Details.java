@@ -189,7 +189,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                         if (controller.hasPalette()) {
                             c = Iterables.get(controller.getColours(), i % controller.getPaletteSize());
                         } else {
-                            c = Color.getHSBColor((float) (i + ifs.getTransforms().size()) / (float) ifs.size(), 0.8f, 0.8f);
+                            c = Color.getHSBColor((float) i / (float) ifs.size(), 0.8f, 0.8f);
                         }
                     }
 
