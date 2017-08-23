@@ -489,9 +489,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
 
             // Draw the line
             Path2D line = new Path2D.Double(Path2D.WIND_NON_ZERO);
-            if (r.r < Math.toRadians(1) && r.r > Math.toRadians(-1)) {
-                line.moveTo(r.x, r.y - 2d * getHeight());
-                line.lineTo(r.x, r.y + 2d * getHeight());
+            if ((r.r < Math.toRadians(0.1d) && r.r > Math.toRadians(-0.1d)) ||
+                    (r.r < Math.toRadians(180.1d) && r.r > Math.toRadians(179.9d))) {
+                line.moveTo(r.x, 0d);
+                line.lineTo(r.x, getHeight());
             } else {
                 line.moveTo(r.x - 2d * getWidth(), r.y - 2d * (getWidth() / Math.tan(r.r)));
                 line.lineTo(r.x + 2d * getWidth(), r.y + 2d * (getWidth() / Math.tan(r.r)));
@@ -706,16 +707,14 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
 
                 int grid = controller.getSnapGrid();
                 if (w <= grid && h <= grid) {
-                    if (e.isControlDown() && reflection != null) {
-                        reflection = null;
-                    }
+                    reflection = null;
                     repaint();
                     return;
                 }
 
                 if (reflection != null) {
                     if (e.isControlDown()) {
-                        reflection.r = Math.atan2(dy, dx);
+                        reflection.r = Math.atan2(dx, dy);
                     }
                     ifs.getReflections().add(reflection);
                     reflection = null;

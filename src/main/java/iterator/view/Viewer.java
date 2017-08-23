@@ -307,9 +307,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             g.setPaint(c);
             g.setStroke(new BasicStroke(2f));
             Path2D line = new Path2D.Double(Path2D.WIND_NON_ZERO);
-            if (r.r == 0d) {
-                line.moveTo(r.x, r.y - (getHeight() / scale));
-                line.lineTo(r.x, r.y + (getHeight() / scale));
+            if ((r.r < Math.toRadians(0.1d) && r.r > Math.toRadians(-0.1d)) ||
+                    (r.r < Math.toRadians(180.1d) && r.r > Math.toRadians(179.9d))) {
+                line.moveTo(r.x, -1d * (getHeight() / scale));
+                line.lineTo(r.x, (getHeight() / scale));
             } else {
                 line.moveTo(r.x - (getWidth() / scale), r.y - (getWidth() / (Math.tan(r.r) * scale)));
                 line.lineTo(r.x + (getWidth() / scale), r.y + (getWidth() / (Math.tan(r.r) * scale)));
