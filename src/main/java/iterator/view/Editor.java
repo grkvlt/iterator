@@ -228,7 +228,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 r.x = origin;
                 r.y = origin;
                 r.r = 0d;
-                ifs.getReflections().add(r);
+                ifs.add(r);
                 bus.post(ifs);
             }
         });
