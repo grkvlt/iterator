@@ -921,7 +921,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
         // Load splash screen text
         SplashScreen splash = SplashScreen.getSplashScreen();
-        if (splash.isVisible()) {
+        if (splash != null && splash.isVisible()) {
             Graphics2D g = splash.createGraphics();
 
             try {
