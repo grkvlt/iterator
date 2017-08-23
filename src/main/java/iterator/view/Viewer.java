@@ -312,8 +312,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 line.moveTo(r.x, -1d * (getHeight() / scale));
                 line.lineTo(r.x, (getHeight() / scale));
             } else {
-                line.moveTo(r.x - (getWidth() / scale), r.y - (getWidth() / (Math.tan(r.r) * scale)));
-                line.lineTo(r.x + (getWidth() / scale), r.y + (getWidth() / (Math.tan(r.r) * scale)));
+                line.moveTo(r.x - getWidth() - (getWidth() / scale), r.y - (getWidth() / Math.tan(r.r)) - (getWidth() / (Math.tan(r.r) * scale)));
+                line.lineTo(r.x + getWidth() + (getWidth() / scale), r.y + (getWidth() / Math.tan(r.r)) + (getWidth() / (Math.tan(r.r) * scale)));
             }
             g.draw(view.createTransformedShape(line));
         } catch (Exception e) {
