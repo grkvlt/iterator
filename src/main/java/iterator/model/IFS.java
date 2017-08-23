@@ -54,9 +54,9 @@ public class IFS extends ForwardingList<Function> {
         }
     };
 
-    public static final Comparator<Transform> IDENTITY = new Comparator<Transform>() {
+    public static final Comparator<Function> IDENTITY = new Comparator<Function>() {
         @Override
-        public int compare(Transform left, Transform right) {
+        public int compare(Function left, Function right) {
             return ComparisonChain.start()
                     .compare(left.getId(), right.getId())
                     .result();
@@ -92,6 +92,10 @@ public class IFS extends ForwardingList<Function> {
     }
 
     public boolean add(Reflection element) {
+        if (element.getId() < 0) {
+            element.setId(reflections.isEmpty() ? 1 : Ordering.from(IDENTITY).max(reflections).getId() + 1);
+        }
+
         return reflections.add(element);
     }
 

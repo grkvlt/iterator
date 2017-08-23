@@ -463,7 +463,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 rotation.translate(-text.x, -text.y);
             }
             g.setTransform(rotation);
-            String id = String.format("TR%s %.1f%% %s",
+            String id = String.format("T%s %.1f%% %s",
                     (t.getId() == -1 ? "--" : String.format("%02d", t.getId())),
                     100d * t.getWeight() / getWeight(Utils.concatenate(ifs.getTransforms(), selected)),
                     ((highlight && rotate != null) ? String.format("(%+d)", (int) Math.toDegrees(t.r)) : ""));
@@ -498,6 +498,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 line.lineTo(r.x + 2d * getWidth(), r.y + 2d * (getWidth() / Math.tan(r.r)));
             }
             g.draw(line);
+
+            // Draw the label
+            g.setFont(new Font("Calibri", Font.BOLD, 25));
+            String id = String.format("R%02d %s", r.getId(), highlight ? String.format("(%+d)", (int) Math.toDegrees(r.r)) : "");
+            g.drawString(id, (int) (r.x + 10), (int) (r.y + 10));
 
             // Add the select handle
             g.setStroke(new BasicStroke(2f));

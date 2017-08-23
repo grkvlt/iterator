@@ -27,4 +27,8 @@ public interface Function {
 
     AffineTransform getTransform();
 
+    int getId();
+
+    void setId(int id);
+
 }

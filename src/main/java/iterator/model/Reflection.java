@@ -33,6 +33,8 @@ import com.google.common.base.Objects;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Reflection")
 public class Reflection implements Function {
+    @XmlAttribute
+    private int id;
     @XmlAttribute(required = false)
     public Double x;
     @XmlAttribute(required = false)
@@ -49,10 +51,11 @@ public class Reflection implements Function {
     }
 
     private Reflection(Dimension size) {
-        this(-1, 0, size);
+        this(-1, size);
     }
 
-    private Reflection(int id, int zIndex, Dimension size) {
+    private Reflection(int id, Dimension size) {
+        this.id = id;
         this.sw = size.getWidth();
         this.sh = size.getHeight();
         this.x = 0d;
@@ -79,6 +82,16 @@ public class Reflection implements Function {
     @Override
     public Dimension getSize() {
         return new Dimension((int) sw, (int) sh);
+    }
+
+    @Override
+    public int getId() {
+        return this.id;
+    }
+
+    @Override
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setSize(Dimension size) {

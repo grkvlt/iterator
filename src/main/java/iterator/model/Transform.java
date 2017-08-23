@@ -113,10 +113,12 @@ public class Transform implements Function {
         this.weight = original.weight;
     }
 
+    @Override
     public int getId() {
         return this.id;
     }
 
+    @Override
     public void setId(int id) {
         this.id = id;
     }

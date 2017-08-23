@@ -179,8 +179,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
             if (ifs.getReflections().size() > 0) {
                 if (i % columns != 0) html.append("</tr>");
                 html.append("<tr><td><h2>Reflections</h2></td></tr>");
-                for (int rid = 0; rid < ifs.getReflections().size(); rid++) {
-                    Reflection r = ifs.getReflections().get(rid);
+                for (Reflection r : ifs.getReflections()) {
                     if (i % columns == 0) html.append("<tr>");
                     html.append("<td>")
                         .append("<table class=\"ifs\">");
@@ -204,7 +203,8 @@ public class Details extends JTextPane implements Printable, Subscriber {
                                 "<td class=\"reflect\" align=\"right\" colspan=\"2\">%.0f °</td>" +
                             "</tr>" +
                             "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
-                            rid, controller.isColour() ? "black" : "white",
+                            r.getId(),
+                            controller.isColour() ? "black" : "white",
                             c.getRed(), c.getGreen(), c.getBlue(),
                             r.x, r.y, Math.toDegrees(r.r));
                     html.append(reflection)
