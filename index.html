@@ -158,7 +158,7 @@
           IFS on screen.
         </p>
         <blockquote>
-          <strong>Note</strong><em> that these options interact with each other and
+          <strong>Note</strong> <em>Many of these options interact with each other and
           not all combinations of settings will make sense.</em>
         </blockquote>
         <p>
@@ -186,9 +186,22 @@
           The <em>stealing</em> mode uses a colour stealing algorithm, taken from
           <strong>Superfractals</strong>. This also uses the palette file
           setting, and can produce some very appealing and natural images.
-          Finally, <em>ifscolour</em> generates a colour image using a
-          spectrum of colours generated using the IFS.
+          Use <em>ifs-colour</em> to generate a brightly coloured image using the
+          entitre spectrum mapped using the IFS.
         </p>
+        <p>
+          Modes <em>density</em>, <em>log-density</em>, <em>log-density-blur</em>
+          and <em>log-density-flame</em> all use a similar density estimation
+          mechanism when rendering. This gives a different behaviour in the
+          viewer, with progressive renders showing more fine-grained detail
+          at each pass. These modes can all be used with thde various colour
+          options to produce different styles of output.
+        </p>
+        <blockquote>
+          <strong>Note</strong> <em>The density estimation and flame rendering
+          modes are under active development, and may produce unexpected or
+          unpredictable output. This will be addressed in an upcoming release.</em>
+        </blockquote>
         <p>
           The <code>explorer.render</code> option complements the display
           mode and can be set to one of <em>ifs</em>, <em>top</em>, <em>standard</em>
@@ -224,6 +237,10 @@
         <p style="margin-left: 25px;">
           <em>Screenshot of the <strong>Editor</strong> mode with the live IFS view</em>
         </p>
+        <blockquote>
+          <strong>TODO</strong> <em>More recent screenshots of the UI are
+          required, showing reflections and dialog boxes.</em>
+        </blockquote>
         <p>
           In the <strong>Editor</strong> mode, clicking and dragging the
           mouse will create a new transform which can then be moved, resised
@@ -245,8 +262,19 @@
           <em>Matrix</em> menu item allows the six affine transform matrix
           coefficients to be altered directly.
         </p>
+        <p>
+          The default menu displayed when right-clicking on the background
+          has only two options, <em>New Transform</em> and <em>New Reflection</em>.
+          These create new functions, respectively an affine transform and
+          a planar reflection. Reflections can also be created by <em>Ctrl</em>
+          clicking on the background or by holding down <em>Alt</em> and
+          clocking and dragging an exsting reflection. Reflections can be
+          modified by dragging them by the square handle or by editing them
+          directly via the <em>Properties</em> dialog available on their
+          context menu.
+        </p>
         <blockquote>
-          <strong>Note</strong><em> once the affine transform matrix has been
+          <strong>Note</strong> <em>Once the affine transform matrix has been
           edited directly, it will no longer be possible to edit the transform
           visually or change its properties, although it can still be moved
           using the mouse.</em>
@@ -263,21 +291,33 @@
           viewpoint co-ordinates.
         </p>
         <blockquote>
-          <strong>Note</strong><em> that when zoomed in at high magnification the
+          <strong>Note</strong> <em>When zoomed in at high magnification the
           iterative process can take a very long time until the rendered fractal
           becomes visible.</em>
         </blockquote>
         <p>
           The <strong>Details</strong> mode shows the actual affine transforms
-          and their matrix coefficients for the system as a scrollable list.
+          and their matrix coefficients, and the co-ordinates and angle of
+          the reflection planes. The scrollable list can also be printed,
+          and will be resized to fit on a single page.
         </p>
+        <blockquote>
+          <strong>Important</strong> <em>Further actions and settings can be
+          found in the right-click context menu on most screens, as well as
+          the <em>Preferences</em> dialog and individual <em>Properties</em>
+          dialogs for transforms and reflections, as well as the zoom
+          settings for the main viewer.</em>
+        </blockquote>
         <h3>Examples</h3>
         <p>
           A series of example XML data files for IFS transforms are provided
           in the <code>data</code> directory of the distribution. Some of these can be
           found in the books <strong>The Computational Beauty of Nature</strong>
           and <strong>Superfractals</strong>, details of which are given in the
-          <em>References</em> section.
+          <em>References</em> section. The <strong>Fractal Flame</strong> paper
+          listed gives more details on the density estimation methods used,
+          and illustrates more possible rendering modes and options for future
+          investigation and implementation.
         </p>
         <p>
           To load the examples, specify the path to the file as the last argument
@@ -317,7 +357,7 @@ with 1,310K iterations</b></code></pre>
         <iframe id="youtube" style="margin-left: 25px; border: 1px solid black; margin-bottom: 10px;" width="480" height="270" allowfullscreen
             src="http://www.youtube.com/embed/FJY53HxTe0o?modestbranding=0&theme=dark&autohide=1&fs=1"></iframe>
         <blockquote>
-          <strong>Note</strong><em> further documentation on the <code>.animation</code>
+          <strong>TODO</strong> <em>Further documentation on the <code>.animation</code>
           file format and generating video files is required.</em>
         </blockquote>
         <h3>References</h3>
@@ -326,6 +366,8 @@ with 1,310K iterations</b></code></pre>
           <li><a href="http://en.wikipedia.org/wiki/Affine_transformation">Affine Transform</a>; <em>Wikipedia</em></li>
           <li><a href="http://www-users.cs.umn.edu/%7Ebstanton/pdf/p271-demko.pdf">Construction of fractal objects with iterated function systems</a>;
             <em>Demko, Stephen and Hodges, Laurie and Naylor, Bruce; SIGGRAPH Computer Graphics, Volume 19, Number 3, 1985</em></li>
+          <li><a href="http://flam3.com/flame.pdf">The Fractal Flame Algorithm</a>;
+            <em>Draves, Scott and Reckase, Eric; 2008</em></li>
           <li><a href="http://www.amazon.co.uk/SuperFractals-Michael-Fielding-Barnsley/dp/0521844932">Superfractals: patterns of Nature</a>;
             <em>Barnsley, Michael F; Cambridge University Press; 7 Sep 2006; ISBN 978-0521844932</em></li>
           <li><a href="http://www.amazon.co.uk/The-Computational-Beauty-Nature-Explorations/dp/0262561271">The Computational Beauty of Nature: Computer Explorations of Fractals, Chaos, Complex Systems and Adaptation</a>;
