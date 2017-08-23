@@ -126,7 +126,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
             int columns = controller.getWidth() / 380;
             html.append("<table>")
                 .append("<tr><td><h2>Transforms</h2></td></tr>");
-            int i = 0;
+            int i = 0, f = 0;
             for (Transform t : Ordering.from(IFS.IDENTITY).immutableSortedCopy(ifs.getTransforms())) {
                 if (i % columns == 0) html.append("<tr>");
                 html.append("<td>")
@@ -138,9 +138,9 @@ public class Details extends JTextPane implements Printable, Subscriber {
                 Color c = Color.WHITE;
                 if (controller.isColour()) {
                     if (controller.hasPalette()) {
-                        c = Iterables.get(controller.getColours(), i % controller.getPaletteSize());
+                        c = Iterables.get(controller.getColours(), f % controller.getPaletteSize());
                     } else {
-                        c = Color.getHSBColor((float) i / (float) ifs.size(), 0.8f, 0.8f);
+                        c = Color.getHSBColor((float) f / (float) ifs.size(), 0.8f, 0.8f);
                     }
                 }
 
@@ -172,7 +172,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                 html.append(transform)
                     .append("</table>")
                     .append("</td>");
-                i++;
+                i++; f++;
                 if (i % columns == 0) html.append("</tr>");
             }
 
@@ -180,7 +180,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                 if (i % columns != 0) html.append("</tr>");
                 html.append("<tr><td><h2>Reflections</h2></td></tr>");
                 i = 0;
-                for (Reflection r : ifs.getReflections()) {
+                for (Reflection r : Ordering.from(IFS.IDENTITY).immutableSortedCopy(ifs.getReflections())) {
                     if (i % columns == 0) html.append("<tr>");
                     html.append("<td>")
                         .append("<table class=\"ifs\">");
@@ -188,9 +188,9 @@ public class Details extends JTextPane implements Printable, Subscriber {
                     Color c = Color.WHITE;
                     if (controller.isColour()) {
                         if (controller.hasPalette()) {
-                            c = Iterables.get(controller.getColours(), i % controller.getPaletteSize());
+                            c = Iterables.get(controller.getColours(), f % controller.getPaletteSize());
                         } else {
-                            c = Color.getHSBColor((float) i / (float) ifs.size(), 0.8f, 0.8f);
+                            c = Color.getHSBColor((float) f / (float) ifs.size(), 0.8f, 0.8f);
                         }
                     }
 
@@ -211,7 +211,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                     html.append(reflection)
                         .append("</table>")
                         .append("</td>");
-                    i++;
+                    i++; f++;
                     if (i % columns == 0) html.append("</tr>");
                 }
             }
