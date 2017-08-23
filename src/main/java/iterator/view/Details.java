@@ -123,10 +123,10 @@ public class Details extends JTextPane implements Printable, Subscriber {
         if (ifs.getTransforms().isEmpty()) {
             html.append("<h2>Empty</h2>");
         } else {
-            int i = 0;
             int columns = controller.getWidth() / 380;
             html.append("<table>")
                 .append("<tr><td><h2>Transforms</h2></td></tr>");
+            int i = 0;
             for (Transform t : Ordering.from(IFS.IDENTITY).immutableSortedCopy(ifs.getTransforms())) {
                 if (i % columns == 0) html.append("<tr>");
                 html.append("<td>")
@@ -179,6 +179,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
             if (ifs.getReflections().size() > 0) {
                 if (i % columns != 0) html.append("</tr>");
                 html.append("<tr><td><h2>Reflections</h2></td></tr>");
+                i = 0;
                 for (Reflection r : ifs.getReflections()) {
                     if (i % columns == 0) html.append("<tr>");
                     html.append("<td>")
