@@ -22,6 +22,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,7 +36,6 @@ import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
@@ -75,20 +75,20 @@ public class Utils {
      * {@code List<Transform> all = concatenate(ifs, selected);}
      * </pre>
      *
-     * @param initial the initial {@link List}
+     * @param initial the initial {@link Collection}
      * @param optional a series of optional elements that may be null
      * @return a new {@link List} including the non-null optional elements
-     * @see Iterables#concat(Iterable)
-     * @see Optional#presentInstances(Iterable)
+     *   not in the initial collection
      */
     @SafeVarargs
-    public static <T> List<T> concatenate(List<T> initial, T...optional) {
-        List<Optional<T>> extra = Lists.newArrayList();
-        for (T nullable : optional) {
-            extra.add(Optional.fromNullable(nullable));
+    public static <T> List<T> concatenate(Collection<T> initial, T...optional) {
+        List<T> joined = Lists.newArrayList(initial);
+        for (T item : optional) {
+            if (item != null && !initial.contains(item)) {
+                joined.add(item);
+            }
         }
-        Iterable<T> joined = Iterables.concat(initial, Optional.presentInstances(extra));
-        return Lists.newArrayList(joined);
+        return joined;
     }
 
     /**

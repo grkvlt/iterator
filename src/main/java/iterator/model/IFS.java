@@ -30,7 +30,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ForwardingList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
@@ -39,7 +41,7 @@ import com.google.common.collect.Ordering;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "IFS")
-public class IFS extends ForwardingList<Transform> {
+public class IFS extends ForwardingList<Function> {
     public static final String UNTITLED = "Untitled";
 
     public static final Comparator<Transform> Z_ORDER = new Comparator<Transform>() {
@@ -72,23 +74,25 @@ public class IFS extends ForwardingList<Transform> {
 
     public IFS() { }
 
-    @Override
     public boolean contains(Object object) {
         if (object == null) {
             return false;
         } else {
-            return super.contains(object);
+            return transforms.contains(object) || reflections.contains(object);
         }
     }
 
-    @Override
     public boolean add(Transform element) {
         if (element.getId() < 0) {
-            element.setId(isEmpty() ? 1 : Ordering.from(IDENTITY).max(this).getId() + 1);
-            element.setZIndex(isEmpty() ? 0 : Ordering.from(Z_ORDER).max(this).getZIndex() + 1);
+            element.setId(transforms.isEmpty() ? 1 : Ordering.from(IDENTITY).max(transforms).getId() + 1);
+            element.setZIndex(transforms.isEmpty() ? 0 : Ordering.from(Z_ORDER).max(transforms).getZIndex() + 1);
         }
 
-        return super.add(element);
+        return transforms.add(element);
+    }
+
+    public boolean add(Reflection element) {
+        return reflections.add(element);
     }
 
     public String getName() {
@@ -109,7 +113,11 @@ public class IFS extends ForwardingList<Transform> {
         this.reflections.addAll(reflections);
     }
 
-    public Collection<Reflection> getReflections() {
+    public List<Transform> getTransforms() {
+        return transforms;
+    }
+
+    public List<Reflection> getReflections() {
         return reflections;
     }
 
@@ -123,8 +131,8 @@ public class IFS extends ForwardingList<Transform> {
     }
 
     @Override
-    protected List<Transform> delegate() {
-        return transforms;
+    protected List<Function> delegate() {
+        return FluentIterable.from(Iterables.concat(transforms, reflections)).toList();
     }
 
     @Override

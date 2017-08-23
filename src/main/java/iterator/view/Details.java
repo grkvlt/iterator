@@ -118,13 +118,13 @@ public class Details extends JTextPane implements Printable, Subscriber {
         html.append("<a name=\"top\"></a>")
             .append(String.format("<h1 id=\"title\">IFS %s</h1>", words));
 
-        if (ifs.isEmpty()) {
+        if (ifs.getTransforms().isEmpty()) {
             html.append("<h2>Empty</h2>");
         } else {
             int i = 0;
             int columns = controller.getWidth() / 380;
             html.append("<table>");
-            for (Transform t : Ordering.from(IFS.IDENTITY).immutableSortedCopy(ifs)) {
+            for (Transform t : Ordering.from(IFS.IDENTITY).immutableSortedCopy(ifs.getTransforms())) {
                 if (i % columns == 0 && i != 0) html.append("</tr>");
                 if (i % columns == 0) html.append("<tr>");
                 html.append("<td>")
@@ -138,7 +138,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                     if (controller.hasPalette()) {
                         c = Iterables.get(controller.getColours(), i % controller.getPaletteSize());
                     } else {
-                        c = Color.getHSBColor((float) i / (float) ifs.size(), 0.8f, 0.8f);
+                        c = Color.getHSBColor((float) i / (float) ifs.getTransforms().size(), 0.8f, 0.8f);
                     }
                 }
 
@@ -165,7 +165,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                             "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
                             t.getId(),
                             f.valueToString(matrix[0]), f.valueToString(matrix[1]), f.valueToString(matrix[2]),
-                            100d * t.getWeight() / controller.getEditor().getWeight(ifs),
+                            100d * t.getWeight() / controller.getEditor().getWeight(ifs.getTransforms()),
                             controller.isColour() ? "black" : "white",
                             c.getRed(), c.getGreen(), c.getBlue(),
                             f.valueToString(matrix[3]), f.valueToString(matrix[4]), f.valueToString(matrix[5]));

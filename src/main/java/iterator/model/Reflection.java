@@ -32,7 +32,7 @@ import com.google.common.base.Objects;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Reflection")
-public class Reflection {
+public class Reflection implements Function {
     @XmlAttribute(required = false)
     public Double x;
     @XmlAttribute(required = false)
@@ -76,6 +76,7 @@ public class Reflection {
         this.r = original.r;
     }
 
+    @Override
     public Dimension getSize() {
         return new Dimension((int) sw, (int) sh);
     }
@@ -84,11 +85,12 @@ public class Reflection {
         Point2D scale = new Point2D.Double(size.getWidth() / sw, size.getHeight() / sh);
         sw = size.getWidth();
         sh = size.getHeight();
-        
+
         x *= scale.getX();
         y *= scale.getY();
     }
 
+    @Override
     public AffineTransform getTransform() {
         AffineTransform transform = AffineTransform.getTranslateInstance(-x, -y);
         transform.rotate(-r);

@@ -17,6 +17,8 @@ package iterator.view;
 
 import static iterator.util.Messages.MENU_EDITOR_NEW_REFLECTION;
 import static iterator.util.Messages.MENU_EDITOR_NEW_TRANSFORM;
+import static iterator.util.Messages.MENU_REFLECTION_DELETE;
+import static iterator.util.Messages.MENU_REFLECTION_PROPERTIES;
 import static iterator.util.Messages.MENU_TRANSFORM_BACK;
 import static iterator.util.Messages.MENU_TRANSFORM_DELETE;
 import static iterator.util.Messages.MENU_TRANSFORM_DUPLICATE;
@@ -45,6 +47,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
 import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
 import java.util.Collections;
@@ -84,7 +87,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     private final Explorer controller;
     private final Messages messages;
 
-    private JPopupMenu transform, editor;
+    private JPopupMenu transformMenu, reflectionMenu, editor;
     private Action properties;
 
     private IFS ifs;
@@ -102,7 +105,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         this.bus = controller.getEventBus();
         this.messages = controller.getMessages();
 
-        transform = new JPopupMenu();
+        transformMenu = new JPopupMenu();
         properties = new AbstractAction(messages.getText(MENU_TRANSFORM_PROPERTIES)) {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -111,8 +114,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 properties.dispose();
             }
         };
-        transform.add(properties);
-        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_MATRIX)) {
+        transformMenu.add(properties);
+        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_MATRIX)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Matrix matrix = new Matrix(getSelected(), ifs, controller);
@@ -120,15 +123,15 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 matrix.dispose();
             }
         });
-        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_DELETE)) {
+        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_DELETE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ifs.remove(selected);
+                ifs.getTransforms().remove(selected);
                 selected = null;
                 bus.post(ifs);
             }
         });
-        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_DUPLICATE)) {
+        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_DUPLICATE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Transform copy = Transform.create(getSize());
@@ -150,36 +153,53 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         });
         JMenuItem separator = new JMenuItem("-");
         separator.setEnabled(false);
-        transform.add(separator);
-        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_RAISE)) {
+        transformMenu.add(separator);
+        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_RAISE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selected.setZIndex(selected.getZIndex() + 1);
                 bus.post(ifs);
             }
         });
-        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_LOWER)) {
+        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_LOWER)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selected.setZIndex(selected.getZIndex() - 1);
                 bus.post(ifs);
             }
         });
-        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_FRONT)) {
+        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_FRONT)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                selected.setZIndex(Ordering.from(IFS.Z_ORDER).max(ifs).getZIndex() + 1);
+                selected.setZIndex(Ordering.from(IFS.Z_ORDER).max(ifs.getTransforms()).getZIndex() + 1);
                 bus.post(ifs);
             }
         });
-        transform.add(new AbstractAction(messages.getText(MENU_TRANSFORM_BACK)) {
+        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_BACK)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                selected.setZIndex(Ordering.from(IFS.Z_ORDER).min(ifs).getZIndex() - 1);
+                selected.setZIndex(Ordering.from(IFS.Z_ORDER).min(ifs.getTransforms()).getZIndex() - 1);
                 bus.post(ifs);
             }
         });
-        add(transform);
+        add(transformMenu);
+
+        reflectionMenu = new JPopupMenu();
+        reflectionMenu.add(new AbstractAction(messages.getText(MENU_REFLECTION_PROPERTIES)) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Show reflection properties dialog
+            }
+        });
+        reflectionMenu.add(new AbstractAction(messages.getText(MENU_REFLECTION_DELETE)) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ifs.getReflections().remove(reflection);
+                reflection = null;
+                bus.post(ifs);
+            }
+        });
+        add(reflectionMenu);
 
         editor = new JPopupMenu();
         editor.add(new AbstractAction(messages.getText(MENU_EDITOR_NEW_TRANSFORM)) {
@@ -207,7 +227,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 r.y = origin;
                 r.r = 0d;
                 ifs.getReflections().add(r);
-                reflection = r;
                 bus.post(ifs);
             }
         });
@@ -227,9 +246,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
 
     public Transform getAnts() {
         Transform ants = null;
-        Point start = controller.getEditor().getStart();
-        Point end = controller.getEditor().getEnd();
-        if (selected == null && start != null && end != null) {
+        if (reflection == null && selected == null && start != null && end != null) {
             double x = Math.min(start.x, end.x);
             double y = Math.min(start.y, end.y);
             double w = Math.max(start.x, end.x) - x;
@@ -248,12 +265,12 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         return ants;
     }
 
-    public List<Transform> getTransforms() {
-        Transform selected = controller.getEditor().getSelected();
-        Transform ants = getAnts();
+    public List<Reflection> getReflections() {
+        return Utils.concatenate(ifs.getReflections(), reflection);
+    }
 
-        if (ifs.contains(selected)) { selected = null; }
-        List<Transform> transforms = Utils.concatenate(ifs, selected, ants);
+    public List<Transform> getTransforms() {
+        List<Transform> transforms = Utils.concatenate(ifs.getTransforms(), selected, getAnts());
         Collections.sort(transforms, IFS.IDENTITY);
         return transforms;
     }
@@ -283,14 +300,16 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     @Subscribe
     public void updated(IFS ifs) {
         this.ifs = ifs;
-        start = null;
-        end = null;
-        resize = null;
-        move = null;
-        rotate = null;
+        this.start = null;
+        this.end = null;
+        this.resize = null;
+        this.move = null;
+        this.rotate = null;
         if (!ifs.contains(selected)) {
-            selected = null;
+            this.selected = null;
         }
+        this.reflection = null;
+
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         repaint();
     }
@@ -314,7 +333,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             paintGrid(g);
 
             if (ifs != null) {
-                for (Transform t : ifs) {
+                for (Transform t : ifs.getTransforms()) {
                     if (!t.equals(selected)) {
                         paintTransform(t, false, g);
                     }
@@ -332,14 +351,14 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     paintReflection(reflection, true, g);
                 }
 
-                if (selected == null && start != null && end != null) {
+                if (reflection == null && selected == null && start != null && end != null) {
                     g.setPaint(Color.BLACK);
                     g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
                     Transform ants = getAnts();
                     g.draw(new Rectangle(ants.x.intValue(), ants.y.intValue(), ants.w.intValue(), ants.h.intValue()));
                 }
 
-                if (!ifs.isEmpty()) {
+                if (!ifs.getTransforms().isEmpty()) {
                     Viewer viewer = controller.getViewer();
                     viewer.reset();
                     List<Transform> transforms = controller.getEditor().getTransforms();
@@ -357,7 +376,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         } finally {
             g.dispose();
         }
-;
     }
 
     public void paintTransform(Transform t, boolean highlight, Graphics2D graphics) {
@@ -443,7 +461,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             g.setTransform(rotation);
             String id = String.format("TR%s %.1f%% %s",
                     (t.getId() == -1 ? "--" : String.format("%02d", t.getId())),
-                    100d * t.getWeight() / getWeight(Utils.concatenate(ifs, ifs.contains(selected) ? null : selected)),
+                    100d * t.getWeight() / getWeight(Utils.concatenate(ifs.getTransforms(), selected)),
                     ((highlight && rotate != null) ? String.format("(%+d)", (int) Math.toDegrees(t.r)) : ""));
             g.drawString(id, text.x + 5, text.y + 25);
         } catch (Exception e) {
@@ -454,7 +472,37 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     }
 
     public void paintReflection(Reflection r, boolean highlight, Graphics2D graphics) {
-        
+        Graphics2D g = (Graphics2D) graphics.create();
+
+        try {
+            // Set the line pattern
+            g.setPaint(Color.BLACK);
+            if (highlight) {
+                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 15f, 5f }, 0f));
+            } else {
+                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 15f, 5f, 5f }, 0f));
+            }
+
+            // Draw the line
+            Path2D line = new Path2D.Double(Path2D.WIND_NON_ZERO);
+            if (r.r == 0d) {
+                line.moveTo(r.x, r.y - 2d * getHeight());
+                line.lineTo(r.x, r.y + 2d * getHeight());
+            } else {
+                line.moveTo(r.x - 2d * getWidth(), r.y - 2d * (getWidth() / Math.tan(r.r)));
+                line.lineTo(r.x + 2d * getWidth(), r.y + 2d * (getWidth() / Math.tan(r.r)));
+            }
+            g.draw(line);
+
+            // Add the select handle
+            g.setStroke(new BasicStroke(2f));
+            Rectangle handle = new Rectangle((int) (r.x - 4), (int) (r.y - 4), 8, 8);
+            g.fill(handle);
+        } catch (Exception e) {
+            controller.error(e, "Failure painting reflection");
+        } finally {
+            g.dispose();
+        }
     }
 
     public void paintGrid(Graphics2D graphics) {
@@ -495,10 +543,20 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     }
 
     public Transform getTransformAt(Point point) {
-        for (Transform t : Ordering.from(IFS.Z_ORDER).reverse().immutableSortedCopy(ifs)) {
+        for (Transform t : Ordering.from(IFS.Z_ORDER).reverse().immutableSortedCopy(ifs.getTransforms())) {
             Shape box = t.getTransform().createTransformedShape(new Rectangle(0, 0, getWidth(), getHeight()));
             if (box.contains(point) || isResize(t, point) || isRotate(t, point)) {
                 return t;
+            }
+        }
+        return null;
+    }
+
+    public Reflection getReflectionAt(Point point) {
+        for (Reflection r : ifs.getReflections()) {
+            Shape box = new Rectangle((int) (r.x - 5), (int) (r.y - 5), 10, 10);
+            if (box.contains(point)) {
+                return r;
             }
         }
         return null;
@@ -539,65 +597,83 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     /** @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent) */
     @Override
     public void mousePressed(MouseEvent e) {
-        Transform clicked = getTransformAt(e.getPoint());
+        Transform clickTransform = getTransformAt(e.getPoint());
+        Reflection clickReflection = getReflectionAt(e.getPoint());
+
         if (SwingUtilities.isLeftMouseButton(e)) {
-            resize = null;
-            for (Transform t : ifs) {
-                if (t.isMatrix()) continue;
-                if (isResize(t, e.getPoint())) {
-                    resize = t;
-                    break;
-                }
-            }
-            if (resize != null) {
-                corner = getCorner(resize, e.getPoint());
-                setCursor(corner);
-                Point nw = new Point(0, 0);
-                Point ne = new Point(getWidth(), 0);
-                Point sw = new Point(0, getHeight());
-                Point se = new Point(getWidth(), getHeight());
-                resize.getTransform().transform(nw, nw);
-                resize.getTransform().transform(ne, ne);
-                resize.getTransform().transform(sw, sw);
-                resize.getTransform().transform(se, se);
-                switch (corner.getType()) {
-                    case Cursor.NW_RESIZE_CURSOR: start = nw; break;
-                    case Cursor.NE_RESIZE_CURSOR: start = ne; break;
-                    case Cursor.SW_RESIZE_CURSOR: start = sw; break;
-                    case Cursor.SE_RESIZE_CURSOR: start = se; break;
-                }
-                ifs.remove(resize);
-                selected = resize;
-            } else if (clicked != null) {
-                if (!clicked.isMatrix() && isRotate(clicked, e.getPoint())) {
-                    selected = clicked;
-                    rotate = selected;
-                    ifs.remove(rotate);
-                    start = snap(e.getPoint());
-                    setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-                } else {
-                    selected = clicked;
-                    if (e.isAltDown()) {
-                        Transform copy = Transform.copy(selected);
-                        selected = copy;
-                    }
-                    move = selected;
-                    setCursor(new Cursor(Cursor.MOVE_CURSOR));
-                    start = snap(e.getPoint());
-                    ifs.remove(selected);
-                }
-            } else {
-                start = snap(e.getPoint());
+            if (clickReflection != null) {
                 selected = null;
-                setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+                clickTransform = null;
+                ifs.getReflections().remove(clickReflection);
+                reflection = clickReflection;
+                start = snap(e.getPoint());
+            } else {
+                resize = null;
+                for (Transform t : ifs.getTransforms()) {
+                    if (t.isMatrix()) continue;
+                    if (isResize(t, e.getPoint())) {
+                        resize = t;
+                        break;
+                    }
+                }
+                if (resize != null) {
+                    corner = getCorner(resize, e.getPoint());
+                    setCursor(corner);
+                    Point nw = new Point(0, 0);
+                    Point ne = new Point(getWidth(), 0);
+                    Point sw = new Point(0, getHeight());
+                    Point se = new Point(getWidth(), getHeight());
+                    resize.getTransform().transform(nw, nw);
+                    resize.getTransform().transform(ne, ne);
+                    resize.getTransform().transform(sw, sw);
+                    resize.getTransform().transform(se, se);
+                    switch (corner.getType()) {
+                        case Cursor.NW_RESIZE_CURSOR: start = nw; break;
+                        case Cursor.NE_RESIZE_CURSOR: start = ne; break;
+                        case Cursor.SW_RESIZE_CURSOR: start = sw; break;
+                        case Cursor.SE_RESIZE_CURSOR: start = se; break;
+                    }
+                    ifs.getTransforms().remove(resize);
+                    selected = resize;
+                } else if (clickTransform != null) {
+                    if (!clickTransform.isMatrix() && isRotate(clickTransform, e.getPoint())) {
+                        selected = clickTransform;
+                        rotate = selected;
+                        ifs.getTransforms().remove(rotate);
+                        start = snap(e.getPoint());
+                        setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+                    } else {
+                        selected = clickTransform;
+                        if (e.isAltDown()) {
+                            Transform copy = Transform.copy(selected);
+                            selected = copy;
+                        }
+                        move = selected;
+                        setCursor(new Cursor(Cursor.MOVE_CURSOR));
+                        start = snap(e.getPoint());
+                        ifs.getTransforms().remove(selected);
+                    }
+                } else {
+                    start = snap(e.getPoint());
+                    selected = null;
+                    setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+                    if (e.isControlDown() && reflection == null) {
+                        reflection = Reflection.create(getSize());
+                        reflection.x = start.getX();
+                        reflection.y = start.getY();
+                    }
+                }
             }
             end = new Point(start.x, start.y);
         } else if (SwingUtilities.isRightMouseButton(e)) {
-            if (clicked != null) {
-                selected = clicked;
+            if (clickTransform != null) {
+                selected = clickTransform;
                 properties.setEnabled(!selected.isMatrix());
-                transform.show(e.getComponent(), e.getX(), e.getY());
-            } else {
+                transformMenu.show(e.getComponent(), e.getX(), e.getY());
+            } else if (clickReflection != null) {
+                reflection = clickReflection;
+                reflectionMenu.show(e.getComponent(), e.getX(), e.getY());
+            } else  {
                 editor.show(e.getComponent(), e.getX(), e.getY());
             }
         }
@@ -618,25 +694,41 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 double y = Math.min(start.y, end.y);
                 double w = Math.max(start.x, end.x) - x;
                 double h = Math.max(start.y, end.y) - y;
+                int dx = end.x - start.x;
+                int dy = end.y - start.y;
 
                 start = null;
                 end = null;
 
                 int grid = controller.getSnapGrid();
                 if (w <= grid && h <= grid) {
+                    if (e.isControlDown() && reflection != null) {
+                        reflection = null;
+                    }
                     repaint();
                     return;
                 }
 
-                selected = Transform.create(getSize());
-                selected.x = x;
-                selected.y = y;
-                selected.w = w;
-                selected.h = h;
-                ifs.add(selected);
+                if (reflection != null) {
+                    if (e.isControlDown()) {
+                        reflection.r = Math.atan2(dy, dx);
+                    }
+                    ifs.getReflections().add(reflection);
+                    reflection = null;
+                } else {
+                    selected = Transform.create(getSize());
+                    selected.x = x;
+                    selected.y = y;
+                    selected.w = w;
+                    selected.h = h;
+                    ifs.add(selected);
+                }
                 bus.post(ifs);
             } else if (selected != null  && start != null && end != null) {
                 ifs.add(selected);
+                bus.post(ifs);
+            } else if (reflection != null  && start != null && end != null) {
+                ifs.getReflections().add(reflection);
                 bus.post(ifs);
             }
         }
@@ -657,113 +749,124 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     public void mouseDragged(MouseEvent e) {
         if (start != null) {
             end = snap(e.getPoint());
-            if (selected  == null) {
-                if (e.isShiftDown()) {
+            if (reflection != null) {
+                if (e.isControlDown()) {
                     int dx = end.x - start.x;
                     int dy = end.y - start.y;
-                    end.y = start.y + (int) Math.copySign(dx, dy);
-                }
-            } else if (selected != null && resize != null) {
-                double w = resize.w;
-                double h = resize.h;
-                int dx = end.x - start.x;
-                int dy = end.y - start.y;
-
-                Point delta = new Point(dx, dy);
-                AffineTransform reverse = new AffineTransform();
-                reverse.rotate(-resize.r);
-                reverse.shear(-resize.shx, -resize.shy);
-                reverse.transform(delta, delta);
-
-                if (e.isShiftDown()) {
-                    delta.x = (int) (delta.y * (w / h));
-                }
-                Point inverseX = new Point(delta.x, 0);
-                Point inverseY = new Point(0, delta.y);
-                try {
-                    reverse.inverseTransform(inverseX, inverseX);
-                    reverse.inverseTransform(inverseY, inverseY);
-                } catch (NoninvertibleTransformException e1) {
-                    Throwables.propagate(e1);
-                }
-
-                double x = resize.x;
-                double y = resize.y;
-
-                switch(corner.getType()) {
-                    case Cursor.NW_RESIZE_CURSOR:
-                        x += (inverseX.x + inverseY.x);
-                        y += (inverseX.y + inverseY.y);
-                        w -= delta.x;
-                        h -= delta.y;
-                        break;
-                    case Cursor.NE_RESIZE_CURSOR:
-                        x += inverseY.x;
-                        y += inverseY.y;
-                        if (e.isShiftDown()) {
-                            w -= delta.x;
-                        } else {
-                            w += delta.x;
-                        }
-                        h -= delta.y;
-                        break;
-                    case Cursor.SW_RESIZE_CURSOR:
-                        if (e.isShiftDown()) {
-                            x -= inverseX.x;
-                            y -= inverseX.y;
-                            w += delta.x;
-                        } else {
-                            x += inverseX.x;
-                            y += inverseX.y;
-                            w -= delta.x;
-                        }
-                        h += delta.y;
-                        break;
-                    case Cursor.SE_RESIZE_CURSOR:
-                        w += delta.x;
-                        h += delta.y;
-                        break;
-                }
-
-                int grid = controller.getSnapGrid();
-                w = Math.max(grid, w);
-                h = Math.max(grid, h);
-
-                selected = Transform.clone(selected);
-                selected.duplicate(resize);
-                selected.x = x;
-                selected.y = y;
-                selected.w = w;
-                selected.h = h;
-            } else if (selected != null && move != null) {
-                int dx = end.x - start.x;
-                int dy = end.y - start.y;
-
-                selected = Transform.clone(selected);
-                if (move.isMatrix()) {
-                    AffineTransform moved = AffineTransform.getTranslateInstance(dx, dy);
-                    moved.concatenate(move.getTransform());
-                    double matrix[] = new double[6];
-                    moved.getMatrix(matrix);
-                    selected.setMatrix(matrix);
+                    reflection.r = Math.atan2(dy, dx);
                 } else {
-                    double x = move.x + dx;
-                    double y = move.y + dy;
+                    reflection.x = end.getX();
+                    reflection.y = end.getY();
+                }
+            } else {
+                if (selected  == null) {
+                    if (e.isShiftDown()) {
+                        int dx = end.x - start.x;
+                        int dy = end.y - start.y;
+                        end.y = start.y + (int) Math.copySign(dx, dy);
+                    }
+                } else if (selected != null && resize != null) {
+                    double w = resize.w;
+                    double h = resize.h;
+                    int dx = end.x - start.x;
+                    int dy = end.y - start.y;
+    
+                    Point delta = new Point(dx, dy);
+                    AffineTransform reverse = new AffineTransform();
+                    reverse.rotate(-resize.r);
+                    reverse.shear(-resize.shx, -resize.shy);
+                    reverse.transform(delta, delta);
+    
+                    if (e.isShiftDown()) {
+                        delta.x = (int) (delta.y * (w / h));
+                    }
+                    Point inverseX = new Point(delta.x, 0);
+                    Point inverseY = new Point(0, delta.y);
+                    try {
+                        reverse.inverseTransform(inverseX, inverseX);
+                        reverse.inverseTransform(inverseY, inverseY);
+                    } catch (NoninvertibleTransformException e1) {
+                        Throwables.propagate(e1);
+                    }
+    
+                    double x = resize.x;
+                    double y = resize.y;
+    
+                    switch(corner.getType()) {
+                        case Cursor.NW_RESIZE_CURSOR:
+                            x += (inverseX.x + inverseY.x);
+                            y += (inverseX.y + inverseY.y);
+                            w -= delta.x;
+                            h -= delta.y;
+                            break;
+                        case Cursor.NE_RESIZE_CURSOR:
+                            x += inverseY.x;
+                            y += inverseY.y;
+                            if (e.isShiftDown()) {
+                                w -= delta.x;
+                            } else {
+                                w += delta.x;
+                            }
+                            h -= delta.y;
+                            break;
+                        case Cursor.SW_RESIZE_CURSOR:
+                            if (e.isShiftDown()) {
+                                x -= inverseX.x;
+                                y -= inverseX.y;
+                                w += delta.x;
+                            } else {
+                                x += inverseX.x;
+                                y += inverseX.y;
+                                w -= delta.x;
+                            }
+                            h += delta.y;
+                            break;
+                        case Cursor.SE_RESIZE_CURSOR:
+                            w += delta.x;
+                            h += delta.y;
+                            break;
+                    }
 
-                    selected.duplicate(move);
+                    int grid = controller.getSnapGrid();
+                    w = Math.max(grid, w);
+                    h = Math.max(grid, h);
+
+                    selected = Transform.clone(selected);
+                    selected.duplicate(resize);
                     selected.x = x;
                     selected.y = y;
+                    selected.w = w;
+                    selected.h = h;
+                } else if (selected != null && move != null) {
+                    int dx = end.x - start.x;
+                    int dy = end.y - start.y;
+    
+                    selected = Transform.clone(selected);
+                    if (move.isMatrix()) {
+                        AffineTransform moved = AffineTransform.getTranslateInstance(dx, dy);
+                        moved.concatenate(move.getTransform());
+                        double matrix[] = new double[6];
+                        moved.getMatrix(matrix);
+                        selected.setMatrix(matrix);
+                    } else {
+                        double x = move.x + dx;
+                        double y = move.y + dy;
+    
+                        selected.duplicate(move);
+                        selected.x = x;
+                        selected.y = y;
+                    }
+                } else if (selected != null && rotate != null) {
+                    Point origin = new Point();
+                    rotate.getTransform().transform(new Point(0, 0), origin);
+                    int dx = end.x - origin.x;
+                    int dy = end.y - origin.y;
+                    double r = Math.atan2(dy - (selected.shy * dx), dx - (selected.shx * dy));
+    
+                    selected = Transform.clone(selected);
+                    selected.duplicate(rotate);
+                    selected.r = r;
                 }
-            } else if (selected != null && rotate != null) {
-                Point origin = new Point();
-                rotate.getTransform().transform(new Point(0, 0), origin);
-                int dx = end.x - origin.x;
-                int dy = end.y - origin.y;
-                double r = Math.atan2(dy - (selected.shy * dx), dx - (selected.shx * dy));
-
-                selected = Transform.clone(selected);
-                selected.duplicate(rotate);
-                selected.r = r;
             }
             repaint();
         }
@@ -773,7 +876,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     @Override
     public void mouseMoved(MouseEvent e) {
         if (start == null) {
-            for (Transform t : ifs) {
+            for (Transform t : ifs.getTransforms()) {
                 Cursor corner = getCorner(t, e.getPoint());
                 if (corner != null) {
                     setCursor(corner);
@@ -781,6 +884,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 }
             }
             if (getTransformAt(e.getPoint()) != null) {
+                setCursor(new Cursor(Cursor.HAND_CURSOR));
+            } else if (getReflectionAt(e.getPoint()) != null) {
                 setCursor(new Cursor(Cursor.HAND_CURSOR));
             } else {
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -801,7 +906,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_DELETE:
                     case KeyEvent.VK_BACK_SPACE:
-                        ifs.remove(selected);
+                        ifs.getTransforms().remove(selected);
                         selected = null;
                         bus.post(ifs);
                         break;

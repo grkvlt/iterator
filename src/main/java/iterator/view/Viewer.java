@@ -71,15 +71,17 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 import iterator.Explorer;
 import iterator.dialog.Zoom;
+import iterator.model.Function;
 import iterator.model.IFS;
+import iterator.model.Reflection;
 import iterator.model.Transform;
-import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
@@ -235,7 +237,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             }
 
             if (overlay) {
-                for (Transform t : ifs) {
+                for (Transform t : ifs.getTransforms()) {
                     paintTransform(t, g);
                 }
             }
@@ -366,8 +368,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         try {
             ImageIO.write(getImage(), "png", file);
 
-            controller.debug("File %s: %d transforms: %.1fx scale at (%.2f, %.2f) with %,dK iterations",
-                    file.getName(), ifs.size(), scale, centre.getX(), centre.getY(), count.get());
+            controller.debug("File %s: %d transforms/%d reflections: %.1fx scale at (%.2f, %.2f) with %,dK iterations",
+                    file.getName(), ifs.getTransforms().size(), ifs.getReflections().size(),
+                    scale, centre.getX(), centre.getY(), count.get());
         } catch (IOException e) {
             controller.error(e,  "Error saving image file %s", file.getName());
         }
@@ -409,24 +412,31 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
 
             List<Transform> transforms = controller.getEditor().getTransforms();
+            List<Reflection> reflections = controller.getEditor().getReflections();
+            List<Function> functions = ImmutableList.<Function>builder()
+                    .addAll(transforms)
+                    .addAll(reflections)
+                    .build();
+
             double weight = controller.getEditor().getWeight(transforms);
 
             int n = transforms.size();
-            int r = isVisible() ? 1 : 2;
+            int s = isVisible() ? 1 : 2;
             int a = isVisible() ? 8 : (int) Math.min(128d, Math.pow(n,  1.2) * 16d);
             int l = getWidth() * getHeight();
+
             for (long i = 0L; i < k; i++) {
                 if (i % 1000L == 0L) {
                     count.incrementAndGet();
                 }
-                int j = random.nextInt(transforms.size());
-                Transform t = transforms.get(j);
-                if (t.getWeight() < random.nextDouble() * weight) {
+                int j = random.nextInt(functions.size());
+                Function f = functions.get(j);
+                if (j < n && ((Transform) f).getWeight() < random.nextDouble() * weight) {
                     continue;
                 }
 
                 Point2D old = new Point2D.Double(points[2], points[3]);
-                t.getTransform().transform(points, 0, points, 0, 2);
+                f.getTransform().transform(points, 0, points, 0, 2);
 
                 // Discard first 10K points
                 if (isVisible() && count.get() < 10) {
@@ -445,7 +455,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     if (controller.getRender().isDensity()) {
                         density[p]++;
                         if (controller.getRender() == Render.LOG_DENSITY_BLUR) {
-                            density[p] += 3;
+                            density[p]++;
                             density[(p + 1) % l]++;
                             density[(p + getWidth()) % l]++;
                             density[(p + 1 + getWidth()) % l]++;
@@ -453,7 +463,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                         max = Math.max(max, density[p]);
                     }
 
-                    Rectangle rect = new Rectangle(x, y, r, r);
+                    Rectangle rect = new Rectangle(x, y, s, s);
 
                     // Choose the colour based on the display mode
                     Color color = Color.BLACK;
@@ -472,9 +482,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                             }
                         } else {
                             if (controller.getRender() == Render.TOP) {
-                                color = Color.getHSBColor((float) top[p] / (float) transforms.size(), 0.8f, 0.8f);
+                                color = Color.getHSBColor((float) top[p] / (float) ifs.size(), 0.8f, 0.8f);
                             } else {
-                                color = Color.getHSBColor((float) j / (float) transforms.size(), 0.8f, 0.8f);
+                                color = Color.getHSBColor((float) j / (float) ifs.size(), 0.8f, 0.8f);
                             }
                         }
                         if (controller.getRender().isDensity()) {
