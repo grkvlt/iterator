@@ -92,11 +92,11 @@ public class Reflection implements Function {
 
     @Override
     public AffineTransform getTransform() {
-        AffineTransform transform = AffineTransform.getTranslateInstance(-x, -y);
+        AffineTransform transform = AffineTransform.getTranslateInstance(x, y);
         transform.rotate(-r);
         transform.scale(-1d, 1d);
         transform.rotate(r);
-        transform.translate(x, y);
+        transform.translate(-x, -y);
 
         return transform;
     }

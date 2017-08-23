@@ -44,6 +44,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -240,6 +241,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 for (Transform t : ifs.getTransforms()) {
                     paintTransform(t, g);
                 }
+                for (Reflection r : ifs.getReflections()) {
+                    paintReflection(r, g);
+                }
             }
 
             if (info) {
@@ -283,6 +287,36 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             g.draw(rect);
         } catch (Exception e) {
             controller.error(e, "Failure painting transform");
+        } finally {
+            g.dispose();
+        }
+    }
+
+    public void paintReflection(Reflection r, Graphics2D graphics) {
+        Graphics2D g = (Graphics2D) graphics.create();
+
+        try {
+            // Transform unit square to view space
+            double x = (getWidth() / 2) - (centre.getX() * scale);
+            double y = (getHeight() / 2) - (centre.getY() * scale);
+            AffineTransform view = AffineTransform.getTranslateInstance(x, y);
+            view.scale(scale, scale);
+
+            // Draw the line
+            Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
+            g.setPaint(c);
+            g.setStroke(new BasicStroke(2f));
+            Path2D line = new Path2D.Double(Path2D.WIND_NON_ZERO);
+            if (r.r == 0d) {
+                line.moveTo(r.x, r.y - (getHeight() / scale));
+                line.lineTo(r.x, r.y + (getHeight() / scale));
+            } else {
+                line.moveTo(r.x - (getWidth() / scale), r.y - (getWidth() / (Math.tan(r.r) * scale)));
+                line.lineTo(r.x + (getWidth() / scale), r.y + (getWidth() / (Math.tan(r.r) * scale)));
+            }
+            g.draw(view.createTransformedShape(line));
+        } catch (Exception e) {
+            controller.error(e, "Failure painting reflection");
         } finally {
             g.dispose();
         }
@@ -419,7 +453,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     .build();
 
             double weight = controller.getEditor().getWeight(transforms);
-
             int n = transforms.size();
             int s = isVisible() ? 1 : 2;
             int a = isVisible() ? 8 : (int) Math.min(128d, Math.pow(n,  1.2) * 16d);
@@ -429,12 +462,15 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 if (i % 1000L == 0L) {
                     count.incrementAndGet();
                 }
+
+                // Skip based on transform weighting
                 int j = random.nextInt(functions.size());
                 Function f = functions.get(j);
                 if (j < n && ((Transform) f).getWeight() < random.nextDouble() * weight) {
                     continue;
                 }
 
+                // Evaluate the function
                 Point2D old = new Point2D.Double(points[2], points[3]);
                 f.getTransform().transform(points, 0, points, 0, 2);
 

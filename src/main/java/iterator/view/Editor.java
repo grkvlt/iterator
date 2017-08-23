@@ -69,6 +69,7 @@ import com.google.common.eventbus.Subscribe;
 import iterator.Explorer;
 import iterator.dialog.Matrix;
 import iterator.dialog.Properties;
+import iterator.model.Function;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
@@ -361,10 +362,12 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 if (!ifs.getTransforms().isEmpty()) {
                     Viewer viewer = controller.getViewer();
                     viewer.reset();
-                    List<Transform> transforms = controller.getEditor().getTransforms();
-                    double areaRatio = controller.getEditor().getArea(transforms) / (getWidth() * getHeight());
-                    double sizeRatio = (controller.getEditor().getWidth(transforms) * controller.getEditor().getHeight(transforms)) / (getWidth() * getHeight());
-                    int k = (int) (1_000_000 * areaRatio * sizeRatio);
+                    List<Transform> transforms = getTransforms();
+                    double area = getWidth() * getHeight();
+                    double reflectRatio = Math.pow(2d, getReflections().size());
+                    double areaRatio = getArea(transforms) / area;
+                    double sizeRatio = (getWidth(transforms) * getHeight(transforms)) / area;
+                    int k = (int) (1_000_000 * areaRatio * sizeRatio * reflectRatio);
                     viewer.iterate(k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
 
                     g.setComposite(AlphaComposite.SrcOver.derive(0.8f));
@@ -485,7 +488,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
 
             // Draw the line
             Path2D line = new Path2D.Double(Path2D.WIND_NON_ZERO);
-            if (r.r == 0d) {
+            if (r.r < Math.toRadians(1) && r.r > Math.toRadians(-1)) {
                 line.moveTo(r.x, r.y - 2d * getHeight());
                 line.lineTo(r.x, r.y + 2d * getHeight());
             } else {
@@ -753,7 +756,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 if (e.isControlDown()) {
                     int dx = end.x - start.x;
                     int dy = end.y - start.y;
-                    reflection.r = Math.atan2(dy, dx);
+                    reflection.r = Math.IEEEremainder(Math.atan2(dx, dy), Math.PI * 2d);
                 } else {
                     reflection.x = end.getX();
                     reflection.y = end.getY();
