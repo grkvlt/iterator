@@ -30,8 +30,6 @@ import static iterator.util.Messages.DIALOG_PROPERTIES_Y;
 
 import java.text.MessageFormat;
 
-import javax.swing.JFormattedTextField.AbstractFormatter;
-
 import com.google.common.base.Optional;
 
 import iterator.Explorer;
@@ -40,8 +38,8 @@ import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
 import iterator.util.AbstractPropertyDialog;
+import iterator.util.Formatter;
 import iterator.util.Property;
-import iterator.util.Utils;
 
 /**
  * Properties dialog.
@@ -70,24 +68,21 @@ public class Properties extends AbstractPropertyDialog {
         String label = MessageFormat.format(messages.getText(DIALOG_PROPERTIES_TITLE), function.getClass().getSimpleName());
         setLabel(label);
 
-        AbstractFormatter doubleFormatter1 = new Utils.DoubleFormatter(1);
-        AbstractFormatter doubleFormatter4 = new Utils.DoubleFormatter(4);
-        AbstractFormatter optionalDoubleFormatter = new Utils.OptionalDoubleFormatter(4);
         if (transform != null) {
-            x = addProperty(messages.getText(DIALOG_PROPERTIES_X), transform.x, doubleFormatter1);
-            y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), transform.y, doubleFormatter1);
-            r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Math.toDegrees(transform.r), doubleFormatter1);
-            w = addProperty(messages.getText(DIALOG_PROPERTIES_W), transform.w, doubleFormatter1);
-            h = addProperty(messages.getText(DIALOG_PROPERTIES_H), transform.h, doubleFormatter1);
-            shx = addProperty(messages.getText(DIALOG_PROPERTIES_SHX), transform.shx, doubleFormatter4);
-            shy = addProperty(messages.getText(DIALOG_PROPERTIES_SHY), transform.shy, doubleFormatter4);
-            det = addReadOnlyProperty(messages.getText(DIALOG_PROPERTIES_DETERMINANT), transform.getDeterminant(), doubleFormatter4);
-            weight = addProperty(messages.getText(DIALOG_PROPERTIES_WEIGHT), Optional.fromNullable(transform.weight), optionalDoubleFormatter);
+            x = addProperty(messages.getText(DIALOG_PROPERTIES_X), transform.x, Formatter.doubles(1));
+            y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), transform.y, Formatter.doubles(1));
+            r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Math.toDegrees(transform.r), Formatter.doubles(1));
+            w = addProperty(messages.getText(DIALOG_PROPERTIES_W), transform.w, Formatter.doubles(1));
+            h = addProperty(messages.getText(DIALOG_PROPERTIES_H), transform.h, Formatter.doubles(1));
+            shx = addProperty(messages.getText(DIALOG_PROPERTIES_SHX), transform.shx, Formatter.doubles(4));
+            shy = addProperty(messages.getText(DIALOG_PROPERTIES_SHY), transform.shy, Formatter.doubles(4));
+            det = addReadOnlyProperty(messages.getText(DIALOG_PROPERTIES_DETERMINANT), transform.getDeterminant(), Formatter.doubles(4));
+            weight = addProperty(messages.getText(DIALOG_PROPERTIES_WEIGHT), Optional.fromNullable(transform.weight), Formatter.optionalDoubles(4));
         }
         if (reflection != null) {
-            x = addProperty(messages.getText(DIALOG_PROPERTIES_X), reflection.x, doubleFormatter1);
-            y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), reflection.y, doubleFormatter1);
-            r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Math.toDegrees(reflection.r), doubleFormatter1);
+            x = addProperty(messages.getText(DIALOG_PROPERTIES_X), reflection.x, Formatter.doubles(1));
+            y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), reflection.y, Formatter.doubles(1));
+            r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Math.toDegrees(reflection.r), Formatter.doubles(1));
         }
 
         setSuccess(messages.getText(DIALOG_PROPERTIES_BUTTON_UPDATE));

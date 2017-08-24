@@ -31,8 +31,8 @@ import iterator.util.AbstractPropertyDialog;
 import iterator.util.Config;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
+import iterator.util.Formatter;
 import iterator.util.Property;
-import iterator.util.Utils;
 
 /**
  * Preferences dialog.
@@ -57,7 +57,7 @@ public class Preferences extends AbstractPropertyDialog {
         render = addDropDown(messages.getText(DIALOG_PREFERENCES_RENDER), controller.getRender(), Render.values());
         paletteFile = addDropDown(messages.getText(DIALOG_PREFERENCES_PALETTE_FILE), controller.getPaletteFile(), Config.PALETTE_FILES);
         paletteSize = addSpinner(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), controller.getPaletteSize(), 0, 256);
-        seed = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SEED), controller.getSeed(), new Utils.LongFormatter());
+        seed = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SEED), controller.getSeed(), Formatter.longs());
         threads = addSpinner(messages.getText(DIALOG_PREFERENCES_THREADS), controller.getThreads(), Config.MIN_THREADS, 8);
         debug = addCheckBox(messages.getText(DIALOG_PREFERENCES_DEBUG), controller.isDebug());
 

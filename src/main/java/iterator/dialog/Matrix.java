@@ -47,9 +47,9 @@ import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Dialog;
+import iterator.util.Formatter;
 import iterator.util.Messages;
 import iterator.util.Property;
-import iterator.util.Utils;
 import iterator.view.Details;
 
 /**
@@ -175,7 +175,7 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
     }
 
     private Property<Double> addProperty(JPanel panel, int digits) {
-        final JFormattedTextField field = new JFormattedTextField(new Utils.DoubleFormatter(digits));
+        final JFormattedTextField field = new JFormattedTextField(Formatter.doubles(digits));
         field.setHorizontalAlignment(JTextField.RIGHT);
         field.setBorder(BorderFactory.createLoweredSoftBevelBorder());
         field.setFont(new Font("Cambria", Font.ITALIC, 14));

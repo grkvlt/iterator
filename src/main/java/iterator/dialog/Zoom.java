@@ -24,12 +24,10 @@ import static iterator.util.Messages.DIALOG_ZOOM_Y;
 
 import java.awt.geom.Point2D;
 
-import javax.swing.JFormattedTextField.AbstractFormatter;
-
 import iterator.Explorer;
 import iterator.util.AbstractPropertyDialog;
+import iterator.util.Formatter;
 import iterator.util.Property;
-import iterator.util.Utils;
 
 /**
  * Zoom properties dialog.
@@ -46,11 +44,9 @@ public class Zoom extends AbstractPropertyDialog {
 
         setLabel(messages.getText(DIALOG_ZOOM_TITLE));
 
-        AbstractFormatter doubleFormatter = new Utils.DoubleFormatter(1);
-        x = addProperty(messages.getText(DIALOG_ZOOM_X), 0d, doubleFormatter);
-        y = addProperty(messages.getText(DIALOG_ZOOM_Y), 0d, doubleFormatter);
-        AbstractFormatter floatFormatter = new Utils.FloatFormatter(2);
-        scale = addProperty(messages.getText(DIALOG_ZOOM_SCALE), 1f, floatFormatter);
+        x = addProperty(messages.getText(DIALOG_ZOOM_X), 0d, Formatter.doubles(4));
+        y = addProperty(messages.getText(DIALOG_ZOOM_Y), 0d, Formatter.doubles(4));
+        scale = addProperty(messages.getText(DIALOG_ZOOM_SCALE), 1f, Formatter.floats(2));
 
         setSuccess(messages.getText(DIALOG_ZOOM_BUTTON_UPDATE));
         setCancel(messages.getText(DIALOG_ZOOM_BUTTON_CANCEL));
