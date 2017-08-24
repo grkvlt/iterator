@@ -73,6 +73,7 @@ import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -88,6 +89,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
@@ -111,8 +113,10 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import com.google.common.base.CaseFormat;
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -155,10 +159,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             "  |___|_|   |____/  |_____/_/\\_\\ .__/|_|\\___/|_|  \\___|_|   ",
             "                               |_|                          ",
             "",
-            "    Iterated Function System Explorer Version %s",
+            "    Iterated Function System Explorer %s",
+            "",
             "    Copyright 2012-2017 by Andrew Donald Kennedy",
             "    Licensed under the Apache Software License, Version 2.0",
-            "    https://grkvlt.github.io/iterator/",
+            "    Documentation at https://grkvlt.github.io/iterator/",
             "");
 
     public static final String FULLSCREEN_OPTION = "-f";
@@ -174,6 +179,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public static final String DETAILS = "details";
 
     private static final Version version = Version.instance();
+
+    private static final String DEBUG = "[?] ";
+    private static final String PRINT = "[-] ";
+    private static final String ERROR = "[!] ";
+    private static final String STACK = "[>] ";
+
+    private static final String NEWLINE = StandardSystemProperty.LINE_SEPARATOR.value();
 
     private Config config;
     private File override;
@@ -262,12 +274,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     final File file = new File(argv[i]);
                     if (file.canRead()) {
                         // Add a task to load the file
-                        postponed = new Runnable() {
-                            public void run() {
-                                IFS loaded = load(file);
-                                loaded.setSize(size);
-                                bus.post(loaded);
-                            }
+                        postponed = () -> {
+                            IFS loaded = load(file);
+                            loaded.setSize(size);
+                            bus.post(loaded);
                         };
                     } else {
                         error("Cannot load XML data file: %s", argv[i]);
@@ -305,7 +315,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             setPaletteSize(config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE));
             loadColours();
         }
-        debug("Configured %s: %s",
+        debug("Configured %s %s: %s", render,
                 colour ? palette ? stealing ? "stealing" : "palette" : ifscolour ? "ifscolour" : "colour" : "grayscale",
                 palette ? paletteFile : colour ? "hsb" : "black");
 
@@ -573,32 +583,33 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         menuBar.add(file);
 
         JMenu system = new JMenu(messages.getText(MENU_DISPLAY));
+        ButtonGroup displayGroup = new ButtonGroup();
         showEditor = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_DISPLAY_EDITOR)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 show(EDITOR);
             }
         });
+        system.add(showEditor);
+        displayGroup.add(showEditor);
         showViewer = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_DISPLAY_VIEWER)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 show(VIEWER);
             }
         });
+        system.add(showViewer);
+        displayGroup.add(showViewer);
         showDetails = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_DISPLAY_DETAILS)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 show(DETAILS);
             }
         });
-        system.add(showEditor);
-        system.add(showViewer);
         system.add(showDetails);
-        ButtonGroup displayGroup = new ButtonGroup();
-        displayGroup.add(showEditor);
-        displayGroup.add(showViewer);
         displayGroup.add(showDetails);
         menuBar.add(system);
+
         setJMenuBar(menuBar);
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -712,6 +723,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void save(File file) {
+        print("Saving %s", file.getName());
         try (FileWriter writer = new FileWriter(file)) {
             JAXBContext context = JAXBContext.newInstance(IFS.class);
             Marshaller marshaller = context.createMarshaller();
@@ -724,6 +736,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public IFS load(File file) {
+        print("Loading %s", file.getName());
         try (FileReader reader = new FileReader(file)) {
             JAXBContext context = JAXBContext.newInstance(IFS.class);
             Unmarshaller unmarshaller = context.createUnmarshaller();
@@ -862,7 +875,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public void debug(String format, Object...varargs) {
         if (isDebug()) {
-            output(System.err, format, varargs);
+            output(System.err, DEBUG + format, varargs);
         }
     }
 
@@ -879,20 +892,29 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void error(Optional<Throwable> t, String format, Object...varargs) {
-        output(System.err, format, varargs);
+        output(System.err, ERROR + format, varargs);
         if (t.isPresent()) {
-            t.get().printStackTrace(System.err);
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            PrintStream print = new PrintStream(bytes);
+            t.get().printStackTrace(print);
+            String trace = Splitter.on(CharMatcher.anyOf("\r\n"))
+                    .omitEmptyStrings()
+                    .splitToList(bytes.toString())
+                    .stream()
+                    .map(STACK::concat)
+                    .collect(Collectors.joining(NEWLINE));
+            System.err.println(trace);
         }
         System.exit(1);
     }
 
     public void print(String format, Object...varargs) {
-        output(System.out, format, varargs);
+        output(System.out, PRINT + format, varargs);
     }
 
     protected void output(PrintStream out, String format, Object...varargs) {
         String output = String.format(format, varargs);
-        if (!output.endsWith("\n")) output = output.concat("\n");
+        if (!output.endsWith(NEWLINE)) output = output.concat(NEWLINE);
         out.print(output);
     }
 
@@ -912,14 +934,15 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     /**
-     * Explorer.
+     * Explorer application launch.
      */
     public static void main(final String...argv) throws Exception {
         // Print text banner
-        String banner = Joiner.on(StandardSystemProperty.LINE_SEPARATOR.value()).join(BANNER);
+        String banner = Joiner.on(NEWLINE).join(BANNER);
         System.out.printf(banner, version.get());
+        System.out.println();
 
-        // Load splash screen text
+        // Print splash screen text
         SplashScreen splash = SplashScreen.getSplashScreen();
         if (splash != null && splash.isVisible()) {
             Graphics2D g = splash.createGraphics();
@@ -936,13 +959,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             }
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                // Start application
-                Explorer explorer = new Explorer(argv);
-                explorer.start();
-            }
+        // Start application
+        SwingUtilities.invokeLater(() -> {
+            Explorer explorer = new Explorer(argv);
+            explorer.print("Starting Explorer UI");
+            explorer.start();
         });
     }
 

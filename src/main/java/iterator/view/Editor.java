@@ -365,10 +365,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     viewer.reset();
                     List<Transform> transforms = getTransforms();
                     double area = getWidth() * getHeight();
-                    double reflectRatio = Math.pow(2d, getReflections().size());
+                    double totalRatio = Math.pow(2d, transforms.size() + getReflections().size());
                     double areaRatio = getArea(transforms) / area;
                     double sizeRatio = (getWidth(transforms) * getHeight(transforms)) / area;
-                    int k = (int) (1_000_000 * areaRatio * sizeRatio * reflectRatio);
+                    int k = (int) (500_000 * areaRatio * sizeRatio * totalRatio);
                     viewer.iterate(k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
 
                     g.setComposite(AlphaComposite.SrcOver.derive(0.8f));
@@ -603,8 +603,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
 
     /** @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent) */
     @Override
-    public void mouseClicked(MouseEvent e) {
-    }
+    public void mouseClicked(MouseEvent e) { }
 
     /** @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent) */
     @Override
@@ -752,13 +751,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
 
     /** @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent) */
     @Override
-    public void mouseEntered(MouseEvent e) {
-    }
+    public void mouseEntered(MouseEvent e) { }
 
     /** @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent) */
     @Override
-    public void mouseExited(MouseEvent e) {
-    }
+    public void mouseExited(MouseEvent e) { }
 
     /** @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent) */
     @Override
@@ -808,7 +805,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     double x = resize.x;
                     double y = resize.y;
     
-                    switch(corner.getType()) {
+                    switch (corner.getType()) {
                         case Cursor.NW_RESIZE_CURSOR:
                             x += (inverseX.x + inverseY.x);
                             y += (inverseX.y + inverseY.y);
@@ -911,8 +908,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
 
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override
-    public void keyTyped(KeyEvent e) {
-    }
+    public void keyTyped(KeyEvent e) { }
 
     /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
     @Override
@@ -955,6 +951,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
 
     /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
     @Override
-    public void keyReleased(KeyEvent e) {
-    }
+    public void keyReleased(KeyEvent e) { }
+
 }

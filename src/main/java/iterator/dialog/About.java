@@ -41,7 +41,8 @@ public class About extends JPanel implements Dialog, MouseListener {
     /** serialVersionUID */
     private static final long serialVersionUID = -1378560167379537595L;
 
-    private Explorer controller;
+    private final Explorer controller;
+
     private JDialog about;
     private BufferedImage image;
 
@@ -83,7 +84,7 @@ public class About extends JPanel implements Dialog, MouseListener {
             g.drawImage(image, AffineTransform.getTranslateInstance(0d, 0d), null);
             Utils.paintSplashText(g, getWidth(), getHeight());
         } catch (Exception e) {
-            controller.error(e, "Failure painting splash text");
+            controller.error(e, "Failure painting about dialog");
         } finally {
             g.dispose();
         }
@@ -97,21 +98,18 @@ public class About extends JPanel implements Dialog, MouseListener {
 
     /** @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent) */
     @Override
-    public void mousePressed(MouseEvent e) {
-    }
+    public void mousePressed(MouseEvent e) { }
 
     /** @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent) */
     @Override
-    public void mouseReleased(MouseEvent e) {
-    }
+    public void mouseReleased(MouseEvent e) { }
 
     /** @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent) */
     @Override
-    public void mouseEntered(MouseEvent e) {
-    }
+    public void mouseEntered(MouseEvent e) { }
 
     /** @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent) */
     @Override
-    public void mouseExited(MouseEvent e) {
-    }
+    public void mouseExited(MouseEvent e) { }
+
 }

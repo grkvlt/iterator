@@ -452,9 +452,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     .addAll(transforms)
                     .addAll(reflections)
                     .build();
+            if (functions.isEmpty()) return;
 
             double weight = controller.getEditor().getWeight(transforms);
             int n = transforms.size();
+            int m = reflections.size();
             int s = isVisible() ? 1 : 2;
             int a = isVisible() ? 8 : (int) Math.min(128d, Math.pow(n,  1.2) * 16d);
             int l = getWidth() * getHeight();
@@ -467,7 +469,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 // Skip based on transform weighting
                 int j = random.nextInt(functions.size());
                 Function f = functions.get(j);
-                if (j < n && ((Transform) f).getWeight() < random.nextDouble() * weight) {
+                if ((j < n ? ((Transform) f).getWeight() : weight) < random.nextDouble() * weight * (m + 1d)) {
                     continue;
                 }
 
@@ -672,8 +674,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override
-    public void keyTyped(KeyEvent e) {
-    }
+    public void keyTyped(KeyEvent e) { }
 
     /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
     @Override
@@ -742,8 +743,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
     /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
     @Override
-    public void keyReleased(KeyEvent e) {
-    }
+    public void keyReleased(KeyEvent e) { }
 
     /** @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent) */
     @Override
@@ -802,33 +802,27 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
     /** @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent) */
     @Override
-    public void mouseEntered(MouseEvent e) {
-    }
+    public void mouseEntered(MouseEvent e) { }
 
     /** @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent) */
     @Override
-    public void mouseExited(MouseEvent e) {
-    }
+    public void mouseExited(MouseEvent e) { }
 
     /** @see java.awt.event.MouseMotionListener#mouseMoved(java.awt.event.MouseEvent) */
     @Override
-    public void mouseMoved(MouseEvent e) {
-    }
+    public void mouseMoved(MouseEvent e) { }
 
     /** @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent) */
     @Override
-    public void mouseClicked(MouseEvent e) {
-    }
+    public void mouseClicked(MouseEvent e) { }
 
     /** @see java.awt.event.ComponentListener#componentResized(java.awt.event.ComponentEvent) */
     @Override
-    public void componentResized(ComponentEvent e) {
-    }
+    public void componentResized(ComponentEvent e) { }
 
     /** @see java.awt.event.ComponentListener#componentMoved(java.awt.event.ComponentEvent) */
     @Override
-    public void componentMoved(ComponentEvent e) {
-    }
+    public void componentMoved(ComponentEvent e) { }
 
     /** @see java.awt.event.ComponentListener#componentShown(java.awt.event.ComponentEvent) */
     @Override
