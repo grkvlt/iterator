@@ -114,9 +114,9 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
 
         c0 = addProperty(matrix, 4);
         c1 = addProperty(matrix, 4);
-        c2 = addProperty(matrix, 4);
+        c2 = addProperty(matrix, 1);
         c3 = addProperty(matrix, 4);
-        c4 = addProperty(matrix, 1);
+        c4 = addProperty(matrix, 4);
         c5 = addProperty(matrix, 1);
 
         JTextPane right = new JTextPane();
@@ -157,20 +157,16 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         update.addKeyListener(this);
         buttons.add(update);
 
-        failure = cancelAction(messages.getText(DIALOG_MATRIX_BUTTON_CANCEL));
-        JButton cancel = new JButton(failure);
-        cancel.setFont(CALIBRI_PLAIN_14);
-        cancel.addKeyListener(this);
-        buttons.add(cancel);
-    }
-
-    private Action cancelAction(String text) {
-        return new AbstractAction() {
+        failure = new AbstractAction(messages.getText(DIALOG_MATRIX_BUTTON_CANCEL)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
             }
         };
+        JButton cancel = new JButton(failure);
+        cancel.setFont(CALIBRI_PLAIN_14);
+        cancel.addKeyListener(this);
+        buttons.add(cancel);
     }
 
     private Property<Double> addProperty(JPanel panel, int digits) {
