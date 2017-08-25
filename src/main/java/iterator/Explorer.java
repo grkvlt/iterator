@@ -136,7 +136,6 @@ import iterator.util.Config.Render;
 import iterator.util.Messages;
 import iterator.util.Platform;
 import iterator.util.Subscriber;
-import iterator.util.Utils;
 import iterator.util.Version;
 import iterator.view.Details;
 import iterator.view.Editor;
@@ -948,7 +947,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             Graphics2D g = splash.createGraphics();
 
             try {
-                Utils.paintSplashText(g, splash.getSize().width, splash.getSize().height);
+                About.paintSplashText(g, splash.getSize().width, splash.getSize().height);
                 splash.update();
             } catch (Exception e) {
                 System.err.println("Failure painting splash text");

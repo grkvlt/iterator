@@ -16,8 +16,10 @@
 package iterator.dialog;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
@@ -31,8 +33,9 @@ import javax.swing.JPanel;
 import com.google.common.io.Resources;
 
 import iterator.Explorer;
+import iterator.Utils;
 import iterator.util.Dialog;
-import iterator.util.Utils;
+import iterator.util.Version;
 
 /**
  * About dialog.
@@ -82,12 +85,27 @@ public class About extends JPanel implements Dialog, MouseListener {
 
         try {
             g.drawImage(image, AffineTransform.getTranslateInstance(0d, 0d), null);
-            Utils.paintSplashText(g, getWidth(), getHeight());
+            paintSplashText(g, getWidth(), getHeight());
         } catch (Exception e) {
             controller.error(e, "Failure painting about dialog");
         } finally {
             g.dispose();
         }
+    }
+
+    /**
+     * Paints text over the spash screen image.
+     */
+    public static void paintSplashText(Graphics2D g, int width, int height) {
+        g.setColor(Color.BLACK);
+        g.setFont(Utils.calibri(Font.BOLD, 80));
+        g.drawString("IFS Explorer", 10, 65);
+        g.setFont(Utils.calibri(Font.BOLD, 25));
+        g.drawString("Version " + Version.instance().get(), 10, 100);
+        g.setFont(Utils.calibri(Font.BOLD, 13));
+        g.drawString("Copyright 2012-2017 by Andrew Kennedy", 10, height - 15);
+        g.setFont(Utils.consolas(Font.BOLD, 12));
+        g.drawString("http://grkvlt.github.io/iterator/", 260, height - 15);
     }
 
     /** @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent) */

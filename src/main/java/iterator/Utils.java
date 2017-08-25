@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iterator.util;
+package iterator;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -26,42 +25,15 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+
+import iterator.model.Transform;
 
 /**
  * Useful static methods.
  */
 public class Utils {
-    /**
-     * Waits until the {@code input} {@link Supplier#get() supplies} a non-null object.
-     * <p>
-     * This does not have a timeout, and will wait forever.
-     * <pre>
-     * {@code bus = waitFor(new Supplier<EventBus>() {
-     *     public EventBus get() { return explorer.getEventBus(); }
-     * });}
-     * </pre>
-     *
-     * @param input a {@link Supplier} for the required object
-     * @return the supplied object
-     * @see Supplier#get()
-     * @see Predicates#notNull()
-     */
-    public static <T> T waitFor(final Supplier<T> input) {
-        return waitFor(Predicates.<T>notNull(), input);
-    }
-    public static <T> T waitFor(final Predicate<T> predicate, final Supplier<T> input) {
-        for (int spin = 0; Predicates.not(predicate).apply(input.get());) {
-            if (++spin % 10_000_000 == 0) System.err.print('.');
-        }
-        T result = input.get();
-        System.err.println(result.getClass().getName());
-        return result;
-    }
 
     /**
      * Concatenates a series of optional elements onto an initial {@link List}.
@@ -85,19 +57,23 @@ public class Utils {
         return joined;
     }
 
-    /**
-     * Paints text over the spash screen image.
-     */
-    public static void paintSplashText(Graphics2D g, int width, int height) {
-        g.setColor(Color.BLACK);
-        g.setFont(new Font("Calibri", Font.BOLD, 80));
-        g.drawString("IFS Explorer", 10, 65);
-        g.setFont(new Font("Calibri", Font.BOLD, 25));
-        g.drawString("Version " + Version.instance().get(), 10, 100);
-        g.setFont(new Font("Calibri", Font.BOLD, 13));
-        g.drawString("Copyright 2012-2017 by Andrew Kennedy", 10, height - 15);
-        g.setFont(new Font("Consolas", Font.BOLD, 12));
-        g.drawString("http://grkvlt.github.io/iterator/", 260, height - 15);
+    public static final String CALIBRI = "Calibri";
+    public static final String CAMBRIA = "Cambria";
+    public static final String CONSOLAS = "Consolas";
+
+    /** Calibri {@link Font}. */
+    public static Font calibri(int style, int size) {
+        return(new Font(CALIBRI, style, size));
+    }
+
+    /** Cambria {@link Font}. */
+    public static Font cambria(int style, int size) {
+        return(new Font(CAMBRIA, style, size));
+    }
+
+    /** Consolas {@link Font}. */
+    public static Font consolas(int style, int size) {
+        return(new Font(CONSOLAS, style, size));
     }
 
     /**
@@ -123,5 +99,25 @@ public class Utils {
         } catch (IOException ioe) {
             throw Throwables.propagate(ioe);
         }
+    }
+
+    public static double weight(List<Transform> transforms) {
+        return transforms.stream().map(Transform::getWeight).reduce(0d, Double::sum);
+    }
+
+    public static double area(List<Transform> transforms) {
+        return transforms.stream().map(t -> t.getWidth() * t.getHeight()).reduce(0d, Double::sum);
+    }
+
+    public static double width(List<Transform> transforms) {
+        double min = transforms.stream().map(Transform::getTranslateX).reduce(0d, Double::min);
+        double max = transforms.stream().map(Transform::getTranslateX).reduce(0d, Double::max);
+        return max - min;
+    }
+
+    public static double height(List<Transform> transforms) {
+        double min = transforms.stream().map(Transform::getTranslateY).reduce(0d, Double::min);
+        double max = transforms.stream().map(Transform::getTranslateY).reduce(0d, Double::max);
+        return max - min;
     }
 }

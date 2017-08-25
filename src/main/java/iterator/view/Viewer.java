@@ -78,6 +78,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 import iterator.Explorer;
+import iterator.Utils;
 import iterator.dialog.Zoom;
 import iterator.model.Function;
 import iterator.model.IFS;
@@ -86,7 +87,6 @@ import iterator.model.Transform;
 import iterator.util.Config.Render;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
-import iterator.util.Utils;
 
 /**
  * Rendered IFS viewer.
@@ -248,7 +248,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
             if (info) {
                 g.setPaint(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
-                Font font = new Font("Calibri", Font.PLAIN, 20);
+                Font font = Utils.calibri(Font.PLAIN, 20);
                 FontRenderContext frc = g.getFontRenderContext();
 
                 TextLayout scaleText = new TextLayout(String.format("%.1fx (%.3f, %.3f) %s/%s", scale, centre.getX() / getWidth(), centre.getY() / getHeight(), controller.getMode(), controller.getRender()), font, frc);
@@ -454,7 +454,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     .build();
             if (functions.isEmpty()) return;
 
-            double weight = controller.getEditor().getWeight(transforms);
+            double weight = Utils.weight(transforms);
             int n = transforms.size();
             int m = reflections.size();
             int s = isVisible() ? 1 : 2;

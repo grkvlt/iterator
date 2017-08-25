@@ -52,11 +52,6 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     /** serialVersionUID */
     private static final long serialVersionUID = -7626627964747215623L;
 
-    protected static final Font CALIBRI_PLAIN_14 = new Font("Calibri", Font.PLAIN, 14);
-    protected static final Font CALIBRI_ITALIC_14 = new Font("Calibri", Font.ITALIC, 14);
-    protected static final Font CALIBRI_BOLD_14 = new Font("Calibri", Font.BOLD, 14);
-    protected static final Font CALIBRI_BOLD_16 = new Font("Calibri", Font.BOLD, 16);
-
     protected final Messages messages;
     protected final Explorer controller;
     protected final EventBus bus;

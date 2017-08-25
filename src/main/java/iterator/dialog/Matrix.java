@@ -22,7 +22,6 @@ import static iterator.util.Messages.DIALOG_MATRIX_TITLE;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -79,11 +78,11 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         setUndecorated(true);
         setResizable(false);
         setLayout(new BorderLayout());
-        setFont(new Font("Calibri", Font.PLAIN, 14));
+        setFont(CALIBRI_PLAIN_14);
         getContentPane().setBackground(Color.WHITE);
 
         JLabel title = new JLabel(messages.getText(DIALOG_MATRIX_TITLE), JLabel.CENTER);
-        title.setFont(new Font("Calibri", Font.BOLD, 16));
+        title.setFont(CALIBRI_BOLD_16);
         add(title, BorderLayout.NORTH);
 
         JPanel panel = new JPanel(new BorderLayout());
@@ -149,18 +148,18 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
                 matrix[3] = c4.get();
                 matrix[5] = c5.get();
                 transform.setMatrix(matrix);
-                bus.post(ifs);
+                bus.post(Matrix.this.ifs);
                 setVisible(false);
             }
         };
         JButton update = new JButton(success);
-        update.setFont(new Font("Calibri", Font.PLAIN, 14));
+        update.setFont(CALIBRI_PLAIN_14);
         update.addKeyListener(this);
         buttons.add(update);
 
         failure = cancelAction(messages.getText(DIALOG_MATRIX_BUTTON_CANCEL));
         JButton cancel = new JButton(failure);
-        cancel.setFont(new Font("Calibri", Font.PLAIN, 14));
+        cancel.setFont(CALIBRI_PLAIN_14);
         cancel.addKeyListener(this);
         buttons.add(cancel);
     }
@@ -178,7 +177,7 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         final JFormattedTextField field = new JFormattedTextField(Formatter.doubles(digits));
         field.setHorizontalAlignment(JTextField.RIGHT);
         field.setBorder(BorderFactory.createLoweredSoftBevelBorder());
-        field.setFont(new Font("Cambria", Font.ITALIC, 14));
+        field.setFont(CALIBRI_ITALIC_14);
         field.setColumns(8);
         field.addKeyListener(this);
         panel.add(field);

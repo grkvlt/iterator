@@ -22,7 +22,6 @@ import java.awt.Graphics2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,11 +38,11 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 import iterator.Explorer;
+import iterator.Utils;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
 import iterator.util.Subscriber;
-import iterator.util.Utils;
 
 /**
  * Detail display.
@@ -165,7 +164,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                         "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
                         t.getId(),
                         matrix[0], matrix[1], matrix[2],
-                        100d * t.getWeight() / controller.getEditor().getWeight(ifs.getTransforms()),
+                        100d * t.getWeight() / Utils.weight(ifs.getTransforms()),
                         controller.isColour() ? "black" : "white",
                         c.getRed(), c.getGreen(), c.getBlue(),
                         matrix[3], matrix[4], matrix[5]);

@@ -15,10 +15,19 @@
  */
 package iterator.util;
 
+import java.awt.Font;
+
+import iterator.Utils;
+
 /**
  * Dialog box interface.
  */
 public interface Dialog {
+
+    Font CALIBRI_PLAIN_14 = Utils.calibri(Font.PLAIN, 14);
+    Font CALIBRI_ITALIC_14 = Utils.calibri(Font.ITALIC, 14);
+    Font CALIBRI_BOLD_14 = Utils.calibri(Font.BOLD, 14);
+    Font CALIBRI_BOLD_16 = Utils.calibri(Font.BOLD, 16);
 
     /** Method to display the dialog box. */
     void showDialog();

@@ -67,6 +67,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 import iterator.Explorer;
+import iterator.Utils;
 import iterator.dialog.Matrix;
 import iterator.dialog.Properties;
 import iterator.model.IFS;
@@ -74,7 +75,6 @@ import iterator.model.Reflection;
 import iterator.model.Transform;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
-import iterator.util.Utils;
 
 /**
  * IFS Editor.
@@ -277,26 +277,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         return transforms;
     }
 
-    public double getWeight(List<Transform> transforms) {
-        return transforms.stream().map(Transform::getWeight).reduce(0d, Double::sum);
-    }
-
-    public double getArea(List<Transform> transforms) {
-        return transforms.stream().map(t -> t.getWidth() * t.getHeight()).reduce(0d, Double::sum);
-    }
-
-    public double getWidth(List<Transform> transforms) {
-        double min = transforms.stream().map(Transform::getTranslateX).reduce(0d, Double::min);
-        double max = transforms.stream().map(Transform::getTranslateX).reduce(0d, Double::max);
-        return max - min;
-    }
-
-    public double getHeight(List<Transform> transforms) {
-        double min = transforms.stream().map(Transform::getTranslateY).reduce(0d, Double::min);
-        double max = transforms.stream().map(Transform::getTranslateY).reduce(0d, Double::max);
-        return max - min;
-    }
-
     /** @see Subscriber#updated(IFS) */
     @Override
     @Subscribe
@@ -366,8 +346,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     List<Transform> transforms = getTransforms();
                     double area = getWidth() * getHeight();
                     double totalRatio = Math.pow(2d, transforms.size() + getReflections().size());
-                    double areaRatio = getArea(transforms) / area;
-                    double sizeRatio = (getWidth(transforms) * getHeight(transforms)) / area;
+                    double areaRatio = Utils.area(transforms) / area;
+                    double sizeRatio = (Utils.width(transforms) * Utils.height(transforms)) / area;
                     int k = (int) (500_000 * areaRatio * sizeRatio * totalRatio);
                     viewer.iterate(k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
 
@@ -448,7 +428,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             } else {
                 g.setPaint(new Color(Color.BLACK.getRed(), Color.BLACK.getGreen(), Color.BLACK.getBlue(), 128));
             }
-            g.setFont(new Font("Calibri", Font.BOLD, 25));
+            g.setFont(Utils.calibri(Font.BOLD, 25));
             Point text = new Point();
             t.getTransform().transform(new Point(0, 0), text);
             AffineTransform rotation = new AffineTransform();
@@ -465,7 +445,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             g.setTransform(rotation);
             String id = String.format("T%s %.1f%% %s",
                     (t.getId() == -1 ? "--" : String.format("%02d", t.getId())),
-                    100d * t.getWeight() / getWeight(Utils.concatenate(ifs.getTransforms(), selected)),
+                    100d * t.getWeight() / Utils.weight(Utils.concatenate(ifs.getTransforms(), selected)),
                     ((highlight && rotate != null) ? String.format("(%+d)", (int) Math.toDegrees(t.r)) : ""));
             g.drawString(id, text.x + 5, text.y + 25);
         } catch (Exception e) {
@@ -500,7 +480,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             g.draw(line);
 
             // Draw the label
-            g.setFont(new Font("Calibri", Font.BOLD, 25));
+            g.setFont(Utils.calibri(Font.BOLD, 25));
             String id = String.format("R%s %s",
                     (r.getId() == -1 ? "--" : String.format("%02d", r.getId())),
                     highlight ? String.format("(%+d)", (int) Math.toDegrees(r.r)) : "");
