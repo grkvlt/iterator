@@ -32,7 +32,9 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.SecondaryLoop;
 import java.awt.Shape;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -119,6 +121,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private Zoom properties;
     private JCheckBoxMenuItem showGrid, showOverlay, showInfo;
     private JMenuItem pause, resume;
+    private SecondaryLoop loop;
 
     public Viewer(Explorer controller) {
         super();
@@ -641,11 +644,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void start() {
         timer.start();
         if (running.compareAndSet(false, true)) {
+            loop = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
             for (int i = 0; i < controller.getThreads(); i++) {
                 executor.submit(this);
             }
             pause.setEnabled(true);
             resume.setEnabled(false);
+            loop.enter();
         }
     }
 
@@ -655,6 +660,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             timer.stop();
         }
         if (status) {
+            loop.exit();
             pause.setEnabled(false);
             resume.setEnabled(true);
         }
