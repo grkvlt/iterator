@@ -22,11 +22,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.DoubleFunction;
 
 import javax.imageio.ImageIO;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 
 import iterator.model.Transform;
 
@@ -34,6 +37,21 @@ import iterator.model.Transform;
  * Useful static methods.
  */
 public class Utils {
+
+    public static final int RGB24 = 0xffffff;
+    public static final Range<Double> UNITY = Range.open(0d, 1d);
+
+    public static BiFunction<Range<Double>, Double, Double> clamp() {
+        return (r,v) -> Math.min(r.upperEndpoint(), Math.max(r.lowerEndpoint(), v));
+    }
+
+    public static DoubleFunction<Double> clamp(Range<Double> range) {
+        return v -> clamp().apply(range, v);
+    }
+
+    public static DoubleFunction<Double> unity() {
+        return v -> clamp().apply(UNITY, v);
+    }
 
     /**
      * Concatenates a series of optional elements onto an initial {@link List}.

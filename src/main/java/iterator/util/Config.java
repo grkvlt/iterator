@@ -15,6 +15,7 @@
  */
 package iterator.util;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -99,21 +100,34 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Mode DEFAULT_MODE = Mode.GRAY;
 
     public static enum Render {
-        STANDARD(false),
-        TOP(false),
-        MEASURE(false),
-        IFS(false),
-        DENSITY(true),
-        LOG_DENSITY(true),
-        LOG_DENSITY_BLUR(true),
-        LOG_DENSITY_FLAME(true);
+        STANDARD(false, false, false),
+        TOP(false, false, false),
+        MEASURE(true, false, false),
+        IFS(false, false, false),
+        DENSITY(false, true, false),
+        DENSITY_POWER(false, true, false),
+        LOG_DENSITY(false, true, true),
+        LOG_DENSITY_POWER(false, true, true),
+        LOG_DENSITY_INVERSE(true, true, true),
+        LOG_DENSITY_BLUR(false, true, true),
+        LOG_DENSITY_FLAME(false, true, true);
 
+        private final boolean inverse;
         private final boolean density;
+        private final boolean log;
+
+        public Color getBackground() { return inverse ? Color.BLACK : Color.WHITE; }
+
+        public Color getForeground() { return inverse ? Color.WHITE : Color.BLACK; }
 
         public boolean isDensity() { return density; }
 
-        private Render(boolean density) {
+        public boolean isLog() { return log; }
+
+        private Render(boolean inverse, boolean density, boolean log) {
+            this.inverse = inverse;
             this.density = density;
+            this.log = log;
         }
 
         @Override

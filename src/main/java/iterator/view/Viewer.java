@@ -15,8 +15,10 @@
  */
 package iterator.view;
 
+import static iterator.Utils.RGB24;
 import static iterator.Utils.alpha;
 import static iterator.Utils.calibri;
+import static iterator.Utils.unity;
 import static iterator.Utils.weight;
 import static iterator.util.Messages.MENU_VIEWER_GRID;
 import static iterator.util.Messages.MENU_VIEWER_INFO;
@@ -83,6 +85,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import com.google.common.math.IntMath;
 
 import iterator.Explorer;
 import iterator.dialog.Zoom;
@@ -245,7 +248,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             }
 
             if (zoom != null) {
-                g.setPaint(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
+                g.setPaint(controller.getRender().getForeground());
                 g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
                 g.draw(zoom);
             }
@@ -260,7 +263,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             }
 
             if (info) {
-                g.setPaint(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
+                g.setPaint(controller.getRender().getForeground());
                 Font font = calibri(Font.PLAIN, 20);
                 FontRenderContext frc = g.getFontRenderContext();
 
@@ -294,7 +297,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             rect = view.createTransformedShape(rect);
 
             // Draw the outline
-            Color c = alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
+            Color c = alpha(controller.getRender().getForeground(), 64);
             g.setPaint(c);
             g.setStroke(new BasicStroke(2f));
             g.draw(rect);
@@ -316,7 +319,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             view.scale(scale, scale);
 
             // Draw the line
-            Color c = alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
+            Color c = alpha(controller.getRender().getForeground(), 64);
             g.setPaint(c);
             g.setStroke(new BasicStroke(2f));
             Path2D line = new Path2D.Double(Path2D.WIND_NON_ZERO);
@@ -341,7 +344,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
         try {
             // Set colour and width
-            Color c = alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
+            Color c = alpha(controller.getRender().getForeground(), 64);
             g.setPaint(c);
             g.setStroke(new BasicStroke(1f));
 
@@ -388,7 +391,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         Graphics2D g = image.createGraphics();
         try {
             if (isVisible()) {
-                g.setColor(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
+                g.setColor(controller.getRender().getBackground());
             } else {
                 g.setColor(new Color(1f, 1f, 1f, 0f));
             }
@@ -506,14 +509,23 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     }
 
                     if (controller.getRender().isDensity()) {
-                        density[p]++;
-                        if (controller.getRender() == Render.LOG_DENSITY_BLUR) {
-                            density[p]++;
-                            density[(p + 1) % l]++;
-                            density[(p + size.width) % l]++;
-                            density[(p + 1 + size.width) % l]++;
+                        try {
+                            int q = p;
+                            density[q] = IntMath.checkedAdd(density[q], 1);
+                            if (controller.getRender() == Render.LOG_DENSITY_BLUR) {
+                                q += 1;
+                                if (q < l) density[q] = IntMath.checkedAdd(density[q], 1);
+                                q += size.width;
+                                if (q < l) density[q] = IntMath.checkedAdd(density[q], 1);
+                                q -= 1;
+                                if (q < l) density[q] = IntMath.checkedAdd(density[q], 1);
+                            } else if (controller.getRender() == Render.LOG_DENSITY_POWER || controller.getRender() == Render.DENSITY_POWER) {
+                                density[q] = IntMath.checkedMultiply(density[q], 2);
+                            }
+                            max = Math.max(max, density[p]);
+                        } catch (ArithmeticException ae) {
+                            controller.debug("Overflow calculating density: %s", ae.getMessage());
                         }
-                        max = Math.max(max, density[p]);
                     }
 
                     Rectangle rect = new Rectangle(x, y, s, s);
@@ -542,9 +554,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         }
                         if (controller.getRender().isDensity()) {
                             if (controller.isIFSColour()) {
-                                rgb[p] = (double) color.getRGB() / (double) (2 << 24);
+                                rgb[p] = (double) color.getRGB() / (double) RGB24;
                             } else {
-                                rgb[p] = (rgb[p] + (double) color.getRGB() / (double) (2 << 24)) / 2d;
+                                rgb[p] = (rgb[p] + (double) color.getRGB() / (double) RGB24) / 2d;
                             }
                         }
                     }
@@ -584,35 +596,36 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public void plotDensity() {
         Graphics2D g = image.createGraphics();
 
-        if (isVisible()) {
-            g.setColor(Color.WHITE);
-        } else {
-            g.setColor(new Color(1f, 1f, 1f, 0f));
-        }
-        g.fillRect(0, 0, size.width, size.height);
-
         try {
+            if (isVisible()) {
+                g.setColor(controller.getRender().getBackground());
+            } else {
+                g.setColor(new Color(1f, 1f, 1f, 0f));
+            }
+            g.fillRect(0, 0, size.width, size.height);
+
             int r = isVisible() ? 1 : 2;
-            boolean log = (controller.getRender() == Render.LOG_DENSITY || controller.getRender() == Render.LOG_DENSITY_BLUR);
+            boolean log = controller.getRender().isLog();
             for (int x = 0; x < size.width; x++) {
                 for (int y = 0; y < size.height; y++) {
                     int p = x + y * size.width;
                     if (density[p] > 0) {
-                        float ratio = log ? (float) (Math.log(density[p]) / Math.log(max)) : ((float) density[p] / (float) max);
-                        float alpha = (float) (Math.log(density[p]) / density[p]);
-                        float gray = 1f - Math.min(1f, ratio);
+                        double ratio = unity().apply(log ? (double) (Math.log(density[p]) / Math.log(max)) : ((double) density[p] / (double) max));
+                        double gray = controller.getRender() == Render.LOG_DENSITY_INVERSE ? ratio : 1d - ratio;
                         if (controller.isColour()) {
-                            Color color = new Color((int) (rgb[p] * (2 << 24)));
+                            Color color = new Color((int) (rgb[p] * RGB24));
                             if (controller.getRender() == Render.LOG_DENSITY_FLAME) {
-                                g.setPaint(new Color((int) (alpha * color.getRed()), (int) (alpha * color.getGreen()), (int) (alpha * color.getBlue()), (int) ((1f - gray) * 255f)));
+                                float alpha = (float) (Math.log(density[p]) / density[p]);
+                                color = new Color((int) (alpha * color.getRed()), (int) (alpha * color.getGreen()), (int) (alpha * color.getBlue()));
                             } else {
-                                float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
-                                g.setPaint(Utils.alpha(new Color(Color.HSBtoRGB(hsb[0], hsb[1], gray)), (int) ((1f - gray) * 255f)));
+                                color = new Color((int) (gray * color.getRed()), (int) (gray * color.getGreen()), (int) (gray * color.getBlue()));
                             }
+                            float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+                            g.setPaint(alpha(new Color(Color.HSBtoRGB(hsb[0], hsb[1], (float) gray)), (int) (ratio * 255)));
                         } else {
-                            g.setPaint(new Color(gray, gray, gray, 1f - gray));
+                            g.setPaint(new Color((float) gray, (float) gray, (float) gray, (float) ratio));
                         }
-                        int side = (controller.getRender() == Render.LOG_DENSITY_BLUR) ? (int) (r * (1f - gray) * 5) : r;
+                        int side = (controller.getRender() == Render.LOG_DENSITY_BLUR) ? (int) (r * ratio * 8f) : r;
                         Rectangle rect = new Rectangle(x, y, side, side);
                         g.fill(rect);
                     }
