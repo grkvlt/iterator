@@ -97,6 +97,8 @@ public class Preferences extends AbstractPropertyDialog {
         controller.getViewer().reset();
         if (controller.getCurrent().equals(Explorer.VIEWER)) {
             controller.getViewer().start();
+        } else if (controller.getCurrent().equals(Explorer.EDITOR)) {
+            controller.getEditor().repaint();
         }
     }
 
