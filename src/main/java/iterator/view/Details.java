@@ -149,7 +149,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                             "<td class=\"bracketl\" rowspan=\"2\">&nbsp;</td>" +
                             "<td class=\"matrixr1\" align=\"right\">%.3f</td>" +
                             "<td class=\"matrixr1\" align=\"right\">%.3f</td>" +
-                            "<td class=\"matrixr1\" align=\"right\">%.3f</td>" +
+                            "<td class=\"matrixr1\" align=\"right\">%.0f</td>" +
                             "<td class=\"bracketr\" rowspan=\"2\">&nbsp;</td>" +
                         "</tr>" +
                         "<tr class=\"transform\">" +
@@ -158,16 +158,16 @@ public class Details extends JTextPane implements Printable, Subscriber {
                                 "background: #%02x%02x%02x; padding: 0; margin: 0;\">&nbsp;</div>" +
                             "</td>" +
                             "<td class=\"matrixr2\" align=\"right\">%.3f</td>" +
-                            "<td class=\"matrixr2\" align=\"right\">%.0f</td>" +
+                            "<td class=\"matrixr2\" align=\"right\">%.3f</td>" +
                             "<td class=\"matrixr2\" align=\"right\">%.0f</td>" +
                         "</tr>" +
                         "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
                         t.getId(),
-                        matrix[0], matrix[1], matrix[2],
+                        matrix[0], matrix[2], matrix[4],
                         100d * t.getWeight() / Utils.weight(ifs.getTransforms()),
                         controller.isColour() ? "black" : "white",
                         c.getRed(), c.getGreen(), c.getBlue(),
-                        matrix[3], matrix[4], matrix[5]);
+                        matrix[1], matrix[3], matrix[5]);
                 html.append(transform)
                     .append("</table>")
                     .append("</td>");
