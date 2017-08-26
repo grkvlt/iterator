@@ -16,10 +16,16 @@
 package iterator.model;
 
 import java.awt.Dimension;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -29,6 +35,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ForwardingList;
@@ -38,10 +45,21 @@ import com.google.common.collect.Ordering;
 
 /**
  * IFS Model.
+ * <p>
+ * The system consists of {@link Function functions}, which can be either
+ * {@link Transform transforms} or {@link Reflection reflections}. The
+ * IFS can be used as a {@link List list} of both, or they can be
+ * accessed with the {@link #getTransforms()} or {@link #getReflections()}
+ * methods.
+ * <p>
+ * The IFS and its functions are serialisable as XML using JAXB, via th
+ * {@link #save(IFS, java.io.File)} and {@link #load(java.io.File)}
+ * methods.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "IFS")
 public class IFS extends ForwardingList<Function> {
+
     public static final String UNTITLED = "Untitled";
 
     public static final Comparator<Transform> Z_ORDER = new Comparator<Transform>() {
@@ -62,6 +80,28 @@ public class IFS extends ForwardingList<Function> {
                     .result();
         }
     };
+
+    public static void save(IFS ifs, File file) {
+        try (FileWriter writer = new FileWriter(file)) {
+            JAXBContext context = JAXBContext.newInstance(IFS.class);
+            Marshaller marshaller = context.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.marshal(ifs, writer);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static IFS load(File file) {
+        try (FileReader reader = new FileReader(file)) {
+            JAXBContext context = JAXBContext.newInstance(IFS.class);
+            Unmarshaller unmarshaller = context.createUnmarshaller();
+            IFS ifs = (IFS) unmarshaller.unmarshal(reader);
+            return ifs;
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
 
     @XmlAttribute
     private String name;
@@ -126,11 +166,8 @@ public class IFS extends ForwardingList<Function> {
     }
 
     public void setSize(Dimension size) {
-        for (Transform t : transforms) {
-            t.setSize(size);
-        }
-        for (Reflection r : reflections) {
-            r.setSize(size);
+        for (Function f : this) {
+            f.setSize(size);
         }
     }
 

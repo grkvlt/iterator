@@ -157,6 +157,7 @@ public class Transform implements Function {
         return weight != null ? weight : getTransform().getDeterminant();
     }
 
+    @Override
     public void setSize(Dimension size) {
         Point2D scale = new Point2D.Double(size.getWidth() / sw, size.getHeight() / sh);
         sw = size.getWidth();

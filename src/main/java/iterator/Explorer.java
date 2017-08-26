@@ -75,8 +75,6 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.PrintStream;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Constructor;
@@ -108,9 +106,6 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
@@ -732,28 +727,14 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public void save(File file) {
         print("Saving %s", file.getName());
-        try (FileWriter writer = new FileWriter(file)) {
-            JAXBContext context = JAXBContext.newInstance(IFS.class);
-            Marshaller marshaller = context.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            marshaller.marshal(ifs, writer);
-            cwd = file.getParentFile();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        cwd = file.getParentFile();
+        IFS.save(ifs, file);
     }
 
     public IFS load(File file) {
         print("Loading %s", file.getName());
-        try (FileReader reader = new FileReader(file)) {
-            JAXBContext context = JAXBContext.newInstance(IFS.class);
-            Unmarshaller unmarshaller = context.createUnmarshaller();
-            IFS ifs = (IFS) unmarshaller.unmarshal(reader);
-            cwd = file.getParentFile();
-            return ifs;
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        cwd = file.getParentFile();
+        return IFS.load(file);
     }
 
     public boolean isFullScreen() { return fullScreen; }

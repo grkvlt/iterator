@@ -25,6 +25,8 @@ public interface Function {
 
     Dimension getSize();
 
+    void setSize(Dimension size);
+
     AffineTransform getTransform();
 
     int getId();

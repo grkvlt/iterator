@@ -94,6 +94,7 @@ public class Reflection implements Function {
         this.id = id;
     }
 
+    @Override
     public void setSize(Dimension size) {
         Point2D scale = new Point2D.Double(size.getWidth() / sw, size.getHeight() / sh);
         sw = size.getWidth();
