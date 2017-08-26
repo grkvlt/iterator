@@ -428,6 +428,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 scale = pf.getImageableHeight() / (double) getHeight();
             }
             g.scale(scale, scale);
+            g.setClip(0, 0, getWidth(), getHeight());
             printAll(g);
         } catch (Exception e) {
             controller.error(e, "Failure printing image");
