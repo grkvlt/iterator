@@ -15,6 +15,9 @@
  */
 package iterator.view;
 
+import static iterator.Utils.alpha;
+import static iterator.Utils.calibri;
+import static iterator.Utils.weight;
 import static iterator.util.Messages.MENU_VIEWER_GRID;
 import static iterator.util.Messages.MENU_VIEWER_INFO;
 import static iterator.util.Messages.MENU_VIEWER_OVERLAY;
@@ -37,8 +40,6 @@ import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -84,7 +85,6 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 import iterator.Explorer;
-import iterator.Utils;
 import iterator.dialog.Zoom;
 import iterator.model.Function;
 import iterator.model.IFS;
@@ -98,8 +98,6 @@ import iterator.util.Subscriber;
  * Rendered IFS viewer.
  */
 public class Viewer extends JPanel implements ActionListener, KeyListener, MouseInputListener, Printable, Subscriber, Callable<Void>, ThreadFactory {
-    /** serialVersionUID */
-    private static final long serialVersionUID = -3294847597249688714L;
 
     private final Explorer controller;
     private final EventBus bus;
@@ -263,7 +261,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
             if (info) {
                 g.setPaint(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
-                Font font = Utils.calibri(Font.PLAIN, 20);
+                Font font = calibri(Font.PLAIN, 20);
                 FontRenderContext frc = g.getFontRenderContext();
 
                 TextLayout scaleText = new TextLayout(String.format("%.1fx (%.3f, %.3f) %s/%s", scale, centre.getX() / size.getWidth(), centre.getY() / size.getHeight(), controller.getMode(), controller.getRender()), font, frc);
@@ -296,7 +294,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             rect = view.createTransformedShape(rect);
 
             // Draw the outline
-            Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
+            Color c = alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
             g.setPaint(c);
             g.setStroke(new BasicStroke(2f));
             g.draw(rect);
@@ -318,7 +316,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             view.scale(scale, scale);
 
             // Draw the line
-            Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
+            Color c = alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
             g.setPaint(c);
             g.setStroke(new BasicStroke(2f));
             Path2D line = new Path2D.Double(Path2D.WIND_NON_ZERO);
@@ -343,7 +341,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
         try {
             // Set colour and width
-            Color c = Utils.alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
+            Color c = alpha(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK, 64);
             g.setPaint(c);
             g.setStroke(new BasicStroke(1f));
 
@@ -390,7 +388,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         Graphics2D g = image.createGraphics();
         try {
             if (isVisible()) {
-                g.setColor(controller.getRender() == Render.MEASURE ? Color.BLACK : Color.WHITE);
+                g.setColor(controller.getRender() == Render.MEASURE ? Color.WHITE : Color.BLACK);
             } else {
                 g.setColor(new Color(1f, 1f, 1f, 0f));
             }
@@ -470,7 +468,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     .build();
             if (functions.isEmpty()) return;
 
-            double weight = Utils.weight(transforms);
+            double weight = weight(transforms);
             int n = transforms.size();
             int m = reflections.size();
             int s = isVisible() ? 1 : 2;
@@ -553,7 +551,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
                     // Set the paint colour according to the rendering mode
                     if (controller.getRender() == Render.IFS) {
-                        g.setPaint(Utils.alpha(color, 255));
+                        g.setPaint(alpha(color, 255));
                     } else if (controller.getRender() == Render.MEASURE) {
                         if (top[p] == 0) {
                             color = new Color(color.getRed(), color.getGreen(), color.getBlue());
@@ -565,9 +563,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                             }
                         }
                         top[p] = color.getRGB();
-                        g.setPaint(Utils.alpha(color, isVisible() ? 16 : 128));
+                        g.setPaint(alpha(color, isVisible() ? 16 : 128));
                     } else {
-                        g.setPaint(Utils.alpha(color, a));
+                        g.setPaint(alpha(color, a));
                     }
 
                     // Don't paint when using density rendering in viewer

@@ -39,7 +39,7 @@ public class Zoom extends AbstractPropertyDialog {
 
     private boolean running = false;
 
-    public Zoom(final Explorer controller) {
+    public Zoom(Explorer controller) {
         super(controller);
 
         setLabel(messages.getText(DIALOG_ZOOM_TITLE));

@@ -15,6 +15,12 @@
  */
 package iterator.view;
 
+import static iterator.Utils.area;
+import static iterator.Utils.calibri;
+import static iterator.Utils.concatenate;
+import static iterator.Utils.height;
+import static iterator.Utils.weight;
+import static iterator.Utils.width;
 import static iterator.util.Messages.MENU_EDITOR_NEW_REFLECTION;
 import static iterator.util.Messages.MENU_EDITOR_NEW_TRANSFORM;
 import static iterator.util.Messages.MENU_REFLECTION_DELETE;
@@ -67,7 +73,6 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 import iterator.Explorer;
-import iterator.Utils;
 import iterator.dialog.Matrix;
 import iterator.dialog.Properties;
 import iterator.model.IFS;
@@ -80,8 +85,6 @@ import iterator.util.Subscriber;
  * IFS Editor.
  */
 public class Editor extends JPanel implements MouseInputListener, KeyListener, Subscriber {
-    /** serialVersionUID */
-    private static final long serialVersionUID = -1;
 
     private final EventBus bus;
     private final Explorer controller;
@@ -97,7 +100,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     private Point start, end;
     private Cursor corner;
 
-    @SuppressWarnings("serial")
     public Editor(Explorer controller) {
         super();
 
@@ -268,11 +270,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     }
 
     public List<Reflection> getReflections() {
-        return Utils.concatenate(ifs.getReflections(), reflection);
+        return concatenate(ifs.getReflections(), reflection);
     }
 
     public List<Transform> getTransforms() {
-        List<Transform> transforms = Utils.concatenate(ifs.getTransforms(), selected, getAnts());
+        List<Transform> transforms = concatenate(ifs.getTransforms(), selected, getAnts());
         Collections.sort(transforms, IFS.IDENTITY);
         return transforms;
     }
@@ -346,8 +348,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     List<Transform> transforms = getTransforms();
                     double area = getWidth() * getHeight();
                     double totalRatio = Math.pow(2d, transforms.size() + getReflections().size());
-                    double areaRatio = Utils.area(transforms) / area;
-                    double sizeRatio = (Utils.width(transforms) * Utils.height(transforms)) / area;
+                    double areaRatio = area(transforms) / area;
+                    double sizeRatio = (width(transforms) * height(transforms)) / area;
                     int k = (int) (500_000 * areaRatio * sizeRatio * totalRatio);
                     viewer.iterate(k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
 
@@ -428,7 +430,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             } else {
                 g.setPaint(new Color(Color.BLACK.getRed(), Color.BLACK.getGreen(), Color.BLACK.getBlue(), 128));
             }
-            g.setFont(Utils.calibri(Font.BOLD, 25));
+            g.setFont(calibri(Font.BOLD, 25));
             Point text = new Point();
             t.getTransform().transform(new Point(0, 0), text);
             AffineTransform rotation = new AffineTransform();
@@ -445,7 +447,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             g.setTransform(rotation);
             String id = String.format("T%s %.1f%% %s",
                     (t.getId() == -1 ? "--" : String.format("%02d", t.getId())),
-                    100d * t.getWeight() / Utils.weight(Utils.concatenate(ifs.getTransforms(), selected)),
+                    100d * t.getWeight() / weight(concatenate(ifs.getTransforms(), selected)),
                     ((highlight && rotate != null) ? String.format("(%+d)", (int) Math.toDegrees(t.r)) : ""));
             g.drawString(id, text.x + 5, text.y + 25);
         } catch (Exception e) {
@@ -480,7 +482,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             g.draw(line);
 
             // Draw the label
-            g.setFont(Utils.calibri(Font.BOLD, 25));
+            g.setFont(calibri(Font.BOLD, 25));
             String id = String.format("R%s %s",
                     (r.getId() == -1 ? "--" : String.format("%02d", r.getId())),
                     highlight ? String.format("(%+d)", (int) Math.toDegrees(r.r)) : "");

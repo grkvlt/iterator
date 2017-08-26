@@ -15,6 +15,10 @@
  */
 package iterator.dialog;
 
+import static iterator.Utils.calibri;
+import static iterator.Utils.consolas;
+import static iterator.Utils.loadImage;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog.ModalityType;
@@ -33,7 +37,6 @@ import javax.swing.JPanel;
 import com.google.common.io.Resources;
 
 import iterator.Explorer;
-import iterator.Utils;
 import iterator.util.Dialog;
 import iterator.util.Version;
 
@@ -41,8 +44,6 @@ import iterator.util.Version;
  * About dialog.
  */
 public class About extends JPanel implements Dialog, MouseListener {
-    /** serialVersionUID */
-    private static final long serialVersionUID = -1378560167379537595L;
 
     private final Explorer controller;
 
@@ -54,7 +55,7 @@ public class About extends JPanel implements Dialog, MouseListener {
 
         this.controller = controller;
 
-        image = Utils.loadImage(Resources.getResource("splash.png"));
+        image = loadImage(Resources.getResource("splash.png"));
         Dimension size = new Dimension(image.getWidth(), image.getHeight());
         setSize(size);
 
@@ -98,13 +99,13 @@ public class About extends JPanel implements Dialog, MouseListener {
      */
     public static void paintSplashText(Graphics2D g, int width, int height) {
         g.setColor(Color.BLACK);
-        g.setFont(Utils.calibri(Font.BOLD, 80));
+        g.setFont(calibri(Font.BOLD, 80));
         g.drawString("IFS Explorer", 10, 65);
-        g.setFont(Utils.calibri(Font.BOLD, 25));
+        g.setFont(calibri(Font.BOLD, 25));
         g.drawString("Version " + Version.instance().get(), 10, 100);
-        g.setFont(Utils.calibri(Font.BOLD, 13));
+        g.setFont(calibri(Font.BOLD, 13));
         g.drawString("Copyright 2012-2017 by Andrew Kennedy", 10, height - 15);
-        g.setFont(Utils.consolas(Font.BOLD, 12));
+        g.setFont(consolas(Font.BOLD, 12));
         g.drawString("http://grkvlt.github.io/iterator/", 260, height - 15);
     }
 

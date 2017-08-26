@@ -53,6 +53,7 @@ import iterator.view.Viewer;
  * IFS Animator.
  */
 public class Animator implements Subscriber {
+
     private Explorer explorer;
     private IFS ifs;
     private EventBus bus;

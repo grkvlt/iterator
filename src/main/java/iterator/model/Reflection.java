@@ -33,6 +33,7 @@ import com.google.common.base.Objects;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Reflection")
 public class Reflection implements Function {
+
     @XmlAttribute
     private int id;
     @XmlAttribute(required = false)

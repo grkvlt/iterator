@@ -55,8 +55,6 @@ import iterator.view.Details;
  * Matrix dialog.
  */
 public class Matrix extends JDialog implements Dialog, KeyListener {
-    /** serialVersionUID */
-    private static final long serialVersionUID = 2515091470183119489L;
 
     private final Property<Double> c0, c1, c2, c3, c4, c5;
     private final Messages messages;
@@ -66,7 +64,7 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
 
     private Action success, failure;
 
-    public Matrix(final Transform transform, final IFS ifs, final Explorer controller) {
+    public Matrix(Transform transform, IFS ifs, Explorer controller) {
         super(controller, null, ModalityType.APPLICATION_MODAL);
 
         this.transform = transform;

@@ -15,6 +15,8 @@
  */
 package iterator.view;
 
+import static iterator.Utils.weight;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -38,7 +40,6 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 import iterator.Explorer;
-import iterator.Utils;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
@@ -48,8 +49,6 @@ import iterator.util.Subscriber;
  * Detail display.
  */
 public class Details extends JTextPane implements Printable, Subscriber {
-    /** serialVersionUID */
-    private static final long serialVersionUID = -1279626785145420083L;
 
     private final Explorer controller;
     private final EventBus bus;
@@ -164,7 +163,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                         "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
                         t.getId(),
                         matrix[0], matrix[2], matrix[4],
-                        100d * t.getWeight() / Utils.weight(ifs.getTransforms()),
+                        100d * t.getWeight() / weight(ifs.getTransforms()),
                         controller.isColour() ? "black" : "white",
                         c.getRed(), c.getGreen(), c.getBlue(),
                         matrix[1], matrix[3], matrix[5]);

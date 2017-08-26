@@ -49,8 +49,6 @@ import iterator.Explorer;
  * Abstract dialog box for setting properties.
  */
 public abstract class AbstractPropertyDialog extends JDialog implements Dialog, KeyListener, ActionListener {
-    /** serialVersionUID */
-    private static final long serialVersionUID = -7626627964747215623L;
 
     protected final Messages messages;
     protected final Explorer controller;
@@ -58,7 +56,7 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     protected final GridBagLayout gridbag = new GridBagLayout();
     protected final GridBagConstraints constraints = new GridBagConstraints();
 
-    public AbstractPropertyDialog(final Explorer controller) {
+    public AbstractPropertyDialog(Explorer controller) {
         super(controller, null, ModalityType.APPLICATION_MODAL);
 
         this.controller = controller;

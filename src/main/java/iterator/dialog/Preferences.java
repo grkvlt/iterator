@@ -48,7 +48,7 @@ public class Preferences extends AbstractPropertyDialog {
 
     private boolean running = false;
 
-    public Preferences(final Explorer controller) {
+    public Preferences(Explorer controller) {
         super(controller);
 
         setLabel(messages.getText(DIALOG_PREFERENCES_TITLE));

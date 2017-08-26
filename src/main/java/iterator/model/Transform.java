@@ -33,6 +33,7 @@ import com.google.common.base.Objects;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "Transform")
 public class Transform implements Function {
+
     @XmlAttribute
     private int id;
     @XmlAttribute

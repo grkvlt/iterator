@@ -53,7 +53,7 @@ public class Properties extends AbstractPropertyDialog {
     private Property<Double> x, y, w, h, r, shx, shy, det;
     private Property<Optional<Double>> weight;
 
-    public Properties(final Function function, final IFS ifs, final Explorer controller) {
+    public Properties(Function function, IFS ifs, Explorer controller) {
         super(controller);
 
         if (function instanceof Transform) {

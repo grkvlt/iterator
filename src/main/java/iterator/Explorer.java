@@ -15,6 +15,7 @@
  */
 package iterator;
 
+import static iterator.Utils.loadImage;
 import static iterator.util.Config.DEBUG_PROPERTY;
 import static iterator.util.Config.DEFAULT_GRID_MAX;
 import static iterator.util.Config.DEFAULT_GRID_MIN;
@@ -142,8 +143,6 @@ import iterator.view.Viewer;
  * @author andrew.international@gmail.com
  */
 public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHandler, SubscriberExceptionHandler, Subscriber {
-    /** serialVersionUID */
-    private static final long serialVersionUID = -2003170067188344917L;
 
     public static final List<String> BANNER = Arrays.asList(
             "   ___ _____ ____    _____            _                     ",
@@ -319,7 +318,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         size = new Dimension(w, h);
 
         // Load icon resources
-        icon = Utils.loadImage(Resources.getResource("icon.png"));
+        icon = loadImage(Resources.getResource("icon.png"));
         setIconImage(icon);
 
         // Setup full-screen mode if required
@@ -391,9 +390,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public void loadColours() {
         try {
             if (paletteFile.contains(".")) {
-                source = Utils.loadImage(URI.create(paletteFile).toURL());
+                source = loadImage(URI.create(paletteFile).toURL());
             } else {
-                source = Utils.loadImage(Resources.getResource("palette/" + paletteFile + ".png"));
+                source = loadImage(Resources.getResource("palette/" + paletteFile + ".png"));
             }
         } catch (MalformedURLException | RuntimeException e) {
             error(e, "Cannot load colour palette %s: %s", paletteFile, e.getMessage());
