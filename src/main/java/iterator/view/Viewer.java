@@ -97,7 +97,7 @@ import iterator.util.Subscriber;
 /**
  * Rendered IFS viewer.
  */
-public class Viewer extends JPanel implements ActionListener, KeyListener, ComponentListener, MouseInputListener, Printable, Subscriber, Callable<Void>, ThreadFactory {
+public class Viewer extends JPanel implements ActionListener, KeyListener, MouseInputListener, Printable, Subscriber, Callable<Void>, ThreadFactory {
     /** serialVersionUID */
     private static final long serialVersionUID = -3294847597249688714L;
 
@@ -192,7 +192,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
         addMouseListener(this);
         addMouseMotionListener(this);
-        addComponentListener(this);
 
         bus.register(this);
     }
@@ -225,7 +224,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public void resized(Dimension size) {
         stop();
         this.size = size;
-        centre = new Point2D.Double(size.getWidth() / 2d, size.getHeight() / 2d);
+        this.centre = new Point2D.Double(size.getWidth() / 2d, size.getHeight() / 2d);
         reset();
         if (isVisible()) {
             start();
@@ -666,7 +665,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
     public void start() {
         if (running.compareAndSet(false, true)) {
-            controller.print("starting");
+            controller.debug("Starting");
             loop = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
             tasks.clear();
             for (int i = 0; i < controller.getThreads(); i++) {
@@ -682,6 +681,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     public boolean stop() {
         boolean stopped = running.compareAndSet(true, false);
         if (stopped) {
+            controller.debug("Stopping");
             timer.stop();
             tasks.stream().forEach(f -> f.cancel(true));
             tasks.clear();
@@ -846,27 +846,5 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     /** @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent) */
     @Override
     public void mouseClicked(MouseEvent e) { }
-
-    /** @see java.awt.event.ComponentListener#componentResized(java.awt.event.ComponentEvent) */
-    @Override
-    public void componentResized(ComponentEvent e) {
-        stop();
-    }
-
-    /** @see java.awt.event.ComponentListener#componentMoved(java.awt.event.ComponentEvent) */
-    @Override
-    public void componentMoved(ComponentEvent e) { }
-
-    /** @see java.awt.event.ComponentListener#componentShown(java.awt.event.ComponentEvent) */
-    @Override
-    public void componentShown(ComponentEvent e) {
-        reset();
-    }
-
-    /** @see java.awt.event.ComponentListener#componentHidden(java.awt.event.ComponentEvent) */
-    @Override
-    public void componentHidden(ComponentEvent e) {
-       stop();
-    }
 
 }

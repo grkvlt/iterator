@@ -682,19 +682,28 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public void show(String name) {
         cards.show(view, name);
         current = name;
-        if (name.equals(VIEWER)) {
-            export.setEnabled(true);
-            print.setEnabled(true);
-            viewer.reset();
-            viewer.start();
-        } else if (name.equals(DETAILS)) {
-            print.setEnabled(true);
-            viewer.reset();
-            viewer.start();
-        } else {
-            export.setEnabled(false);
-            print.setEnabled(false);
-            viewer.stop();
+        switch (current) {
+            case VIEWER:
+                export.setEnabled(true);
+                print.setEnabled(true);
+                setResizable(false);
+                viewer.reset();
+                viewer.start();
+                break;
+            case DETAILS:
+                export.setEnabled(false);
+                print.setEnabled(true);
+                setResizable(true);
+                viewer.stop();
+                break;
+            case EDITOR:
+                export.setEnabled(false);
+                print.setEnabled(false);
+                setResizable(true);
+                viewer.stop();
+                break;
+            default:
+                throw new IllegalStateException("Unknown view type: " + current);
         }
     }
 
