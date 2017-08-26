@@ -57,8 +57,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -76,6 +79,7 @@ import javax.swing.event.MouseInputListener;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
@@ -93,7 +97,7 @@ import iterator.util.Subscriber;
 /**
  * Rendered IFS viewer.
  */
-public class Viewer extends JPanel implements ActionListener, KeyListener, ComponentListener, MouseInputListener, Printable, Subscriber, Runnable {
+public class Viewer extends JPanel implements ActionListener, KeyListener, ComponentListener, MouseInputListener, Printable, Subscriber, Callable<Void>, ThreadFactory {
     /** serialVersionUID */
     private static final long serialVersionUID = -3294847597249688714L;
 
@@ -114,8 +118,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     private Random random = new Random();
     private float scale = 1.0f;
     private Point2D centre;
+    private Dimension size;
     private Rectangle zoom;
-    private ExecutorService executor = Executors.newCachedThreadPool();
+    private ExecutorService executor = Executors.newCachedThreadPool(this);
+    private List<Future<Void>> tasks = Lists.newArrayList();
     private boolean overlay, info, grid;
     private JPopupMenu viewer;
     private Zoom properties;
@@ -215,8 +221,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Override
     @Subscribe
     public void resized(Dimension size) {
+        stop();
         centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
         reset();
+        if (isVisible()) {
+            start();
+        }
     }
 
     /** @see javax.swing.JComponent#paintComponent(Graphics) */
@@ -630,49 +640,60 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     /**
      * Called as a task to render the IFS.
      *
-     * @see java.lang.Runnable#run()
+     * @see java.util.concurrent.Callable#call()
      */
     @Override
-    public void run() {
-        int id = task.incrementAndGet();
-        controller.debug("Started task %d", id);;
+    public Void call() {
+        String name = Thread.currentThread().getName();
+        controller.debug("Started task %s", name);;
         do {
             iterate(controller.getIterations(), scale, centre);
         } while (running.get());
-        controller.debug("Stopped task %d", id);;
+        controller.debug("Stopped task %s", name);;
+        return null;
+    }
+
+    /** @see java.util.concurrent.ThreadFactory#newThread(Runnable) */
+    @Override
+    public Thread newThread(Runnable r) {
+        Thread t = new Thread(r);
+        t.setName("iterator-" + task.incrementAndGet());
+        return t;
     }
 
     public void start() {
-        timer.start();
         if (running.compareAndSet(false, true)) {
+            controller.print("starting");
             loop = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
+            tasks.clear();
             for (int i = 0; i < controller.getThreads(); i++) {
-                executor.submit(this);
+                tasks.add(executor.submit(this));
             }
             pause.setEnabled(true);
             resume.setEnabled(false);
+            timer.start();
             loop.enter();
         }
     }
 
     public boolean stop() {
-        boolean status = running.compareAndSet(true, false);
-        if (timer.isRunning()) {
+        boolean stopped = running.compareAndSet(true, false);
+        if (stopped) {
             timer.stop();
-        }
-        if (status) {
-            loop.exit();
+            tasks.stream().forEach(f -> f.cancel(true));
+            tasks.clear();
+            try {
+                boolean result = executor.awaitTermination(1, TimeUnit.SECONDS);
+                controller.debug("Executor %s all tasks", result ? "stopped" : "failed to stop");;
+            } catch (InterruptedException e) {
+                Thread.interrupted();
+                controller.debug("Executor interrupted while stopping tasks");
+            }
             pause.setEnabled(false);
             resume.setEnabled(true);
+            loop.exit();
         }
-        try {
-            boolean stopped = executor.awaitTermination(1, TimeUnit.SECONDS);
-            controller.debug("Executor %s all tasks", stopped ? "stopped" : "failed to stop");;
-        } catch (InterruptedException e) {
-            Thread.interrupted();
-            controller.debug("Executor interrupted stopping tasks");
-        }
-        return status;
+        return stopped;
     }
 
     public boolean isRunning() {
@@ -825,7 +846,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
     /** @see java.awt.event.ComponentListener#componentResized(java.awt.event.ComponentEvent) */
     @Override
-    public void componentResized(ComponentEvent e) { }
+    public void componentResized(ComponentEvent e) {
+        stop();
+    }
 
     /** @see java.awt.event.ComponentListener#componentMoved(java.awt.event.ComponentEvent) */
     @Override
