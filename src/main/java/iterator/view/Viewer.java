@@ -140,6 +140,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         timer.setCoalesce(true);
         timer.setInitialDelay(0);
 
+        size = getSize();
+
         properties = new Zoom(controller);
         viewer = new JPopupMenu();
         viewer.add(new AbstractAction(messages.getText(MENU_VIEWER_ZOOM)) {
@@ -222,7 +224,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     @Subscribe
     public void resized(Dimension size) {
         stop();
-        centre = new Point2D.Double(getWidth() / 2d, getHeight() / 2d);
+        this.size = size;
+        centre = new Point2D.Double(size.getWidth() / 2d, size.getHeight() / 2d);
         reset();
         if (isVisible()) {
             start();
@@ -264,10 +267,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 Font font = Utils.calibri(Font.PLAIN, 20);
                 FontRenderContext frc = g.getFontRenderContext();
 
-                TextLayout scaleText = new TextLayout(String.format("%.1fx (%.3f, %.3f) %s/%s", scale, centre.getX() / getWidth(), centre.getY() / getHeight(), controller.getMode(), controller.getRender()), font, frc);
-                scaleText.draw(g, 10f, getHeight() - 10f);
+                TextLayout scaleText = new TextLayout(String.format("%.1fx (%.3f, %.3f) %s/%s", scale, centre.getX() / size.getWidth(), centre.getY() / size.getHeight(), controller.getMode(), controller.getRender()), font, frc);
+                scaleText.draw(g, 10f, size.height - 10f);
                 TextLayout countText = new TextLayout(String.format("%,dK", count.get()).replaceAll("[^0-9K]", " "), font, frc);
-                countText.draw(g, getWidth() - 10f - (float) countText.getBounds().getWidth(), getHeight() - 10f);
+                countText.draw(g, size.width - 10f - (float) countText.getBounds().getWidth(), size.height - 10f);
             }
 
             if (grid) {
@@ -285,8 +288,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
         try {
             // Transform unit square to view space
-            double x = (getWidth() / 2) - (centre.getX() * scale);
-            double y = (getHeight() / 2) - (centre.getY() * scale);
+            double x = (size.getWidth() / 2d) - (centre.getX() * scale);
+            double y = (size.getHeight() / 2d) - (centre.getY() * scale);
             Rectangle unit = new Rectangle(getSize());
             Shape rect = t.getTransform().createTransformedShape(unit);
             AffineTransform view = AffineTransform.getTranslateInstance(x, y);
@@ -310,8 +313,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
         try {
             // Transform unit square to view space
-            double x = (getWidth() / 2) - (centre.getX() * scale);
-            double y = (getHeight() / 2) - (centre.getY() * scale);
+            double x = (size.getWidth() / 2d) - (centre.getX() * scale);
+            double y = (size.getHeight() / 2d) - (centre.getY() * scale);
             AffineTransform view = AffineTransform.getTranslateInstance(x, y);
             view.scale(scale, scale);
 
@@ -322,11 +325,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             Path2D line = new Path2D.Double(Path2D.WIND_NON_ZERO);
             if ((r.r < Math.toRadians(0.1d) && r.r > Math.toRadians(-0.1d)) ||
                     (r.r < Math.toRadians(180.1d) && r.r > Math.toRadians(179.9d))) {
-                line.moveTo(r.x, -1d * (getHeight() / scale));
-                line.lineTo(r.x, (getHeight() / scale));
+                line.moveTo(r.x, -1d * (size.getHeight() / scale));
+                line.lineTo(r.x, (size.getHeight() / scale));
             } else {
-                line.moveTo(r.x - getWidth() - (getWidth() / scale), r.y - (getWidth() / Math.tan(r.r)) - (getWidth() / (Math.tan(r.r) * scale)));
-                line.lineTo(r.x + getWidth() + (getWidth() / scale), r.y + (getWidth() / Math.tan(r.r)) + (getWidth() / (Math.tan(r.r) * scale)));
+                line.moveTo(r.x - size.getWidth() - (size.getWidth() / scale), r.y - (size.getWidth() / Math.tan(r.r)) - (size.getWidth() / (Math.tan(r.r) * scale)));
+                line.lineTo(r.x + size.getWidth() + (size.getWidth() / scale), r.y + (size.getWidth() / Math.tan(r.r)) + (size.getWidth() / (Math.tan(r.r) * scale)));
             }
             g.draw(view.createTransformedShape(line));
         } catch (Exception e) {
@@ -346,8 +349,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             g.setStroke(new BasicStroke(1f));
 
             // Transform unit square to view space
-            double x0 = (getWidth() / 2) - (centre.getX() * scale);
-            double y0 = (getHeight() / 2) - (centre.getY() * scale);
+            double x0 = (size.getWidth() / 2d) - (centre.getX() * scale);
+            double y0 = (size.getHeight() / 2d) - (centre.getY() * scale);
             double spacing = controller.getMaxGrid() / scale;
             AffineTransform view = AffineTransform.getTranslateInstance(x0, y0);
             view.scale(scale, scale);
@@ -355,14 +358,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             // Draw grid lines
             double cx = Math.abs(centre.getX()) + getWidth() / scale;
             double cy = Math.abs(centre.getY()) + getHeight() / scale;
-            double ox = Math.max(getWidth() / scale, cx);
-            double oy = Math.max(getHeight() / scale, cy);
-            for (double x = -ox; x < ox + getWidth(); x += spacing) {
-                Line2D line = new Line2D.Double(x, -oy, x, oy + getHeight());
+            double ox = Math.max(size.getWidth() / scale, cx);
+            double oy = Math.max(size.getHeight() / scale, cy);
+            for (double x = -ox; x < ox + size.getWidth(); x += spacing) {
+                Line2D line = new Line2D.Double(x, -oy, x, oy + size.getHeight());
                 g.draw(view.createTransformedShape(line));
             }
-            for (double y = -oy; y < oy + getWidth(); y += spacing) {
-                Line2D line = new Line2D.Double(-ox, y, ox + getWidth(), y);
+            for (double y = -oy; y < oy + size.getWidth(); y += spacing) {
+                Line2D line = new Line2D.Double(-ox, y, ox + size.getWidth(), y);
                 g.draw(view.createTransformedShape(line));
             }
         } catch (Exception e) {
@@ -378,13 +381,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
     }
 
     public void rescale() {
-        rescale(1f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
+        rescale(1f, new Point2D.Double(size.getWidth() / 2d, size.getHeight() / 2d));
     }
 
     public void reset() {
-        if (getWidth() <= 0 && getHeight() <= 0) return;
+        if (size.getWidth() <= 0 && size.getHeight() <= 0) return;
 
-        image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
         try {
             if (isVisible()) {
@@ -392,21 +395,21 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             } else {
                 g.setColor(new Color(1f, 1f, 1f, 0f));
             }
-            g.fillRect(0, 0, getWidth(), getHeight());
+            g.fillRect(0, 0, size.width, size.height);
         } catch (Exception e) {
             controller.error(e, "Failure resetting image");
         } finally {
             g.dispose();
         }
 
-        points[0] = random.nextInt(getWidth());
-        points[1] = random.nextInt(getHeight());
-        points[2] = random.nextInt(getWidth());
-        points[3] = random.nextInt(getHeight());
+        points[0] = random.nextInt(size.width);
+        points[1] = random.nextInt(size.height);
+        points[2] = random.nextInt(size.width);
+        points[3] = random.nextInt(size.height);
 
-        top = new int[getWidth() * getHeight()];
-        density = new int[getWidth() * getHeight()];
-        rgb = new double[getWidth() * getHeight()];
+        top = new int[size.width * size.height];
+        density = new int[size.width * size.height];
+        rgb = new double[size.width * size.height];
         max = 1;
 
         count.set(0l);
@@ -433,12 +436,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
 
         try {
             g.translate(pf.getImageableX(), pf.getImageableY());
-            double scale = pf.getImageableWidth() / (double) getWidth();
+            double scale = pf.getImageableWidth() / size.getWidth();
             if ((scale * getHeight()) > pf.getImageableHeight()) {
-                scale = pf.getImageableHeight() / (double) getHeight();
+                scale = pf.getImageableHeight() / size.getHeight();
             }
             g.scale(scale, scale);
-            g.setClip(0, 0, getWidth(), getHeight());
+            g.setClip(0, 0, size.width, size.height);
             printAll(g);
         } catch (Exception e) {
             controller.error(e, "Failure printing image");
@@ -473,7 +476,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
             int m = reflections.size();
             int s = isVisible() ? 1 : 2;
             int a = isVisible() ? 8 : (int) Math.min(128d, Math.pow(n,  1.2) * 16d);
-            int l = getWidth() * getHeight();
+            int l = size.width * size.height;
 
             for (long i = 0L; i < k; i++) {
                 if (i % 1000L == 0L) {
@@ -496,10 +499,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     continue;
                 }
 
-                int x = (int) ((points[0] - centre.getX()) * scale) + (getWidth() / 2);
-                int y = (int) ((points[1] - centre.getY()) * scale) + (getHeight() / 2);
-                if (x >= 0 && y >= 0 && x < getWidth() && y < getWidth()) {
-                    int p = x + y * getWidth();
+                int x = (int) ((points[0] - centre.getX()) * scale) + (size.width / 2);
+                int y = (int) ((points[1] - centre.getY()) * scale) + (size.height / 2);
+                if (x >= 0 && y >= 0 && x < size.width && y < size.height) {
+                    int p = x + y * size.width;
 
                     if (controller.getRender() == Render.TOP) {
                         if (j > top[p]) top[p] = j;
@@ -510,8 +513,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                         if (controller.getRender() == Render.LOG_DENSITY_BLUR) {
                             density[p]++;
                             density[(p + 1) % l]++;
-                            density[(p + getWidth()) % l]++;
-                            density[(p + 1 + getWidth()) % l]++;
+                            density[(p + size.width) % l]++;
+                            density[(p + 1 + size.width) % l]++;
                         }
                         max = Math.max(max, density[p]);
                     }
@@ -522,7 +525,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                     Color color = Color.BLACK;
                     if (controller.isColour()) {
                         if (controller.isIFSColour()) {
-                            color = Color.getHSBColor((float) old.getX() / getWidth(), (float) old.getY() / getHeight(), 0.8f);
+                            color = Color.getHSBColor((float) (old.getX() / size.getWidth()), (float) (old.getY() / size.getHeight()), 0.8f);
                         } else if (controller.hasPalette()) {
                             if (controller.isStealing()) {
                                 color = controller.getPixel(old.getX(), old.getY());
@@ -589,14 +592,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
         } else {
             g.setColor(new Color(1f, 1f, 1f, 0f));
         }
-        g.fillRect(0, 0, getWidth(), getHeight());
+        g.fillRect(0, 0, size.width, size.height);
 
         try {
             int r = (isVisible() ? 1 : 2) * (controller.getRender() == Render.LOG_DENSITY_BLUR ? 1 : 2);
             boolean log = (controller.getRender() == Render.LOG_DENSITY || controller.getRender() == Render.LOG_DENSITY_BLUR);
-            for (int x = 0; x < getWidth(); x++) {
-                for (int y = 0; y < getHeight(); y++) {
-                    int p = x + y * getWidth();
+            for (int x = 0; x < size.width; x++) {
+                for (int y = 0; y < size.height; y++) {
+                    int p = x + y * size.width;
                     if (density[p] > 0) {
                         float ratio = log ? (float) (Math.log(density[p]) / Math.log(max)) : ((float) density[p] / (float) max);
                         float alpha = (float) (Math.log(density[p]) / density[p]);
@@ -810,12 +813,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Compo
                 stop();
 
                 // Calculate new centre point and scale
-                Point2D origin = new Point2D.Double((centre.getX() * scale) - (getWidth() / 2d), (centre.getY() * scale) - (getHeight() / 2d));
+                Point2D origin = new Point2D.Double((centre.getX() * scale) - (size.getWidth() / 2d), (centre.getY() * scale) - (size.getHeight() / 2d));
                 Point2D updated = new Point2D.Double((zoom.x + (zoom.width / 2d) + origin.getX()) / scale, (zoom.y + (zoom.height / 2d) + origin.getY()) / scale);
                 if (zoom.width < 2 *  controller.getSnapGrid()) {
                     rescale(scale * 2f, updated);
                 } else {
-                    rescale(scale * ((float) getWidth() / (float) zoom.width), updated);
+                    rescale(scale * ((float) size.getWidth() / (float) zoom.width), updated);
                 }
 
                 controller.debug("Zoom: %.1fx scale, centre (%.1f, %.1f) via click at (%d, %d)",
