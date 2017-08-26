@@ -594,7 +594,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         g.fillRect(0, 0, size.width, size.height);
 
         try {
-            int r = (isVisible() ? 1 : 2) * (controller.getRender() == Render.LOG_DENSITY_BLUR ? 1 : 2);
+            int r = isVisible() ? 1 : 2;
             boolean log = (controller.getRender() == Render.LOG_DENSITY || controller.getRender() == Render.LOG_DENSITY_BLUR);
             for (int x = 0; x < size.width; x++) {
                 for (int y = 0; y < size.height; y++) {
@@ -614,7 +614,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         } else {
                             g.setPaint(new Color(gray, gray, gray, 1f - gray));
                         }
-                        Rectangle rect = new Rectangle(x, y, r, r);
+                        int side = (controller.getRender() == Render.LOG_DENSITY_BLUR) ? (int) (r * (1f - gray) * 5) : r;
+                        Rectangle rect = new Rectangle(x, y, side, side);
                         g.fill(rect);
                     }
                 }
