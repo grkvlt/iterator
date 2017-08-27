@@ -112,8 +112,10 @@ public class Config extends ForwardingSortedMap<String, String> {
         DENSITY_POWER(false, true, false),
         LOG_DENSITY(false, true, true),
         LOG_DENSITY_POWER(false, true, true),
+        LOG_DENSITY_POWER_INVERSE(true, true, true),
         LOG_DENSITY_INVERSE(true, true, true),
         LOG_DENSITY_BLUR(false, true, true),
+        LOG_DENSITY_BLUR_INVERSE(true, true, true),
         LOG_DENSITY_FLAME(false, true, true),
         LOG_DENSITY_FLAME_INVERSE(true, true, true);
 

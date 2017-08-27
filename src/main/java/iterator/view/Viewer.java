@@ -497,7 +497,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     continue;
                 }
 
-                // Evaluate the function
+                // Evaluate the function twice, for (x,y) position and for hue/saturation color space
                 Point2D old = new Point2D.Double(points[2], points[3]);
                 f.getTransform().transform(points, 0, points, 0, 2);
 
@@ -515,27 +515,34 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         if (j > top[p]) top[p] = j;
                     }
 
+                    // Density estimation histogram
                     if (controller.getRender().isDensity()) {
                         try {
                             int q = p;
                             density[q] = IntMath.checkedAdd(density[q], 1);
-                            if (controller.getRender() == Render.LOG_DENSITY_BLUR) {
-                                q += 1;
-                                if (q < l) density[q] = IntMath.checkedAdd(density[q], 1);
-                                q += size.width;
-                                if (q < l) density[q] = IntMath.checkedAdd(density[q], 1);
-                                q -= 1;
-                                if (q < l) density[q] = IntMath.checkedAdd(density[q], 1);
-                            } else if (controller.getRender() == Render.LOG_DENSITY_POWER || controller.getRender() == Render.DENSITY_POWER) {
-                                density[q] = IntMath.checkedMultiply(density[q], 2);
+                            switch (controller.getRender()) {
+                                case LOG_DENSITY_BLUR:
+                                case LOG_DENSITY_BLUR_INVERSE:
+                                    q += 1;
+                                    if (q < l && q % size.width != 0) density[q] = IntMath.checkedAdd(density[q], 1);
+                                    q += size.width;
+                                    if (q < l && q % size.width != 0) density[q] = IntMath.checkedAdd(density[q], 1);
+                                    q -= 1;
+                                    if (q < l && q % size.width != 0) density[q] = IntMath.checkedAdd(density[q], 1);
+                                    break;
+                                case LOG_DENSITY_POWER:
+                                case DENSITY_POWER:
+                                case LOG_DENSITY_POWER_INVERSE:
+                                    density[q] = IntMath.checkedMultiply(density[q], 2);
+                                    break;
+                                default:
+                                    break;
                             }
                             max = Math.max(max, density[p]);
                         } catch (ArithmeticException ae) {
                             controller.debug("Overflow calculating density: %s", ae.getMessage());
                         }
                     }
-
-                    Rectangle rect = new Rectangle(x, y, s, s);
 
                     // Choose the colour based on the display mode
                     Color color = Color.BLACK;
@@ -587,7 +594,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         g.setPaint(alpha(color, a));
                     }
 
-                    // Don't paint when using density rendering in viewer
+                    // Paint pixels unless using density rendering in viewer
+                    Rectangle rect = new Rectangle(x, y, s, s);
                     if (!(controller.getRender().isDensity() && isVisible())) {
                         g.fill(rect);
                     }
