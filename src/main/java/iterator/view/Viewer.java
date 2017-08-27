@@ -263,14 +263,18 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             }
 
             if (info) {
-                g.setPaint(controller.getRender().getForeground());
-                Font font = calibri(Font.PLAIN, 20);
-                FontRenderContext frc = g.getFontRenderContext();
+                String scaleText = String.format("%.1fx (%.3f, %.3f) %s/%s : %s",
+                        scale, centre.getX() / size.getWidth(), centre.getY() / size.getHeight(),
+                        controller.getMode(), controller.getRender(),
+                        controller.hasPalette() ? controller.getPaletteFile() : controller.isColour() ? "hsb" : "black");
+                String countText = String.format("%s%,dK", isRunning() ? "+" : "", count.get()).replaceAll("[^0-9K+]", " ");
 
-                TextLayout scaleText = new TextLayout(String.format("%.1fx (%.3f, %.3f) %s/%s", scale, centre.getX() / size.getWidth(), centre.getY() / size.getHeight(), controller.getMode(), controller.getRender()), font, frc);
-                scaleText.draw(g, 10f, size.height - 10f);
-                TextLayout countText = new TextLayout(String.format("%,dK", count.get()).replaceAll("[^0-9K]", " "), font, frc);
-                countText.draw(g, size.width - 10f - (float) countText.getBounds().getWidth(), size.height - 10f);
+                g.setPaint(controller.getRender().getForeground());
+                FontRenderContext frc = g.getFontRenderContext();
+                TextLayout scaleLayout = new TextLayout(scaleText, calibri(Font.BOLD, 20), frc);
+                scaleLayout.draw(g, 10f, size.height - 10f);
+                TextLayout countLayout = new TextLayout(countText, calibri(Font.BOLD | (isRunning() ? Font.PLAIN : Font.ITALIC), 20), frc);
+                countLayout.draw(g, size.width - 10f - (float) countLayout.getBounds().getWidth(), size.height - 10f);
             }
 
             if (grid) {
