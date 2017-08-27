@@ -924,8 +924,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                         if (start != null && end != null) {
                             start = null;
                             end = null;
-                            repaint();
                         }
+                        if (reflection != null) {
+                            reflection = null;
+                        }
+                        repaint();
                         break;
                 }
             }
