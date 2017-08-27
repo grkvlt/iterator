@@ -118,16 +118,14 @@ public class Reflection implements Function {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(x, y, r);
+        return Objects.hashCode(id);
     }
 
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof Reflection)) return false;
         Reflection that = (Reflection) object;
-        return Objects.equal(x, that.x) &&
-                Objects.equal(y, that.y) &&
-                Objects.equal(r, that.r);
+        return Objects.equal(id, that.id);
     }
 
     @Override

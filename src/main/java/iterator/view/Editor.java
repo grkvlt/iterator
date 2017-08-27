@@ -602,7 +602,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     Reflection copy = Reflection.copy(clickReflection);
                     reflection = copy;
                 } else {
-                    ifs.getReflections().remove(clickReflection);
                     reflection = clickReflection;
                 }
                 start = snap(e.getPoint());

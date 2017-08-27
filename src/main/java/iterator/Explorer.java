@@ -468,6 +468,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         saveAs = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_SAVE_AS)) {
             @Override
             public void actionPerformed(ActionEvent e) {
+                boolean running = viewer.stop();
                 FileNameExtensionFilter filter = new FileNameExtensionFilter(messages.getText(DIALOG_FILES_XML), "xml");
                 JFileChooser chooser = new JFileChooser();
                 chooser.setCurrentDirectory(cwd);
@@ -483,6 +484,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     ifs.setName(saveAs.getName().replace(".xml", ""));
                     save(saveAs);
                     bus.post(ifs);
+                }
+                if (current.equals(VIEWER) && running) {
+                    viewer.start();
                 }
             }
         });

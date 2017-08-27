@@ -114,7 +114,8 @@ public class Config extends ForwardingSortedMap<String, String> {
         LOG_DENSITY_POWER(false, true, true),
         LOG_DENSITY_INVERSE(true, true, true),
         LOG_DENSITY_BLUR(false, true, true),
-        LOG_DENSITY_FLAME(false, true, true);
+        LOG_DENSITY_FLAME(false, true, true),
+        LOG_DENSITY_FLAME_INVERSE(true, true, true);
 
         private final boolean inverse;
         private final boolean density;
@@ -123,6 +124,8 @@ public class Config extends ForwardingSortedMap<String, String> {
         public Color getBackground() { return inverse ? Color.BLACK : Color.WHITE; }
 
         public Color getForeground() { return inverse ? Color.WHITE : Color.BLACK; }
+
+        public boolean isInverse() { return inverse; }
 
         public boolean isDensity() { return density; }
 
@@ -138,6 +141,7 @@ public class Config extends ForwardingSortedMap<String, String> {
         public String toString() {
             return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, name());
         }
+
     }
 
     public static final Render DEFAULT_RENDER = Render.STANDARD;

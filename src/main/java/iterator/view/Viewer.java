@@ -618,7 +618,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     int p = x + y * size.width;
                     if (density[p] > 0) {
                         double ratio = unity().apply(log ? (double) (Math.log(density[p]) / Math.log(max)) : ((double) density[p] / (double) max));
-                        double gray = controller.getRender() == Render.LOG_DENSITY_INVERSE ? ratio : 1d - ratio;
+                        double gray = controller.getRender().isInverse() ? ratio : 1d - ratio;
                         if (controller.isColour()) {
                             Color color = new Color((int) (rgb[p] * RGB24));
                             if (controller.getRender() == Render.LOG_DENSITY_FLAME) {
