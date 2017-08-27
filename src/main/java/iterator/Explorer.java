@@ -298,7 +298,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             setPaletteFile(config.get(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE));
         }
         setPaletteSize(config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE));
-        debug("Configured rendering as %s/%s:%s", render, mode, palette ? paletteFile : colour ? "hsb" : "black");
+        debug("Configured rendering as %s/%s %s", render, mode, palette ? paletteFile : colour ? "hsb" : "black");
 
         // Load colour palette if required
         if (palette) {

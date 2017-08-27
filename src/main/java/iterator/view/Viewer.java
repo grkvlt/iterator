@@ -263,11 +263,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             }
 
             if (info) {
-                String scaleText = String.format("%.1fx (%.3f, %.3f) %s/%s : %s",
+                String scaleText = String.format("%.1fx (%.3f, %.3f) %s/%s %s",
                         scale, centre.getX() / size.getWidth(), centre.getY() / size.getHeight(),
                         controller.getMode(), controller.getRender(),
                         controller.hasPalette() ? controller.getPaletteFile() : controller.isColour() ? "hsb" : "black");
-                String countText = String.format("%s%,dK", isRunning() ? "+" : "", count.get()).replaceAll("[^0-9K+]", " ");
+                String countText = String.format("%,dK", count.get()).replaceAll("[^0-9K+]", " ");
 
                 g.setPaint(controller.getRender().getForeground());
                 FontRenderContext frc = g.getFontRenderContext();
@@ -301,10 +301,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             rect = view.createTransformedShape(rect);
 
             // Draw the outline
-            Color c = alpha(controller.getRender().getForeground(), 64);
+            Color c = alpha(controller.getRender().getForeground(), 128);
             g.setPaint(c);
             g.setStroke(new BasicStroke(2f));
             g.draw(rect);
+            g.setPaint(alpha(Color.GRAY, 8));
+            g.fill(rect);
         } catch (Exception e) {
             controller.error(e, "Failure painting transform");
         } finally {
@@ -323,17 +325,19 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             view.scale(scale, scale);
 
             // Draw the line
-            Color c = alpha(controller.getRender().getForeground(), 64);
+            Color c = alpha(controller.getRender().getForeground(), 128);
             g.setPaint(c);
-            g.setStroke(new BasicStroke(2f));
+            g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 10f, 10f }, 0f));
             Path2D line = new Path2D.Double(Path2D.WIND_NON_ZERO);
             if ((r.r < Math.toRadians(0.1d) && r.r > Math.toRadians(-0.1d)) ||
                     (r.r < Math.toRadians(180.1d) && r.r > Math.toRadians(179.9d))) {
                 line.moveTo(r.x, -1d * (size.getHeight() / scale));
                 line.lineTo(r.x, (size.getHeight() / scale));
             } else {
-                line.moveTo(r.x - size.getWidth() - (size.getWidth() / scale), r.y - (size.getWidth() / Math.tan(r.r)) - (size.getWidth() / (Math.tan(r.r) * scale)));
-                line.lineTo(r.x + size.getWidth() + (size.getWidth() / scale), r.y + (size.getWidth() / Math.tan(r.r)) + (size.getWidth() / (Math.tan(r.r) * scale)));
+                line.moveTo(r.x - size.getWidth() - (size.getWidth() / scale),
+                        r.y - (size.getWidth() / Math.tan(r.r)) - (size.getWidth() / (Math.tan(r.r) * scale)));
+                line.lineTo(r.x + size.getWidth() + (size.getWidth() / scale),
+                        r.y + (size.getWidth() / Math.tan(r.r)) + (size.getWidth() / (Math.tan(r.r) * scale)));
             }
             g.draw(view.createTransformedShape(line));
         } catch (Exception e) {
@@ -350,7 +354,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             // Set colour and width
             Color c = alpha(controller.getRender().getForeground(), 64);
             g.setPaint(c);
-            g.setStroke(new BasicStroke(1f));
+            g.setStroke(new BasicStroke(1f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
 
             // Transform unit square to view space
             double x0 = (size.getWidth() / 2d) - (centre.getX() * scale);

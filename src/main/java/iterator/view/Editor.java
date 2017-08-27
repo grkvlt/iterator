@@ -15,6 +15,7 @@
  */
 package iterator.view;
 
+import static iterator.Utils.alpha;
 import static iterator.Utils.area;
 import static iterator.Utils.calibri;
 import static iterator.Utils.concatenate;
@@ -382,12 +383,12 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             // Fill the rectangle
             if (highlight) {
                 if (t.isMatrix()) {
-                    g.setPaint(new Color(Color.GREEN.getRed(), Color.GREEN.getGreen(), Color.GREEN.getBlue(), 16));
+                    g.setPaint(alpha(Color.GREEN, 16));
                 } else {
-                    g.setPaint(new Color(Color.BLUE.getRed(), Color.BLUE.getGreen(), Color.BLUE.getBlue(), 16));
+                    g.setPaint(alpha(Color.BLUE, 16));
                 }
             } else {
-                g.setPaint(new Color(Color.GRAY.getRed(), Color.GRAY.getGreen(), Color.GRAY.getBlue(), 8));
+                g.setPaint(alpha(Color.GRAY, 16));
             }
             g.fill(rect);
 
@@ -428,7 +429,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             if (highlight) {
                 g.setPaint(Color.BLACK);
             } else {
-                g.setPaint(new Color(Color.BLACK.getRed(), Color.BLACK.getGreen(), Color.BLACK.getBlue(), 128));
+                g.setPaint(alpha(Color.BLACK, 128));
             }
             g.setFont(calibri(Font.BOLD, 25));
             Point text = new Point();
@@ -462,12 +463,12 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
 
         try {
             // Set the line pattern
-            g.setPaint(Color.BLACK);
             if (highlight) {
-                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 15f, 5f }, 0f));
+                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 10f, 10f }, 0f));
             } else {
-                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 15f, 5f, 5f }, 0f));
+                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 15f, 10f, 5f, 10f }, 0f));
             }
+            g.setPaint(Color.BLACK);
 
             // Draw the line
             Path2D line = new Path2D.Double(Path2D.WIND_NON_ZERO);
