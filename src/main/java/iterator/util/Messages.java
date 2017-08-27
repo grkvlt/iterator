@@ -58,6 +58,7 @@ public class Messages {
     public static final String MENU_REFLECTION_PROPERTIES = "explorer.menu.reflection.properties";
     public static final String MENU_REFLECTION_DELETE = "explorer.menu.reflection.delete";
 
+    public static final String MENU_EDITOR_NEW_IFS = "explorer.menu.editor.new.ifs";
     public static final String MENU_EDITOR_NEW_TRANSFORM = "explorer.menu.editor.new.transform";
     public static final String MENU_EDITOR_NEW_REFLECTION = "explorer.menu.editor.new.reflection";
 

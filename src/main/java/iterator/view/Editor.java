@@ -22,6 +22,7 @@ import static iterator.Utils.concatenate;
 import static iterator.Utils.height;
 import static iterator.Utils.weight;
 import static iterator.Utils.width;
+import static iterator.util.Messages.MENU_EDITOR_NEW_IFS;
 import static iterator.util.Messages.MENU_EDITOR_NEW_REFLECTION;
 import static iterator.util.Messages.MENU_EDITOR_NEW_TRANSFORM;
 import static iterator.util.Messages.MENU_REFLECTION_DELETE;
@@ -207,6 +208,13 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         add(reflectionMenu);
 
         editor = new JPopupMenu();
+        editor.add(new AbstractAction(messages.getText(MENU_EDITOR_NEW_IFS)) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                IFS untitled = new IFS();
+                bus.post(untitled);
+            }
+        });
         editor.add(new AbstractAction(messages.getText(MENU_EDITOR_NEW_TRANSFORM)) {
             @Override
             public void actionPerformed(ActionEvent e) {
