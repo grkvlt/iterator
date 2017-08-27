@@ -779,13 +779,16 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             case EDITOR: return editor;
             case VIEWER: return viewer;
             case DETAILS: return details;
-            default: return null;
+            default:
+                throw new IllegalStateException(String.format("Invalid component %s", current));
         }
     }
 
     public Viewer getViewer() { return viewer; }
 
     public Editor getEditor() { return editor; }
+
+    public Details getDetails() { return details; }
 
     public About getAbout() { return about; }
 
