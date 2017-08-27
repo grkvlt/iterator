@@ -24,7 +24,9 @@ import java.util.SortedMap;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Charsets;
+import com.google.common.base.Enums;
 import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.StandardSystemProperty;
@@ -58,6 +60,8 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String[] PALETTE_FILES = { "abstract", "autumn", "car", "car2", "forest", "lego", "night", "trees", "wave" };
     public static final String DEFAULT_PALETTE_FILE = "abstract";
     public static final Integer DEFAULT_PALETTE_SIZE = 64;
+    public static final Integer MIN_PALETTE_SIZE = 16;
+    public static final Integer MAX_PALETTE_SIZE = 255;
     public static final Long DEFAULT_PALETTE_SEED = 0L;
     public static final Integer DEFAULT_GRID_MIN = 10;
     public static final Integer DEFAULT_GRID_MAX = 50;
@@ -229,13 +233,20 @@ public class Config extends ForwardingSortedMap<String, String> {
             return (T) Byte.valueOf(value);
         } else if (Character.class == type || Character.TYPE == type) {
             if (value.length() != 1) {
-                throw new IllegalArgumentException("Bad Character value: " + value);
+                throw new IllegalArgumentException(String.format("Bad Character %s", value));
             }
             return (T) Character.valueOf(value.charAt(0));
         } else if (Boolean.class == type || Boolean.TYPE == type) {
             return (T) Boolean.valueOf(value);
         } else if (String.class == type) {
             return (T) value;
+        } else if (Enum.class.isAssignableFrom(type)) {
+            Optional<?> e = Enums.getIfPresent((Class<Enum>) type, CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_UNDERSCORE, value));
+            if (e.isPresent()) {
+                return (T) e.get();
+            } else {
+                throw new IllegalArgumentException(String.format("Cannot find %s in %s enum", value, type.getName()));
+            }
         } else {
             throw new IllegalArgumentException(String.format("Cannot cast %s to %s", value, type.getName()));
         }

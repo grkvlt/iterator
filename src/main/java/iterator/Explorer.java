@@ -29,6 +29,8 @@ import static iterator.util.Config.DEFAULT_RENDER;
 import static iterator.util.Config.DEFAULT_WINDOW_SIZE;
 import static iterator.util.Config.GRID_PROPERTY;
 import static iterator.util.Config.ITERATIONS_PROPERTY;
+import static iterator.util.Config.MAX_PALETTE_SIZE;
+import static iterator.util.Config.MIN_PALETTE_SIZE;
 import static iterator.util.Config.MIN_THREADS;
 import static iterator.util.Config.MIN_WINDOW_SIZE;
 import static iterator.util.Config.MODE_PROPERTY;
@@ -190,11 +192,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private boolean stealing = false;
     private boolean ifscolour = false;
 
-    private Mode mode = DEFAULT_MODE;
-    private Render render = DEFAULT_RENDER;
-    private int paletteSize = DEFAULT_PALETTE_SIZE;
-    private String paletteFile = DEFAULT_PALETTE_FILE;
-    private long seed = 0l;
+    private Mode mode;
+    private Render render;
+    private int paletteSize;
+    private String paletteFile;
+    private long seed;
 
     private Platform platform = Platform.getPlatform();
     private int threads;
@@ -284,33 +286,24 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         // Load configuration
         config = Config.loadProperties(override);
 
+        // Set performance properties
         threads = config.get(THREADS_PROPERTY, Math.max(Runtime.getRuntime().availableProcessors() / 2, MIN_THREADS));
         debug = config.get(DEBUG_PROPERTY, Boolean.FALSE);
 
-        // Check colour mode configuration
-        if (config.containsKey(MODE_PROPERTY)) {
-            String value = config.get(MODE_PROPERTY);
-            setMode(value);
+        // Set colour mode and rendering configuration
+        setMode(config.get(MODE_PROPERTY, DEFAULT_MODE));
+        setRender(config.get(RENDER_PROPERTY, DEFAULT_RENDER));
+        setSeed(config.get(PALETTE_PROPERTY + ".seed", DEFAULT_PALETTE_SEED));
+        if (Strings.isNullOrEmpty(paletteFile)) {
+            setPaletteFile(config.get(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE));
         }
+        setPaletteSize(config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE));
+        debug("Configured rendering as %s/%s:%s", render, mode, palette ? paletteFile : colour ? "hsb" : "black");
 
-        // Check rendering configuration
-        if (config.containsKey(RENDER_PROPERTY)) {
-            String value = config.get(RENDER_PROPERTY);
-            setRender(value);
-        }
-
-        // Load colour palette
+        // Load colour palette if required
         if (palette) {
-            setSeed(config.get(PALETTE_PROPERTY + ".seed", DEFAULT_PALETTE_SEED));
-            if (Strings.isNullOrEmpty(paletteFile)) {
-                setPaletteFile(config.get(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE));
-            }
-            setPaletteSize(config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE));
             loadColours();
         }
-        debug("Configured %s %s: %s", render,
-                colour ? palette ? stealing ? "stealing" : "palette" : ifscolour ? "ifscolour" : "colour" : "grayscale",
-                palette ? paletteFile : colour ? "hsb" : "black");
 
         // Get window size configuration
         int w = Math.max(MIN_WINDOW_SIZE, config.get(WINDOW_PROPERTY + ".width", DEFAULT_WINDOW_SIZE));
@@ -335,6 +328,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         about = new About(this);
 
         // Setup platform specifics
+        // TODO Windows specific UI configuration
         if (platform == Platform.MAC_OS_X) {
             try {
                 Class<?> support = Class.forName("iterator.AppleSupport");
@@ -343,7 +337,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 Object apple = ctor.newInstance(bus, this);
                 setup.invoke(apple);
             } catch (InvocationTargetException ite) {
-                error(Optional.of(ite.getCause()), "Error while configuring OSX support: %s", ite.getCause().getMessage());
+                error(ite.getCause(), "Error while configuring OSX support: %s", ite.getCause().getMessage());
             } catch (Exception e) {
                 error(e, "Unable to configure OSX support");
             }
@@ -372,15 +366,15 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void setPaletteSize(int value) {
-        paletteSize = value;
+        paletteSize = Math.min(Math.max(MIN_PALETTE_SIZE, value), MAX_PALETTE_SIZE);
     }
 
-    public void setRender(String value) {
-        render = Render.valueOf(CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_UNDERSCORE, value));
+    public void setRender(Render value) {
+        render = value;
     }
 
-    public void setMode(String value) {
-        mode = Mode.valueOf(CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_UNDERSCORE, value));
+    public void setMode(Mode value) {
+        mode = value;
         colour = mode.isColour();
         palette = mode.isPalette();
         stealing = mode.isStealing();
@@ -680,20 +674,20 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             case VIEWER:
                 export.setEnabled(true);
                 print.setEnabled(true);
-                setResizable(false);
+                if (!fullScreen) setResizable(false);
                 viewer.reset();
                 viewer.start();
                 break;
             case DETAILS:
                 export.setEnabled(false);
                 print.setEnabled(true);
-                setResizable(true);
+                if (!fullScreen) setResizable(true);
                 viewer.stop();
                 break;
             case EDITOR:
                 export.setEnabled(false);
                 print.setEnabled(false);
-                setResizable(true);
+                if (!fullScreen) setResizable(true);
                 viewer.stop();
                 break;
             default:
