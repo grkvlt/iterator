@@ -107,20 +107,12 @@ public class IFS extends ForwardingList<Function> {
     private String name;
     @XmlElementWrapper(name = "Transforms")
     @XmlElement(name = "Transform")
-    private List<Transform> transforms = Lists.newArrayList();
+    private List<Transform> transforms = Lists.newLinkedList();
     @XmlElementWrapper(name = "Reflections")
     @XmlElement(name = "Reflection")
-    private List<Reflection> reflections = Lists.newArrayList();
+    private List<Reflection> reflections = Lists.newLinkedList();
 
     public IFS() { }
-
-    public boolean contains(Object object) {
-        if (object == null) {
-            return false;
-        } else {
-            return transforms.contains(object) || reflections.contains(object);
-        }
-    }
 
     public boolean add(Transform element) {
         if (element.getId() < 0) {
@@ -128,6 +120,7 @@ public class IFS extends ForwardingList<Function> {
             element.setZIndex(transforms.isEmpty() ? 0 : Ordering.from(Z_ORDER).max(transforms).getZIndex() + 1);
         }
 
+        transforms.remove(element);
         return transforms.add(element);
     }
 
@@ -136,6 +129,7 @@ public class IFS extends ForwardingList<Function> {
             element.setId(reflections.isEmpty() ? 1 : Ordering.from(IDENTITY).max(reflections).getId() + 1);
         }
 
+        reflections.remove(element);
         return reflections.add(element);
     }
 
