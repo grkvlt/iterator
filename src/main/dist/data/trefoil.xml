@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<IFS name="trefoil">
+    <Transforms>
+        <Transform id="2" zIndex="1" x="-165.0" y="505.0" w="920.0" h="200.0" r="0.0" shx="0.0" shy="0.0" sw="1200.0" sh="1200.0"/>
+        <Transform id="1" zIndex="0" x="1048.0" y="35.0" w="228.0" h="743.0" r="1.0494439282076435" shx="0.0" shy="0.0" sw="1200.0" sh="1200.0"/>
+    </Transforms>
+    <Reflections>
+        <Reflection id="1" x="385.0" y="245.0" r="0.5354195419366258" sw="1200.0" sh="1200.0"/>
+        <Reflection id="2" x="1025.0" y="600.0" r="-1.5707963267948966" sw="1200.0" sh="1200.0"/>
+    </Reflections>
+</IFS>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<IFS name="curls">
+    <Transforms>
+        <Transform id="4" zIndex="3" x="480.0" y="-250.0" w="828.0" h="802.0" r="0.7853981633974483" shx="0.0" shy="0.0" sw="1200.0" sh="1200.0"/>
+        <Transform id="1" zIndex="0" x="713.0" y="706.0" w="342.0" h="336.0" r="0.8737749495422971" shx="0.0" shy="0.0" sw="1200.0" sh="1200.0"/>
+    </Transforms>
+    <Reflections>
+        <Reflection id="1" x="195.0" y="840.0" r="1.9690744528961808" sw="1200.0" sh="1200.0"/>
+    </Reflections>
+</IFS>

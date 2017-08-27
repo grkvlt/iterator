@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<IFS name="crab">
+    <Transforms>
+        <Transform id="2" zIndex="1" x="75.0" y="155.0" w="724.0" h="724.0" r="0.7853981633974483" shx="1.0" shy="0.0" sw="1200.0" sh="1200.0"/>
+        <Transform id="3" zIndex="2" sw="1200.0" sh="1200.0" matrix="0.25 0.0 -0.5 0.5 675.0 70.0"/>
+        <Transform id="4" zIndex="3" x="300.0" y="900.0" w="1200.0" h="155.0" r="0.0" shx="0.0" shy="0.0" sw="1200.0" sh="1200.0"/>
+    </Transforms>
+    <Reflections>
+        <Reflection id="1" x="665.0" y="500.0" r="-0.5244699326261224" sw="1200.0" sh="1200.0"/>
+    </Reflections>
+</IFS>
