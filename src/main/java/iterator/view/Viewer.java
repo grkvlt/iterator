@@ -137,9 +137,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         this.bus = controller.getEventBus();
         this.messages = controller.getMessages();
 
-        timer = new Timer(200, this);
+        timer = new Timer(100, this);
         timer.setCoalesce(true);
-        timer.setInitialDelay(0);
 
         size = getSize();
 
