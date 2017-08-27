@@ -607,7 +607,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         addWindowListener(new WindowAdapter() {
             /** @see WindowListener#windowClosed(WindowEvent) */
             @Override
-            public void windowClosed(WindowEvent e) {
+            public void windowClosing(WindowEvent e) {
+                print("Exiting");
                 System.exit(0);
             }
         });
