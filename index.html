@@ -53,6 +53,9 @@
           <em>References</em> section below for more details on the mathematics
           and concepts behind these systems.
         </p>
+        <div style="margin-left: 25px; margin-bottom: 20px;">
+          <img src="images/export.png" alt="Export" title="Export" border="1" width="485" height="485">
+        </div>
         <p>
           <strong>IFS Explorer</strong> provides an interactive UI to create
           and manipulate a set of affine transforms, which are then iterated
@@ -62,13 +65,15 @@
           be saved and loaded as XML files, and rendered images can be exported
           as PNG graphics files or printed.
         </p>
-        <div style="margin-left: 25px;">
-          <img src="images/viewer.png" alt="Viewer" title="Viewer" border="1" width="240" height="240">
-          <img src="images/details.png" alt="Details" title="Details" border="1" width="240" height="240">
+        <div style="page-break-inside: avoid;">
+					<div style="margin-left: 25px;">
+						<img src="images/viewer.png" alt="Viewer" title="Viewer" border="1" width="240" height="240">
+						<img src="images/details.png" alt="Details" title="Details" border="1" width="240" height="240">
+					</div>
+					<p style="margin-left: 25px;">
+						<em>Screenshots for the <strong>Viewer</strong>  and <strong>Details</strong> modes.</em>
+					</p>
         </div>
-        <p style="margin-left: 25px;">
-          <em>Screenshots for the <strong>Viewer</strong>  and <strong>Details</strong> modes.</em>
-        </p>
         <h3>Program requirements</h3>
         <ul>
           <li>Java 1.8.x Runtime Environment</li>
@@ -154,9 +159,24 @@
 <b>$</b> ./bin/explorer.sh --colour --palette wave ./data/spikes.xml</code></pre>
         <p>
           The <em>Preferences...</em> menu option displays a dialog with some of the
-          available options, which can be edited and applied to the current view,
-          but will not be saved when the program exits.
+          available options. In particular there are drop-down menus to select the IFS 
+          display mode, such as <em>ifs-colour</em> or <em>gray</em>, and the rendering
+          style, from <em>standard</em> to the range of density estimation based options
+          such as <em>log-density-flame-inverse</em>. See the next section for more
+          details on these options.
         </p>
+        <div style="page-break-inside: avoid;">
+					<div style="margin-left: 25px;">
+						<img src="images/preferences.png" alt="Preferences" title="Preferences Dialog" border="1" width="160" height="160">
+					</div>
+					<p style="margin-left: 25px;">
+						<em>The <strong>Preferences</strong> dialog.</em>
+					</p>
+        </div>
+        <blockquote>
+          <strong>Note</strong> <em>Settings changed using the <strong>Preferences</strong>
+          dialog are applied to the current view, but will not be saved when the program exits.</em>
+        </blockquote>
         <h3>Options</h3>
         <p>
           The most interesting configuration properties are the <code>explorer.mode</code>,
@@ -238,12 +258,14 @@
           of changes to a transform immediately it is possible to reach the
           desired final image much more quickly.
         </p>
-        <div style="margin-left: 25px;">
-          <img src="images/editor.png" alt="Editor" title="Editor" border="1" width="485">
+        <div style="page-break-inside: avoid;">
+					<div style="margin-left: 25px;">
+						<img src="images/editor.png" alt="Editor" title="Editor" border="1" width="485">
+					</div>
+					<p style="margin-left: 25px;">
+						<em>Screenshot of the <strong>Editor</strong> mode with the live IFS view</em>
+					</p>
         </div>
-        <p style="margin-left: 25px;">
-          <em>Screenshot of the <strong>Editor</strong> mode with the live IFS view</em>
-        </p>
         <p>
           In the <strong>Editor</strong> mode, clicking and dragging the
           mouse will create a new transform which can then be moved, resised
@@ -265,29 +287,46 @@
           <em>Matrix</em> menu item allows the six affine transform matrix
           coefficients to be altered directly.
         </p>
-        <p>
-          The default menu displayed when right-clicking on the background
-          has only two options, <em>New Transform</em> and <em>New Reflection</em>.
-          These create new functions, respectively an affine transform and
-          a planar reflection. Reflections can also be created by <em>Ctrl</em>
-          clicking on the background or by holding down <em>Alt</em> and
-          clocking and dragging an exsting reflection. Reflections can be
-          modified by dragging them by the square handle or by editing them
-          directly via the <em>Properties</em> dialog available on their
-          context menu.
-        </p>
+        <div style="page-break-inside: avoid;">
+					<div style="margin-left: 25px;">
+						<img src="images/transform-properties.png" alt="Transform" title="Transform Properties Dialog" border="1" width="160" height="160">
+						<img src="images/transform-matrix.png" alt="Matrix" title="Transform Matrix Dialog" border="1" width="160" height="160">
+						<img src="images/reflection-properties.png" alt="Reflection" title="Reflection Properties Dialog" border="1" width="160" height="160">
+					</div>
+					<p style="margin-left: 25px;">
+						<em>The <strong>Transform Properties</strong>, <strong>Transform Matrix</strong>
+						and <strong>Reflection Properties</strong> dialogs.</em>
+					</p>
+        </div>
         <blockquote>
           <strong>Note</strong> <em>Once the affine transform matrix has been
           edited directly, it will no longer be possible to edit the transform
           visually or change its properties, although it can still be moved
           using the mouse.</em>
         </blockquote>
-        <div style="margin-left: 25px;">
-          <img src="images/viewer-overlay-grid.png" alt="Viewer" title="Viewer" border="1" width="485">
-        </div>
-        <p style="margin-left: 25px;">
-          <em>Screenshot of the <strong>Viewer</strong> mode with IFS overlay and grid</em>
+        <p>
+          The default menu displayed when right-clicking on the background
+          has three options. <em>New IFS</em> will delete all existing transforms
+          and reflections and create a new, empty IFS. <em>New Transform</em>
+          and <em>New Reflection</em> create new functions, respectively an
+          affine transform and a planar reflection.
         </p>
+        <p>
+          Reflections can also be created by <em>Ctrl</em>
+          clicking on the background or by holding down <em>Alt</em> and
+          clocking and dragging an exsting reflection. Reflections can be
+          modified by dragging them by the square handle or by editing them
+          directly via the <em>Properties</em> dialog available on their
+          context menu.
+        </p>
+        <div style="page-break-inside: avoid;">
+					<div style="margin-left: 25px;">
+						<img src="images/viewer-overlay-grid.png" alt="Viewer" title="Viewer" border="1" width="485">
+					</div>
+					<p style="margin-left: 25px;">
+						<em>Screenshot of the <strong>Viewer</strong> mode with IFS overlay and grid</em>
+					</p>
+        </div>
         <p>
           When in <strong>Viewer</strong> mode the <em>Space</em> key will pause
           and continue the rendering process. To zoom into the fractal select a
@@ -299,6 +338,15 @@
           and the <em>i</em> key will toggle display of the current scale and
           viewpoint co-ordinates.
         </p>
+        <div style="page-break-inside: avoid;">
+					<div style="margin-left: 25px;">
+						<img src="images/display-properties.png" alt="Display" title="Display Properties Dialog" border="1" width="160" height="160">
+					</div>
+					<p style="margin-left: 25px;">
+						<em>The <strong>Display Properties</strong> dialog for editing scale factor
+						and viewpoint centre.</em>
+					</p>
+        </div>
         <blockquote>
           <strong>Note</strong> <em>When zoomed in at high magnification the
           iterative process can take a very long time until the rendered fractal
@@ -311,11 +359,8 @@
           and will be resized to fit on a single page.
         </p>
         <blockquote>
-          <strong>Important</strong> <em>Further actions and settings can be
-          found in the right-click context menu on most screens, as well as
-          the <em>Preferences</em> dialog and individual <em>Properties</em>
-          dialogs for transforms and reflections, as well as the zoom
-          settings for the main viewer.</em>
+          <strong>Important</strong> <em>Editing and other actions can also be
+          accessed using the right-click context menu on most screens.
         </blockquote>
         <h3>Examples</h3>
         <p>
@@ -333,14 +378,16 @@
           on the command-line. Sample images for these transforms have also been provided,
           so be sure to use the <code>.xml</code> file, not the <code>.png</code>.
         </p>
-        <div style="margin-left: 25px;">
-          <a href="webstart/images/gallery/index.html">
-            <img src="images/gallery.png" style="border: 0;" alt="Gallery" title="Gallery" border="0" width="485">
-          </a>
+        <div style="page-break-inside: avoid;">
+					<div style="margin-left: 25px;">
+						<a href="webstart/images/gallery/index.html">
+							<img src="images/gallery.png" style="border: 0;" alt="Gallery" title="Gallery" border="0" width="485">
+						</a>
+					</div>
+					<p style="margin-left: 25px;">
+						<em>Gallery of example fractal images.</em>
+					</p>
         </div>
-        <p style="margin-left: 25px;">
-          <em>Gallery of example fractal images.</em>
-        </p>
         <p>
           This selection of IFS images is also included in the distribution archive.
           To view it, open the <code>data/gallery/index.html</code> file in a web browser.

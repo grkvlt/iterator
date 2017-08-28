@@ -1,29 +1,32 @@
 body {
-  font: 13px/1.4 Calibri, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font:13px/1.4 Calibri, "Helvetica Neue", Helvetica, Arial, sans-serif;
   padding:50px;
   color:#777;
   font-weight:300;
+  orphans:8;
+  widows:8;
 }
 
 img {
-  padding: 0;
-  margin: 0;
-  margin-bottom: -3px;
-  border: 1px solid black;
+  padding:0;
+  margin:0;
+  margin-bottom:-3px;
+  border:1px solid black;
 }
 
 h1, h2, h3, h4, h5, h6 {
   color:#222;
-  margin:0 0 10px;
+  margin:0 0 10px 0;
 }
 
 p, ul, ol, table, pre, dl, blockquote {
-  margin:0 0 20px;
+  margin:0 0 20px 0;
 }
 
 h1, h2, h3 {
   font-size:21px;
   line-height:1.1;
+  page-break-after:avoid;
 }
 
 h1 {
@@ -70,20 +73,21 @@ blockquote {
   border-left:1px solid #e5e5e5;
   padding:0 0 0 20px;
   font-style:italic;
+  page-break-before:avoid;
 }
 
 code, pre {
-  font-family: Consolas, Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal;
+  font-family:Consolas, Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal;
   color:#333;
   font-size:12px;
 }
 
 pre {
   padding:8px 15px;
-  background: #f8f8f8;  
+  background:#f8f8f8;  
   border-radius:5px;
   border:1px solid #e5e5e5;
-  overflow-x: auto;
+  overflow-x:auto;
 }
 
 table {
