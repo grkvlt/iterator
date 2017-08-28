@@ -3,7 +3,9 @@ IFS Explorer
 
 Iterated Function System Explorer.
 
-<http://grkvlt.github.io/iterator/>
+![viewer](http://grkvlt.github.io/iterator/images/viewer-overlay-grid.png)
+
+See <http://grkvlt.github.io/iterator/> for further documentation.
 
 ## Features
 
@@ -36,11 +38,6 @@ Iterated Function System Explorer.
 - Better Operating-System integration
   - Native full-screen mode
   - Support native windowing system features
-- Better editing UI
-  - Fix bugs in resize operation
-- More rendering modes
-  - Fractal flame
-  - Other function types
 - Improved co-ordinate system
   - Allow non-square aspect ratio
   - Use unit vectors as basis
