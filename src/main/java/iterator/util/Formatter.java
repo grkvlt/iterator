@@ -77,6 +77,7 @@ public class Formatter {
      * Formatter for {@link Double} values in {@link JFormattedTextField}s.
      */
     public static class DoubleFormatter extends AbstractFormatter {
+
         private final int digits;
 
         DoubleFormatter() {
@@ -98,22 +99,29 @@ public class Formatter {
 
         @Override
         public String valueToString(Object value) throws ParseException {
-            return String.format("%." + digits + "f", value);
+            String text = String.format("%." + digits + "f", value);
+            String zeros = "\\.0*$";
+            if (text.matches(zeros)) {
+                text = text.replaceAll(zeros, "");
+            }
+            return text;
         }
+
     }
 
     /**
      * Formatter for {@link Optional<Double>} values in {@link JFormattedTextField}s.
      */
     public static class OptionalDoubleFormatter extends AbstractFormatter {
-        private final int digits;
+
+        private final DoubleFormatter formatter;
 
         OptionalDoubleFormatter() {
             this(3);
         }
 
         OptionalDoubleFormatter(int digits) {
-            this.digits = digits;
+            this.formatter = new DoubleFormatter(digits);
         }
 
         @Override
@@ -122,7 +130,7 @@ public class Formatter {
                 return Optional.absent();
             }
             try {
-                return Optional.of(Double.valueOf(text));
+                return Optional.of(formatter.stringToValue(text));
             } catch (NumberFormatException e) {
                 return Optional.absent();
             }
@@ -132,17 +140,19 @@ public class Formatter {
         public String valueToString(Object value) throws ParseException {
             Optional<Double> optional = (Optional<Double>) value;
             if (value instanceof Optional && optional.isPresent()) {
-                return String.format("%." + digits + "f", optional.get());
+                return formatter.valueToString(optional.get());
             } else {
                 return "";
             }
         }
+
     }
 
     /**
      * Formatter for {@link Float} values in {@link JFormattedTextField}s.
      */
     public static class FloatFormatter extends AbstractFormatter {
+
         private final int digits;
 
         FloatFormatter() {
@@ -164,14 +174,21 @@ public class Formatter {
 
         @Override
         public String valueToString(Object value) throws ParseException {
-            return String.format("%." + digits + "f", value);
+            String text = String.format("%." + digits + "f", value);
+            String zeros = "\\.0*$";
+            if (text.matches(zeros)) {
+                text = text.replaceAll(zeros, "");
+            }
+            return text;
         }
+
     }
 
     /**
      * Formatter for {@link Integer} values in {@link JFormattedTextField}s.
      */
     public static class IntegerFormatter extends AbstractFormatter {
+
         private final int min, max;
 
         IntegerFormatter() {
@@ -196,12 +213,14 @@ public class Formatter {
         public String valueToString(Object value) throws ParseException {
             return Objects.toString(value);
         }
+
     }
 
     /**
      * Formatter for {@link Long} values in {@link JFormattedTextField}s.
      */
     public static class LongFormatter extends AbstractFormatter {
+
         private final long min, max;
 
         LongFormatter() {
@@ -226,12 +245,14 @@ public class Formatter {
         public String valueToString(Object value) throws ParseException {
             return Objects.toString(value);
         }
+
     }
 
     /**
      * Formatter for {@link String} values in {@link JFormattedTextField}s.
      */
     public static class StringFormatter extends AbstractFormatter {
+
         StringFormatter() { }
 
         @Override
@@ -243,6 +264,7 @@ public class Formatter {
         public String valueToString(Object value) throws ParseException {
             return Objects.toString(value);
         }
+
     }
 
 }
