@@ -73,6 +73,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -94,6 +95,7 @@ import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
 import iterator.util.Config.Render;
+import iterator.util.Formatter;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
 
@@ -196,8 +198,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         bus.register(this);
     }
 
-    public BufferedImage getImage() { return image; }
-
     public long getCount() { return count.get(); }
 
     public Point2D getCentre() { return centre; }
@@ -262,10 +262,15 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             }
 
             if (info) {
-                String scaleText = String.format("%.1fx (%.3f, %.3f) %s/%s %s",
-                        scale, centre.getX() / size.getWidth(), centre.getY() / size.getHeight(),
+                AbstractFormatter one = Formatter.floats(1);
+                AbstractFormatter four = Formatter.doubles(4);
+                String scaleText = String.format("%sx (%s, %s) %s/%s %s (%s)",
+                        one.valueToString(scale),
+                        four.valueToString(centre.getX() / size.getWidth()),
+                        four.valueToString(centre.getY() / size.getHeight()),
                         controller.getMode(), controller.getRender(),
-                        controller.hasPalette() ? controller.getPaletteFile() : controller.isColour() ? "hsb" : "black");
+                        controller.hasPalette() ? controller.getPaletteFile() : (controller.isColour() ? "hsb" : "black"),
+                        isRunning() ? Long.toString(tasks.stream().filter(t -> !t.isDone()).count()) : "-");
                 String countText = String.format("%,dK", count.get()).replaceAll("[^0-9K+]", " ");
 
                 g.setPaint(controller.getRender().getForeground());
@@ -394,20 +399,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public void reset() {
         if (size.getWidth() <= 0 && size.getHeight() <= 0) return;
 
-        image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = image.createGraphics();
-        try {
-            if (isVisible()) {
-                g.setColor(controller.getRender().getBackground());
-            } else {
-                g.setColor(new Color(1f, 1f, 1f, 0f));
-            }
-            g.fillRect(0, 0, size.width, size.height);
-        } catch (Exception e) {
-            controller.error(e, "Failure resetting image");
-        } finally {
-            g.dispose();
-        }
+        resetImage();
 
         points[0] = random.nextInt(size.width);
         points[1] = random.nextInt(size.height);
@@ -422,9 +414,22 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         count.set(0l);
     }
 
+    public void resetImage() {
+        image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        try {
+            g.setColor(controller.getRender().getBackground());
+            g.fillRect(0, 0, size.width, size.height);
+        } catch (Exception e) {
+            controller.error(e, "Failure resetting image");
+        } finally {
+            g.dispose();
+        }
+    }
+
     public void save(File file) {
         try {
-            ImageIO.write(getImage(), "png", file);
+            ImageIO.write(image, "png", file);
 
             controller.debug("File %s: %d transforms/%d reflections: %.1fx scale at (%.2f, %.2f) with %,dK iterations",
                     file.getName(), ifs.getTransforms().size(), ifs.getReflections().size(),
@@ -459,8 +464,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         return PAGE_EXISTS;
     }
 
-    public void iterate(long k, float scale, Point2D centre) {
-        Graphics2D g = image.createGraphics();
+    public void iterate(BufferedImage targetImage, int s, long k, float scale, Point2D centre) {
+        Graphics2D g = targetImage.createGraphics();
 
         try {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -481,8 +486,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             double weight = weight(transforms);
             int n = transforms.size();
             int m = reflections.size();
-            int s = isVisible() ? 1 : 2;
-            int a = isVisible() ? 8 : (int) Math.min(128d, Math.pow(n,  1.2) * 16d);
             int l = size.width * size.height;
 
             for (long i = 0L; i < k; i++) {
@@ -502,7 +505,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 f.getTransform().transform(points, 0, points, 0, 2);
 
                 // Discard first 10K points
-                if (isVisible() && count.get() < 10) {
+                if (count.get() < 10) {
                     continue;
                 }
 
@@ -591,12 +594,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         top[p] = color.getRGB();
                         g.setPaint(alpha(color, isVisible() ? 16 : 128));
                     } else {
-                        g.setPaint(alpha(color, a));
+                        g.setPaint(alpha(color, isVisible() ? 16 : 128));
                     }
 
-                    // Paint pixels unless using density rendering in viewer
-                    Rectangle rect = new Rectangle(x, y, s, s);
-                    if (!(controller.getRender().isDensity() && isVisible())) {
+                    // Paint pixels unless using density rendering
+                    if (!controller.getRender().isDensity()) {
+                        Rectangle rect = new Rectangle(x, y, s, s);
                         g.fill(rect);
                     }
                 }
@@ -608,25 +611,19 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         }
     }
 
-    public void plotDensity() {
-        Graphics2D g = image.createGraphics();
+    public void plotDensity(BufferedImage targetImage, int r) {
+        Graphics2D g = targetImage.createGraphics();
 
         try {
-            if (isVisible()) {
-                g.setColor(controller.getRender().getBackground());
-            } else {
-                g.setColor(new Color(1f, 1f, 1f, 0f));
-            }
-            g.fillRect(0, 0, size.width, size.height);
-
-            int r = isVisible() ? 1 : 2;
             boolean log = controller.getRender().isLog();
+            boolean invert = controller.getRender().isInverse() && isVisible();
+            int min = isVisible() ? 0 : 16;
             for (int x = 0; x < size.width; x++) {
                 for (int y = 0; y < size.height; y++) {
                     int p = x + y * size.width;
-                    if (density[p] > 0) {
+                    if (density[p] > min) {
                         double ratio = unity().apply(log ? (double) (Math.log(density[p]) / Math.log(max)) : ((double) density[p] / (double) max));
-                        double gray = controller.getRender().isInverse() ? ratio : 1d - ratio;
+                        double gray = invert ? ratio : 1d - ratio;
                         if (controller.isColour()) {
                             Color color = new Color((int) (rgb[p] * RGB24));
                             if (controller.getRender() == Render.LOG_DENSITY_FLAME) {
@@ -660,8 +657,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (controller.getRender().isDensity()) {
-            plotDensity();
+        if (isVisible() && controller.getRender().isDensity()) {
+            resetImage();
+            plotDensity(image, 1);
         }
         repaint();
     }
@@ -676,7 +674,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         String name = Thread.currentThread().getName();
         controller.debug("Started task %s", name);;
         do {
-            iterate(controller.getIterations(), scale, centre);
+            iterate(image, 1, controller.getIterations(), scale, centre);
         } while (running.get());
         controller.debug("Stopped task %s", name);;
         return null;
@@ -710,7 +708,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         if (stopped) {
             controller.debug("Stopping");
             timer.stop();
-            tasks.stream().forEach(f -> f.cancel(true));
+            for (Future<Void> task : tasks) {
+                task.cancel(true);
+            }
             tasks.clear();
             try {
                 boolean result = executor.awaitTermination(1, TimeUnit.SECONDS);
@@ -722,6 +722,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             pause.setEnabled(false);
             resume.setEnabled(true);
             loop.exit();
+            repaint();
         }
         return stopped;
     }

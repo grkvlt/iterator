@@ -16,12 +16,9 @@
 package iterator.view;
 
 import static iterator.Utils.alpha;
-import static iterator.Utils.area;
 import static iterator.Utils.calibri;
 import static iterator.Utils.concatenate;
-import static iterator.Utils.height;
 import static iterator.Utils.weight;
-import static iterator.Utils.width;
 import static iterator.util.Messages.MENU_EDITOR_NEW_IFS;
 import static iterator.util.Messages.MENU_EDITOR_NEW_REFLECTION;
 import static iterator.util.Messages.MENU_EDITOR_NEW_TRANSFORM;
@@ -49,6 +46,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -58,15 +56,18 @@ import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
 
 import com.google.common.base.Throwables;
@@ -80,13 +81,15 @@ import iterator.dialog.Properties;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
+import iterator.util.Config.Render;
+import iterator.util.Formatter;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
 
 /**
  * IFS Editor.
  */
-public class Editor extends JPanel implements MouseInputListener, KeyListener, Subscriber {
+public class Editor extends JPanel implements MouseInputListener, KeyListener, ActionListener, Subscriber {
 
     private final EventBus bus;
     private final Explorer controller;
@@ -95,6 +98,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
     private JPopupMenu transformMenu, reflectionMenu, editor;
     private Action properties;
 
+    private Timer timer;
+    private BufferedImage image;
     private IFS ifs;
     private Reflection reflection;
     private Transform selected;
@@ -108,6 +113,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         this.controller = controller;
         this.bus = controller.getEventBus();
         this.messages = controller.getMessages();
+
+        timer = new Timer(50, this);
+        timer.setCoalesce(true);
+        timer.start();
 
         transformMenu = new JPopupMenu();
         properties = new AbstractAction(messages.getText(MENU_TRANSFORM_PROPERTIES)) {
@@ -315,6 +324,46 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
         bus.post(ifs);
     }
 
+    /**
+     * Invoked when the timer fires, to refresh the image when rendering.
+     *
+     * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+     */
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (isVisible() && ifs.size() > 0) {
+            Viewer viewer = controller.getViewer();
+            long n = getTransforms().size();
+            long m = getReflections().size() + 1;
+            long k = Math.min(1_500_000, 100_000 * (long) Math.pow(2d, n * m));
+            controller.debug("Rendering in editor: k = %d, n = %d, m = %d", k, n, m);
+            resetImage();
+            viewer.reset();
+            viewer.iterate(image, 4, k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
+            if (controller.getRender().isDensity()) {
+                if (controller.getRender() == Render.LOG_DENSITY_BLUR || controller.getRender() == Render.LOG_DENSITY_BLUR_INVERSE) {
+                    viewer.plotDensity(image, 2);
+                } else {
+                    viewer.plotDensity(image, 4);
+                }
+            }
+            repaint();
+        }
+    }
+
+    public void resetImage() {
+        image = new BufferedImage(getSize().width, getSize().height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        try {
+            g.setColor(new Color(1f, 1f, 1f, 0f));
+            g.fillRect(0, 0, getSize().width, getSize().height);
+        } catch (Exception ex) {
+            controller.error(ex, "Failure resetting image");
+        } finally {
+            g.dispose();
+        }
+    }
+
     /** @see javax.swing.JComponent#paintComponent(Graphics) */
     @Override
     protected void paintComponent(Graphics graphics) {
@@ -326,6 +375,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             paintGrid(g);
 
             if (ifs != null) {
+                if (ifs.size() > 0) {
+                    g.setComposite(AlphaComposite.SrcOver.derive(0.8f));
+                    g.drawImage(image, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
+                }
+
                 for (Transform t : ifs.getTransforms()) {
                     if (!t.equals(selected)) {
                         paintTransform(t, false, g);
@@ -349,21 +403,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                     g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
                     Transform ants = getAnts();
                     g.draw(new Rectangle(ants.x.intValue(), ants.y.intValue(), ants.w.intValue(), ants.h.intValue()));
-                }
-
-                if (!ifs.getTransforms().isEmpty()) {
-                    Viewer viewer = controller.getViewer();
-                    viewer.reset();
-                    List<Transform> transforms = getTransforms();
-                    double area = getWidth() * getHeight();
-                    double totalRatio = Math.pow(2d, transforms.size() + getReflections().size());
-                    double areaRatio = area(transforms) / area;
-                    double sizeRatio = (width(transforms) * height(transforms)) / area;
-                    int k = (int) (500_000 * areaRatio * sizeRatio * totalRatio);
-                    viewer.iterate(k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
-
-                    g.setComposite(AlphaComposite.SrcOver.derive(0.8f));
-                    g.drawImage(viewer.getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
                 }
             }
         } catch (Exception e) {
@@ -439,7 +478,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             } else {
                 g.setPaint(alpha(Color.BLACK, 128));
             }
-            g.setFont(calibri(Font.BOLD, 25));
+
+            // Set the position and angle
             Point text = new Point();
             t.getTransform().transform(new Point(0, 0), text);
             AffineTransform rotation = new AffineTransform();
@@ -454,10 +494,14 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
                 rotation.translate(-text.x, -text.y);
             }
             g.setTransform(rotation);
-            String id = String.format("T%s %.1f%% %s",
+
+            // Draw the label
+            AbstractFormatter one = Formatter.doubles(1);
+            String id = String.format("T%s %s%% %s",
                     (t.getId() == -1 ? "--" : String.format("%02d", t.getId())),
-                    100d * t.getWeight() / weight(concatenate(ifs.getTransforms(), selected)),
-                    ((highlight && rotate != null) ? String.format("(%+d)", (int) Math.toDegrees(t.r)) : ""));
+                    one.valueToString(100d * t.getWeight() / weight(concatenate(ifs.getTransforms(), selected))),
+                    ((highlight && rotate != null) ? String.format("(%s)", one.valueToString(Math.toDegrees(t.r))) : ""));
+            g.setFont(calibri(Font.BOLD, 25));
             g.drawString(id, text.x + 5, text.y + 25);
         } catch (Exception e) {
             controller.error(e, "Failure painting transform number");
@@ -491,10 +535,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, S
             g.draw(line);
 
             // Draw the label
-            g.setFont(calibri(Font.BOLD, 25));
+            AbstractFormatter one = Formatter.doubles(1);
             String id = String.format("R%s %s",
                     (r.getId() == -1 ? "--" : String.format("%02d", r.getId())),
-                    highlight ? String.format("(%+d)", (int) Math.toDegrees(r.r)) : "");
+                    highlight ? String.format("(%s)", one.valueToString(Math.toDegrees(r.r))) : "");
+            g.setFont(calibri(Font.BOLD, 25));
             g.drawString(id, (int) (r.x + 10), (int) (r.y + 10));
 
             // Add the select handle
