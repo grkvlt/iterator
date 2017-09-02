@@ -116,10 +116,14 @@
           to the command-line.
         </p>
         <p>
-          Enable colour rendering with the <code>-c</code> or <code>--colour</code> flag.
-          This will use a fixed list of colours for the transforms. To use a colour palette
-          taken from a sample image, specify <code>-p</code> or <code>--palette</code>. The image
-          used can also be set with the <code>explorer.palette.file</code> system property and
+          The default rendering mode is grayscale. To show a coloured image, choose one of the
+          other rendering modes either by using the preferences dialog, by editing the configuration
+          properties or by setting the <em>explorer.mode</em> system property.
+        </p>
+        <p>
+          To use a colour palette taken from a sample image, specify <code>-p</code> or
+          <code>--palette</code> on the command line, which will set the rendering mode to <em>palette</em>.
+          The image used can also be set with the <code>explorer.palette.file</code> system property and
           can be one of several included named palettes, such as <em>abstract</em>, <em>wave</em>
           or <em>car</em>, or a URI pointing at a local or remote <code>PNG</code> image
           to retrieve colours from.
@@ -156,10 +160,10 @@
           using the <code>JAVA_OPTS</code> environment variable.
         </p>
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> export JAVA_OPTS="-Dexplorer.palette.seed=1234"
-<b>$</b> ./bin/explorer.sh --colour --palette wave ./data/spikes.xml</code></pre>
+<b>$</b> ./bin/explorer.sh --palette wave ./data/spikes.xml</code></pre>
         <p>
           The <em>Preferences...</em> menu option displays a dialog with some of the
-          available options. In particular there are drop-down menus to select the IFS 
+          available options. In particular there are drop-down menus to select the IFS
           display mode, such as <em>ifs-colour</em> or <em>gray</em>, and the rendering
           style, from <em>standard</em> to the range of density estimation based options
           such as <em>log-density-flame-inverse</em>. See the next section for more
