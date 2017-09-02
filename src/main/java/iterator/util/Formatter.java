@@ -16,7 +16,6 @@
 package iterator.util;
 
 import java.text.ParseException;
-import java.util.Objects;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
@@ -73,12 +72,67 @@ public class Formatter {
         return new StringFormatter();
     }
 
+    public static abstract class BaseFormatter<T> extends AbstractFormatter {
+
+        @Override
+        public Object stringToValue(String text) throws ParseException {
+            if (Strings.isNullOrEmpty(text)) {
+                return getDefault();
+            } else {
+                try {
+                    return tryParse(text);
+                } catch (Exception e) {
+                    return getDefault();
+                }
+            }
+        }
+
+        @Override
+        public String valueToString(Object value) throws ParseException {
+            if (value == null) {
+                return "";
+            } else {
+                return toString((T) value);
+            }
+        }
+
+        protected abstract T tryParse(String text);
+
+        protected abstract String toString(T value);
+
+        protected abstract T getDefault();
+
+    }
+
+    public static abstract class BaseOptionalFormatter<T> extends BaseFormatter<Optional<T>> {
+
+        protected BaseFormatter<T> formatter;
+
+        @Override
+        protected Optional<T> tryParse(String text) {
+            return Optional.of(formatter.tryParse(text));
+        }
+
+        @Override
+        protected String toString(Optional<T> value) {
+            if (value.isPresent()) {
+                return formatter.toString(value.get());
+            } else {
+                return "";
+            }
+        }
+
+        @Override
+        protected Optional<T> getDefault() { return Optional.absent(); }
+
+    }
+
     /**
      * Formatter for {@link Double} values in {@link JFormattedTextField}s.
      */
-    public static class DoubleFormatter extends AbstractFormatter {
+    public static class DoubleFormatter extends BaseFormatter<Double> {
 
-        private final int digits;
+        private int digits;
 
         DoubleFormatter() {
             this(3);
@@ -89,32 +143,28 @@ public class Formatter {
         }
 
         @Override
-        public Object stringToValue(String text) throws ParseException {
-            try {
-                return Double.valueOf(text);
-            } catch (NumberFormatException e) {
-                return 0d;
-            }
+        protected Double tryParse(String text) {
+            return Double.valueOf(text);
         }
 
         @Override
-        public String valueToString(Object value) throws ParseException {
+        protected String toString(Double value) {
             String text = String.format("%." + digits + "f", value);
-            String zeros = "\\.0*$";
-            if (text.matches(zeros)) {
-                text = text.replaceAll(zeros, "");
+            if (text.matches("^-?[0-9]*\\.0+$")) { // ###.000
+                text = text.replaceAll("\\.0+$", ""); // ###
             }
             return text;
         }
+
+        @Override
+        protected Double getDefault() { return 0d; }
 
     }
 
     /**
      * Formatter for {@link Optional<Double>} values in {@link JFormattedTextField}s.
      */
-    public static class OptionalDoubleFormatter extends AbstractFormatter {
-
-        private final DoubleFormatter formatter;
+    public static class OptionalDoubleFormatter extends BaseOptionalFormatter<Double> {
 
         OptionalDoubleFormatter() {
             this(3);
@@ -124,72 +174,46 @@ public class Formatter {
             this.formatter = new DoubleFormatter(digits);
         }
 
-        @Override
-        public Object stringToValue(String text) throws ParseException {
-            if (Strings.isNullOrEmpty(text)) {
-                return Optional.absent();
-            }
-            try {
-                return Optional.of(formatter.stringToValue(text));
-            } catch (NumberFormatException e) {
-                return Optional.absent();
-            }
-        }
-
-        @Override
-        public String valueToString(Object value) throws ParseException {
-            Optional<Double> optional = (Optional<Double>) value;
-            if (value instanceof Optional && optional.isPresent()) {
-                return formatter.valueToString(optional.get());
-            } else {
-                return "";
-            }
-        }
-
     }
 
     /**
      * Formatter for {@link Float} values in {@link JFormattedTextField}s.
      */
-    public static class FloatFormatter extends AbstractFormatter {
+    public static class FloatFormatter extends BaseFormatter<Float> {
 
-        private final int digits;
+        private DoubleFormatter formatter;
 
         FloatFormatter() {
             this(3);
         }
 
         FloatFormatter(int digits) {
-            this.digits = digits;
+            this.formatter = new DoubleFormatter(digits);
         }
 
         @Override
-        public Object stringToValue(String text) throws ParseException {
-            try {
-                return Float.valueOf(text);
-            } catch (NumberFormatException e) {
-                return 0f;
-            }
+        protected Float tryParse(String text) {
+            Double doubleValue = formatter.tryParse(text);
+            return doubleValue.floatValue();
         }
 
         @Override
-        public String valueToString(Object value) throws ParseException {
-            String text = String.format("%." + digits + "f", value);
-            String zeros = "\\.0*$";
-            if (text.matches(zeros)) {
-                text = text.replaceAll(zeros, "");
-            }
-            return text;
+        protected String toString(Float value) {
+            Double doubleValue = value.doubleValue();
+            return formatter.toString(doubleValue);
         }
+
+        @Override
+        protected Float getDefault() { return 0f; }
 
     }
 
     /**
      * Formatter for {@link Integer} values in {@link JFormattedTextField}s.
      */
-    public static class IntegerFormatter extends AbstractFormatter {
+    public static class IntegerFormatter extends BaseFormatter<Integer> {
 
-        private final int min, max;
+        private int min, max;
 
         IntegerFormatter() {
             this(Integer.MIN_VALUE, Integer.MAX_VALUE);
@@ -201,27 +225,26 @@ public class Formatter {
         }
 
         @Override
-        public Object stringToValue(String text) throws ParseException {
-            try {
-                return Integer.min(max, Integer.max(min, Integer.valueOf(text)));
-            } catch (NumberFormatException e) {
-                return 0;
-            }
+        protected Integer tryParse(String text) {
+            return Integer.min(max, Integer.max(min, Integer.valueOf(text)));
         }
 
         @Override
-        public String valueToString(Object value) throws ParseException {
-            return Objects.toString(value);
+        protected String toString(Integer value) {
+            return Integer.toString(value);
         }
+
+        @Override
+        protected Integer getDefault() { return 0; }
 
     }
 
     /**
      * Formatter for {@link Long} values in {@link JFormattedTextField}s.
      */
-    public static class LongFormatter extends AbstractFormatter {
+    public static class LongFormatter extends BaseFormatter<Long> {
 
-        private final long min, max;
+        private long min, max;
 
         LongFormatter() {
             this(Long.MIN_VALUE, Long.MAX_VALUE);
@@ -233,37 +256,39 @@ public class Formatter {
         }
 
         @Override
-        public Object stringToValue(String text) throws ParseException {
-            try {
-                return Long.min(max, Long.max(min, Long.valueOf(text)));
-            } catch (NumberFormatException e) {
-                return 0l;
-            }
+        protected Long tryParse(String text) {
+            return Long.min(max, Long.max(min, Long.valueOf(text)));
         }
 
         @Override
-        public String valueToString(Object value) throws ParseException {
-            return Objects.toString(value);
+        protected String toString(Long value) {
+            return Long.toString(value);
         }
+
+        @Override
+        protected Long getDefault() { return 0l; }
 
     }
 
     /**
      * Formatter for {@link String} values in {@link JFormattedTextField}s.
      */
-    public static class StringFormatter extends AbstractFormatter {
+    public static class StringFormatter extends BaseFormatter<String> {
 
         StringFormatter() { }
 
         @Override
-        public Object stringToValue(String text) throws ParseException {
+        protected String tryParse(String text) {
             return text;
         }
 
         @Override
-        public String valueToString(Object value) throws ParseException {
-            return Objects.toString(value);
+        protected String toString(String value) {
+            return value;
         }
+
+        @Override
+        protected String getDefault() { return ""; }
 
     }
 
