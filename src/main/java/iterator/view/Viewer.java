@@ -86,7 +86,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import com.google.common.math.IntMath;
+import com.google.common.math.LongMath;
 
 import iterator.Explorer;
 import iterator.dialog.Zoom;
@@ -94,6 +94,7 @@ import iterator.model.Function;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
+import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Formatter;
 import iterator.util.Messages;
@@ -110,9 +111,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
     private IFS ifs;
     private BufferedImage image;
-    private int top[], density[];
+    private int top[];
+    private long density[];
     private double rgb[];
-    private int max;
+    private long max;
     private Timer timer;
     private double points[] = new double[4];
     private AtomicLong count = new AtomicLong(0);
@@ -407,7 +409,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         points[3] = random.nextInt(size.height);
 
         top = new int[size.width * size.height];
-        density = new int[size.width * size.height];
+        density = new long[size.width * size.height];
         rgb = new double[size.width * size.height];
         max = 1;
 
@@ -464,7 +466,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         return PAGE_EXISTS;
     }
 
-    public void iterate(BufferedImage targetImage, int s, long k, float scale, Point2D centre) {
+    public void iterate(BufferedImage targetImage, int s, long k, float scale, Point2D centre, Render render, Mode mode) {
         Graphics2D g = targetImage.createGraphics();
 
         try {
@@ -514,29 +516,29 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 if (x >= 0 && y >= 0 && x < size.width && y < size.height) {
                     int p = x + y * size.width;
 
-                    if (controller.getRender() == Render.TOP) {
+                    if (render == Render.TOP) {
                         if (j > top[p]) top[p] = j;
                     }
 
                     // Density estimation histogram
-                    if (controller.getRender().isDensity()) {
+                    if (render.isDensity()) {
                         try {
                             int q = p;
-                            density[q] = IntMath.checkedAdd(density[q], 1);
-                            switch (controller.getRender()) {
+                            density[q] = LongMath.checkedAdd(density[q], 1l);
+                            switch (render) {
                                 case LOG_DENSITY_BLUR:
                                 case LOG_DENSITY_BLUR_INVERSE:
                                     q += 1;
-                                    if (q < l && q % size.width != 0) density[q] = IntMath.checkedAdd(density[q], 1);
+                                    if (q < l && q % size.width != 0) density[q] = LongMath.checkedAdd(density[q], 1l);
                                     q += size.width;
-                                    if (q < l && q % size.width != 0) density[q] = IntMath.checkedAdd(density[q], 1);
+                                    if (q < l && q % size.width != 0) density[q] = LongMath.checkedAdd(density[q], 1l);
                                     q -= 1;
-                                    if (q < l && q % size.width != 0) density[q] = IntMath.checkedAdd(density[q], 1);
+                                    if (q < l && q % size.width != 0) density[q] = LongMath.checkedAdd(density[q], 1l);
                                     break;
                                 case LOG_DENSITY_POWER:
                                 case DENSITY_POWER:
                                 case LOG_DENSITY_POWER_INVERSE:
-                                    density[q] = IntMath.checkedMultiply(density[q], 2);
+                                    density[q] = LongMath.checkedMultiply(density[q], 2l);
                                     break;
                                 default:
                                     break;
@@ -549,28 +551,28 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
                     // Choose the colour based on the display mode
                     Color color = Color.BLACK;
-                    if (controller.isColour()) {
-                        if (controller.isIFSColour()) {
+                    if (mode.isColour()) {
+                        if (mode.isIFSColour()) {
                             color = Color.getHSBColor((float) (old.getX() / size.getWidth()), (float) (old.getY() / size.getHeight()), 0.8f);
-                        } else if (controller.hasPalette()) {
-                            if (controller.isStealing()) {
-                                color = controller.getPixel(old.getX(), old.getY());
+                        } else if (mode.isPalette()) {
+                            if (mode.isStealing()) {
+                                color = controller.getSourcePixel(old.getX(), old.getY());
                             } else {
-                                if (controller.getRender() == Render.TOP) {
+                                if (render == Render.TOP) {
                                     color = Iterables.get(controller.getColours(), top[p] % controller.getPaletteSize());
                                 } else {
                                     color = Iterables.get(controller.getColours(), j % controller.getPaletteSize());
                                 }
                             }
                         } else {
-                            if (controller.getRender() == Render.TOP) {
+                            if (render == Render.TOP) {
                                 color = Color.getHSBColor((float) top[p] / (float) ifs.size(), 0.8f, 0.8f);
                             } else {
                                 color = Color.getHSBColor((float) j / (float) ifs.size(), 0.8f, 0.8f);
                             }
                         }
-                        if (controller.getRender().isDensity()) {
-                            if (controller.isIFSColour()) {
+                        if (render.isDensity()) {
+                            if (mode.isIFSColour()) {
                                 rgb[p] = (double) color.getRGB() / (double) RGB24;
                             } else {
                                 rgb[p] = (rgb[p] + (double) color.getRGB() / (double) RGB24) / 2d;
@@ -579,9 +581,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     }
 
                     // Set the paint colour according to the rendering mode
-                    if (controller.getRender() == Render.IFS) {
+                    if (render == Render.IFS) {
                         g.setPaint(alpha(color, 255));
-                    } else if (controller.getRender() == Render.MEASURE) {
+                    } else if (render == Render.MEASURE) {
                         if (top[p] == 0) {
                             color = new Color(color.getRed(), color.getGreen(), color.getBlue());
                         } else {
@@ -598,7 +600,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     }
 
                     // Paint pixels unless using density rendering
-                    if (!controller.getRender().isDensity()) {
+                    if (!render.isDensity()) {
                         Rectangle rect = new Rectangle(x, y, s, s);
                         g.fill(rect);
                     }
@@ -611,12 +613,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         }
     }
 
-    public void plotDensity(BufferedImage targetImage, int r) {
+    public void plotDensity(BufferedImage targetImage, int r, Render render, Mode mode) {
         Graphics2D g = targetImage.createGraphics();
 
         try {
-            boolean log = controller.getRender().isLog();
-            boolean invert = controller.getRender().isInverse() && isVisible();
+            boolean log = render.isLog();
+            boolean invert = render.isInverse() && isVisible();
             int min = isVisible() ? 0 : 16;
             for (int x = 0; x < size.width; x++) {
                 for (int y = 0; y < size.height; y++) {
@@ -624,9 +626,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     if (density[p] > min) {
                         double ratio = unity().apply(log ? (double) (Math.log(density[p]) / Math.log(max)) : ((double) density[p] / (double) max));
                         double gray = invert ? ratio : 1d - ratio;
-                        if (controller.isColour()) {
+                        if (mode.isColour()) {
                             Color color = new Color((int) (rgb[p] * RGB24));
-                            if (controller.getRender() == Render.LOG_DENSITY_FLAME) {
+                            if (render == Render.LOG_DENSITY_FLAME || render == Render.LOG_DENSITY_FLAME_INVERSE) {
                                 float alpha = (float) (Math.log(density[p]) / density[p]);
                                 color = new Color((int) (alpha * color.getRed()), (int) (alpha * color.getGreen()), (int) (alpha * color.getBlue()));
                             } else {
@@ -637,7 +639,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         } else {
                             g.setPaint(new Color((float) gray, (float) gray, (float) gray, (float) ratio));
                         }
-                        int side = (controller.getRender() == Render.LOG_DENSITY_BLUR) ? (int) (r * ratio * 8f) : r;
+                        int side = (render == Render.LOG_DENSITY_BLUR) ? (int) (r * ratio * 8f) : r;
                         Rectangle rect = new Rectangle(x, y, side, side);
                         g.fill(rect);
                     }
@@ -659,7 +661,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public void actionPerformed(ActionEvent e) {
         if (isVisible() && controller.getRender().isDensity()) {
             resetImage();
-            plotDensity(image, 1);
+            plotDensity(image, 1, controller.getRender(), controller.getMode());
         }
         repaint();
     }
@@ -674,7 +676,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         String name = Thread.currentThread().getName();
         controller.debug("Started task %s", name);;
         do {
-            iterate(image, 1, controller.getIterations(), scale, centre);
+            iterate(image, 1, controller.getIterations(), scale, centre, controller.getRender(), controller.getMode());
         } while (running.get());
         controller.debug("Stopped task %s", name);;
         return null;

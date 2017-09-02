@@ -81,6 +81,7 @@ import iterator.dialog.Properties;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
+import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Formatter;
 import iterator.util.Messages;
@@ -222,6 +223,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             public void actionPerformed(ActionEvent e) {
                 IFS untitled = new IFS();
                 bus.post(untitled);
+                resetImage();
             }
         });
         editor.add(new AbstractAction(messages.getText(MENU_EDITOR_NEW_TRANSFORM)) {
@@ -313,6 +315,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         this.reflection = null;
 
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+
         repaint();
     }
 
@@ -339,13 +342,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             controller.debug("Rendering in editor: k = %d, n = %d, m = %d", k, n, m);
             resetImage();
             viewer.reset();
-            viewer.iterate(image, 4, k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d));
+            viewer.iterate(image, 4, k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d), Render.STANDARD, Mode.IFS_COLOUR);
             if (controller.getRender().isDensity()) {
-                if (controller.getRender() == Render.LOG_DENSITY_BLUR || controller.getRender() == Render.LOG_DENSITY_BLUR_INVERSE) {
-                    viewer.plotDensity(image, 2);
-                } else {
-                    viewer.plotDensity(image, 4);
-                }
+                viewer.plotDensity(image, 4, Render.LOG_DENSITY, Mode.IFS_COLOUR);
             }
             repaint();
         }
@@ -818,13 +817,13 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     double h = resize.h;
                     int dx = end.x - start.x;
                     int dy = end.y - start.y;
-    
+
                     Point delta = new Point(dx, dy);
                     AffineTransform reverse = new AffineTransform();
                     reverse.rotate(-resize.r);
                     reverse.shear(-resize.shx, -resize.shy);
                     reverse.transform(delta, delta);
-    
+
                     if (e.isShiftDown()) {
                         delta.x = (int) (delta.y * (w / h));
                     }
@@ -836,10 +835,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     } catch (NoninvertibleTransformException e1) {
                         Throwables.propagate(e1);
                     }
-    
+
                     double x = resize.x;
                     double y = resize.y;
-    
+
                     switch (corner.getType()) {
                         case Cursor.NW_RESIZE_CURSOR:
                             x += (inverseX.x + inverseY.x);
@@ -888,7 +887,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                 } else if (selected != null && move != null) {
                     int dx = end.x - start.x;
                     int dy = end.y - start.y;
-    
+
                     selected = Transform.clone(selected);
                     if (move.isMatrix()) {
                         AffineTransform moved = AffineTransform.getTranslateInstance(dx, dy);
@@ -899,7 +898,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     } else {
                         double x = move.x + dx;
                         double y = move.y + dy;
-    
+
                         selected.duplicate(move);
                         selected.x = x;
                         selected.y = y;
@@ -910,7 +909,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     int dx = end.x - origin.x;
                     int dy = end.y - origin.y;
                     double r = Math.atan2(dy - (selected.shy * dx), dx - (selected.shx * dy));
-    
+
                     selected = Transform.clone(selected);
                     selected.duplicate(rotate);
                     selected.r = r;

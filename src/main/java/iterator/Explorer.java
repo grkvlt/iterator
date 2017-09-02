@@ -163,10 +163,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public static final String FULLSCREEN_OPTION = "-f";
     public static final String FULLSCREEN_OPTION_LONG = "--fullscreen";
-    public static final String COLOUR_OPTION = "-c";
-    public static final String COLOUR_OPTION_LONG = "--colour";
     public static final String PALETTE_OPTION = "-p";
     public static final String PALETTE_OPTION_LONG = "--palette";
+    public static final String CONFIG_OPTION = "-c";
     public static final String CONFIG_OPTION_LONG = "--config";
 
     public static final String EDITOR = "editor";
@@ -186,11 +185,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private File override;
 
     private boolean fullScreen = false;
-
-    private boolean colour = false;
-    private boolean palette = false;
-    private boolean stealing = false;
-    private boolean ifscolour = false;
 
     private Mode mode;
     private Render render;
@@ -246,15 +240,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     if (argv[i].equalsIgnoreCase(FULLSCREEN_OPTION) ||
                             argv[i].equalsIgnoreCase(FULLSCREEN_OPTION_LONG)) {
                         fullScreen = true;
-                    } else if (argv[i].equalsIgnoreCase(COLOUR_OPTION) ||
-                            argv[i].equalsIgnoreCase(COLOUR_OPTION_LONG)) {
-                        colour = true;
                     } else if (argv[i].equalsIgnoreCase(PALETTE_OPTION) ||
                             argv[i].equalsIgnoreCase(PALETTE_OPTION_LONG)) {
                         if (argv.length >= i + 1) {
                             paletteFile = argv[++i];
                         } else error("Palette argument not provided");
-                    } else if (argv[i].equalsIgnoreCase(CONFIG_OPTION_LONG)) {
+                    } else if (argv[i].equalsIgnoreCase(CONFIG_OPTION) ||
+                            argv[i].equalsIgnoreCase(CONFIG_OPTION_LONG)) {
                         if (argv.length >= i + 1) {
                             override = new File(argv[++i]);
                             if (!override.exists()) {
@@ -291,19 +283,17 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         debug = config.get(DEBUG_PROPERTY, Boolean.FALSE);
 
         // Set colour mode and rendering configuration
-        setMode(config.get(MODE_PROPERTY, DEFAULT_MODE));
+        setMode(config.get(MODE_PROPERTY, Strings.isNullOrEmpty(paletteFile) ? DEFAULT_MODE : Mode.PALETTE));
         setRender(config.get(RENDER_PROPERTY, DEFAULT_RENDER));
         setSeed(config.get(PALETTE_PROPERTY + ".seed", DEFAULT_PALETTE_SEED));
         if (Strings.isNullOrEmpty(paletteFile)) {
             setPaletteFile(config.get(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE));
         }
         setPaletteSize(config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE));
-        debug("Configured rendering as %s/%s %s", render, mode, palette ? paletteFile : colour ? "hsb" : "black");
+        debug("Configured rendering as %s/%s %s", render, mode, mode.isPalette() ? paletteFile : mode.isColour() ? "hsb" : "black");
 
         // Load colour palette if required
-        if (palette) {
-            loadColours();
-        }
+        loadColours();
 
         // Get window size configuration
         int w = Math.max(MIN_WINDOW_SIZE, config.get(WINDOW_PROPERTY + ".width", DEFAULT_WINDOW_SIZE));
@@ -366,7 +356,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void setPaletteSize(int value) {
-        paletteSize = Math.min(Math.max(MIN_PALETTE_SIZE, value), MAX_PALETTE_SIZE);
+        paletteSize = Utils.clamp(MIN_PALETTE_SIZE, MAX_PALETTE_SIZE).apply(value);
     }
 
     public void setRender(Render value) {
@@ -375,10 +365,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public void setMode(Mode value) {
         mode = value;
-        colour = mode.isColour();
-        palette = mode.isPalette();
-        stealing = mode.isStealing();
-        ifscolour = mode.isIFSColour();
     }
 
     public void loadColours() {
@@ -401,7 +387,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
     }
 
-    public Color getPixel(double x, double y) {
+    public Color getSourcePixel(double x, double y) {
         int sx = (int) Math.max(0, Math.min(source.getWidth() - 1, (x / getWidth()) * source.getWidth()));
         int sy = (int) Math.max(0, Math.min(source.getHeight() - 1, (y / getHeight()) * source.getHeight()));
         return new Color(source.getRGB(sx, sy));
@@ -427,6 +413,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 IFS untitled = new IFS();
                 show(EDITOR);
                 bus.post(untitled);
+                getEditor().resetImage();
             }
         });
         newIfs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -737,13 +724,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public boolean isFullScreen() { return fullScreen; }
 
-    public boolean isColour() { return colour; }
+    public boolean isColour() { return mode.isColour(); }
 
-    public boolean hasPalette() { return palette && colours != null; }
+    public boolean hasPalette() { return mode.isPalette() && colours != null; }
 
-    public boolean isStealing() { return stealing && source != null; }
+    public boolean isStealing() { return mode.isStealing() && source != null; }
 
-    public boolean isIFSColour() { return ifscolour; }
+    public boolean isIFSColour() { return mode.isIFSColour(); }
 
     public Set<Color> getColours() { return colours; }
 

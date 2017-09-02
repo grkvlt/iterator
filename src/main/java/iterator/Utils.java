@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.DoubleFunction;
+import java.util.function.IntFunction;
+import java.util.function.LongFunction;
 
 import javax.imageio.ImageIO;
 
@@ -41,6 +43,10 @@ public class Utils {
     public static final int RGB24 = 0xffffff;
     public static final Range<Double> UNITY = Range.open(0d, 1d);
 
+    public static DoubleFunction<Double> unity() {
+        return v -> clamp().apply(UNITY, v);
+    }
+
     public static BiFunction<Range<Double>, Double, Double> clamp() {
         return (r,v) -> Math.min(r.upperEndpoint(), Math.max(r.lowerEndpoint(), v));
     }
@@ -49,8 +55,12 @@ public class Utils {
         return v -> clamp().apply(range, v);
     }
 
-    public static DoubleFunction<Double> unity() {
-        return v -> clamp().apply(UNITY, v);
+    public static IntFunction<Integer> clamp(Integer lowerBound, Integer upperBound) {
+        return v -> Math.min(upperBound, Math.max(lowerBound, v));
+    }
+
+    public static LongFunction<Long> clamp(Long lowerBound, Long upperBound) {
+        return v -> Math.min(upperBound, Math.max(lowerBound, v));
     }
 
     /**
