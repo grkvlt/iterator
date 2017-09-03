@@ -15,6 +15,7 @@
  */
 package iterator;
 
+import static iterator.Utils.NEWLINE;
 import static iterator.Utils.loadImage;
 import static iterator.util.Config.DEBUG_PROPERTY;
 import static iterator.util.Config.DEFAULT_GAMMA;
@@ -29,18 +30,24 @@ import static iterator.util.Config.DEFAULT_PALETTE_SIZE;
 import static iterator.util.Config.DEFAULT_RENDER;
 import static iterator.util.Config.DEFAULT_WINDOW_SIZE;
 import static iterator.util.Config.GAMMA_PROPERTY;
-import static iterator.util.Config.GRID_PROPERTY;
+import static iterator.util.Config.GRID_MAX_PROPERTY;
+import static iterator.util.Config.GRID_MIN_PROPERTY;
+import static iterator.util.Config.GRID_SNAP_PROPERTY;
 import static iterator.util.Config.ITERATIONS_PROPERTY;
 import static iterator.util.Config.MAX_PALETTE_SIZE;
 import static iterator.util.Config.MIN_PALETTE_SIZE;
 import static iterator.util.Config.MIN_THREADS;
 import static iterator.util.Config.MIN_WINDOW_SIZE;
 import static iterator.util.Config.MODE_PROPERTY;
-import static iterator.util.Config.PALETTE_PROPERTY;
+import static iterator.util.Config.PALETTE_FILE_PROPERTY;
+import static iterator.util.Config.PALETTE_SEED_PROPERTY;
+import static iterator.util.Config.PALETTE_SIZE_PROPERTY;
 import static iterator.util.Config.RENDER_PROPERTY;
 import static iterator.util.Config.THREADS_PROPERTY;
-import static iterator.util.Config.WINDOW_PROPERTY;
+import static iterator.util.Config.WINDOW_HEIGHT_PROPERTY;
+import static iterator.util.Config.WINDOW_WIDTH_PROPERTY;
 import static iterator.util.Messages.DIALOG_FILES_PNG;
+import static iterator.util.Messages.DIALOG_FILES_PROPERTIES;
 import static iterator.util.Messages.DIALOG_FILES_XML;
 import static iterator.util.Messages.MENU_DISPLAY;
 import static iterator.util.Messages.MENU_DISPLAY_DETAILS;
@@ -52,6 +59,7 @@ import static iterator.util.Messages.MENU_FILE_EXPORT;
 import static iterator.util.Messages.MENU_FILE_NEW;
 import static iterator.util.Messages.MENU_FILE_OPEN;
 import static iterator.util.Messages.MENU_FILE_PREFERENCES;
+import static iterator.util.Messages.MENU_FILE_PREFERENCES_SAVE;
 import static iterator.util.Messages.MENU_FILE_PRINT;
 import static iterator.util.Messages.MENU_FILE_QUIT;
 import static iterator.util.Messages.MENU_FILE_SAVE;
@@ -117,7 +125,6 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
-import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
@@ -180,8 +187,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private static final String PRINT = "[-] ";
     private static final String ERROR = "[!] ";
     private static final String STACK = "[>] ";
-
-    private static final String NEWLINE = StandardSystemProperty.LINE_SEPARATOR.value();
 
     private Config config;
     private File override;
@@ -288,11 +293,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         // Set colour mode and rendering configuration
         setMode(config.get(MODE_PROPERTY, Strings.isNullOrEmpty(paletteFile) ? DEFAULT_MODE : Mode.PALETTE));
         setRender(config.get(RENDER_PROPERTY, DEFAULT_RENDER));
-        setSeed(config.get(PALETTE_PROPERTY + ".seed", DEFAULT_PALETTE_SEED));
+        setSeed(config.get(PALETTE_SEED_PROPERTY, DEFAULT_PALETTE_SEED));
         if (Strings.isNullOrEmpty(paletteFile)) {
-            setPaletteFile(config.get(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE));
+            setPaletteFile(config.get(PALETTE_FILE_PROPERTY, DEFAULT_PALETTE_FILE));
         }
-        setPaletteSize(config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE));
+        setPaletteSize(config.get(PALETTE_SIZE_PROPERTY, DEFAULT_PALETTE_SIZE));
         setGamma(config.get(GAMMA_PROPERTY, DEFAULT_GAMMA));
         debug("Configured rendering as %s/%s %s", render, mode, mode.isPalette() ? paletteFile : mode.isColour() ? "hsb" : "black");
 
@@ -300,8 +305,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         loadColours();
 
         // Get window size configuration
-        int w = Math.max(MIN_WINDOW_SIZE, config.get(WINDOW_PROPERTY + ".width", DEFAULT_WINDOW_SIZE));
-        int h = Math.max(MIN_WINDOW_SIZE, config.get(WINDOW_PROPERTY + ".height", DEFAULT_WINDOW_SIZE));
+        int w = Math.max(MIN_WINDOW_SIZE, config.get(WINDOW_WIDTH_PROPERTY, DEFAULT_WINDOW_SIZE));
+        int h = Math.max(MIN_WINDOW_SIZE, config.get(WINDOW_HEIGHT_PROPERTY, DEFAULT_WINDOW_SIZE));
         size = new Dimension(w, h);
 
         // Load icon resources
@@ -345,34 +350,42 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public void setThreads(int value) {
         threads = value;
+        config.set(THREADS_PROPERTY, threads);
     }
 
     public void setDebug(boolean value) {
         debug = value;
+        config.set(DEBUG_PROPERTY, debug);
     }
 
     public void setSeed(long value) {
         seed = value;
+        config.set(PALETTE_SEED_PROPERTY, seed);
     }
 
     public void setPaletteFile(String value) {
         paletteFile = value;
+        config.set(PALETTE_FILE_PROPERTY, paletteFile);
     }
 
     public void setPaletteSize(int value) {
         paletteSize = Utils.clamp(MIN_PALETTE_SIZE, MAX_PALETTE_SIZE).apply(value);
+        config.set(PALETTE_SIZE_PROPERTY, paletteSize);
     }
 
     public void setRender(Render value) {
         render = value;
+        config.set(RENDER_PROPERTY, render);
     }
 
     public void setMode(Mode value) {
         mode = value;
+        config.set(MODE_PROPERTY, mode);
     }
 
     public void setGamma(float value) {
         gamma = value;
+        config.set(GAMMA_PROPERTY, gamma);
     }
 
     public void loadColours() {
@@ -557,6 +570,28 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     prefs.showDialog();
                 }
             });
+        }
+        file.add(new AbstractAction(messages.getText(MENU_FILE_PREFERENCES_SAVE)) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FileNameExtensionFilter filter = new FileNameExtensionFilter(messages.getText(DIALOG_FILES_PROPERTIES), "properties");
+                JFileChooser chooser = new JFileChooser();
+                chooser.setCurrentDirectory(cwd);
+                chooser.setFileFilter(filter);
+                chooser.setSelectedFile(Optional.fromNullable(override).or(new File(Config.PROPERTIES_FILE)));
+                int result = chooser.showSaveDialog(null);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File preferences = chooser.getSelectedFile();
+                    String name = preferences.getName();
+                    if (!name.toLowerCase().endsWith(".properties")) {
+                        preferences = new File(preferences.getParent(), name + ".properties");
+                    }
+                    config.save(preferences);
+                    cwd = preferences.getParentFile();
+                }
+            }
+        });
+        if (platform != Platform.MAC_OS_X) {
             JMenuItem quit = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_QUIT)) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -758,13 +793,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public boolean isDebug() { return debug; }
 
     /** Small grid spacing. */
-    public int getMinGrid() { return config.get(GRID_PROPERTY + ".min", DEFAULT_GRID_MIN); }
+    public int getMinGrid() { return config.get(GRID_MIN_PROPERTY, DEFAULT_GRID_MIN); }
 
     /** Large grid spacing. */
-    public int getMaxGrid() { return config.get(GRID_PROPERTY + ".max", DEFAULT_GRID_MAX); }
+    public int getMaxGrid() { return config.get(GRID_MAX_PROPERTY, DEFAULT_GRID_MAX); }
 
     /** Snap to grid distance. */
-    public int getSnapGrid() { return config.get(GRID_PROPERTY + ".snap", DEFAULT_GRID_SNAP); }
+    public int getSnapGrid() { return config.get(GRID_SNAP_PROPERTY, DEFAULT_GRID_SNAP); }
 
     public BufferedImage getIcon() { return icon; }
 
@@ -879,7 +914,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void error(Optional<Throwable> t, String format, Object...varargs) {
-        output(System.err, ERROR + format, varargs);
+        output(System.out, ERROR + format, varargs);
         if (t.isPresent()) {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             PrintStream print = new PrintStream(bytes);

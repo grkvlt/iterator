@@ -39,6 +39,7 @@ public class Messages {
     public static final String MENU_FILE_EXPORT = "explorer.menu.file.export";
     public static final String MENU_FILE_PRINT = "explorer.menu.file.print";
     public static final String MENU_FILE_PREFERENCES = "explorer.menu.file.preferences";
+    public static final String MENU_FILE_PREFERENCES_SAVE = "explorer.menu.file.preferences.save";
     public static final String MENU_FILE_QUIT = "explorer.menu.file.quit";
 
     public static final String MENU_DISPLAY = "explorer.menu.display";
@@ -71,6 +72,7 @@ public class Messages {
 
     public static final String DIALOG_FILES_XML = "explorer.dialog.files.xml";
     public static final String DIALOG_FILES_PNG = "explorer.dialog.files.png";
+    public static final String DIALOG_FILES_PROPERTIES = "explorer.dialog.files.properties";
 
     public static final String DIALOG_PROPERTIES_TITLE = "explorer.dialog.properties.title";
     public static final String DIALOG_PROPERTIES_X = "explorer.dialog.properties.x";

@@ -31,6 +31,7 @@ import java.util.function.LongFunction;
 
 import javax.imageio.ImageIO;
 
+import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
@@ -41,6 +42,8 @@ import iterator.model.Transform;
  * Useful static methods.
  */
 public class Utils {
+
+    public static final String NEWLINE = StandardSystemProperty.LINE_SEPARATOR.value();
 
     public static final int RGB24 = 0xffffff;
     public static final Range<Double> UNITY = Range.open(0d, 1d);

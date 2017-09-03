@@ -15,10 +15,18 @@
  */
 package iterator.util;
 
+import static iterator.Utils.NEWLINE;
+
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.SortedMap;
 
@@ -34,6 +42,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ForwardingSortedMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
+import com.google.common.io.CharSink;
 import com.google.common.io.CharSource;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -49,9 +58,17 @@ public class Config extends ForwardingSortedMap<String, String> {
 
     public static final String EXPLORER_PROPERTY = "explorer";
     public static final String PALETTE_PROPERTY = EXPLORER_PROPERTY + ".palette";
+    public static final String PALETTE_SEED_PROPERTY = PALETTE_PROPERTY + ".seed";
+    public static final String PALETTE_FILE_PROPERTY = PALETTE_PROPERTY + ".file";
+    public static final String PALETTE_SIZE_PROPERTY = PALETTE_PROPERTY + ".size";
     public static final String GAMMA_PROPERTY = EXPLORER_PROPERTY + ".gamma";
     public static final String GRID_PROPERTY =  EXPLORER_PROPERTY + ".grid";
-    public static final String WINDOW_PROPERTY =  EXPLORER_PROPERTY + ".window";
+    public static final String GRID_MIN_PROPERTY = GRID_PROPERTY + ".min";
+    public static final String GRID_MAX_PROPERTY = GRID_PROPERTY + ".max";
+    public static final String GRID_SNAP_PROPERTY = GRID_PROPERTY + ".snap";
+    public static final String WINDOW_PROPERTY = EXPLORER_PROPERTY + ".window";
+    public static final String WINDOW_WIDTH_PROPERTY = WINDOW_PROPERTY + ".width";
+    public static final String WINDOW_HEIGHT_PROPERTY = WINDOW_PROPERTY + ".height";
     public static final String DEBUG_PROPERTY = EXPLORER_PROPERTY + ".debug";
     public static final String MODE_PROPERTY = EXPLORER_PROPERTY + ".mode";
     public static final String THREADS_PROPERTY = EXPLORER_PROPERTY + ".threads";
@@ -72,6 +89,17 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Long DEFAULT_ITERATIONS = 10_000L;
     public static final Integer MIN_WINDOW_SIZE = 400; // Details view requires 350px
     public static final Integer MIN_THREADS = 2;
+
+    public static final List<String> HEADER = Arrays.asList(
+            "##",
+            "# IFS Explorer %s Configuration",
+            "# Generated on %s by %s",
+            "##",
+            "");
+    public static final List<String> FOOTER = Arrays.asList(
+            "##",
+            "");
+    public static final String PROPERTY = "%s = %s";
 
     public static enum Mode {
         COLOUR(true, false, false, false),
@@ -215,6 +243,31 @@ public class Config extends ForwardingSortedMap<String, String> {
         putAll(Maps.filterKeys(data, EXPLORER_KEYS));
     }
 
+    public void save(CharSink sink) {
+        try (Writer writer = sink.openStream()) {
+            String header = Joiner.on(NEWLINE).join(HEADER);
+            String version = Version.instance().get();
+            String timestamp = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now());
+            String user = StandardSystemProperty.USER_NAME.value();
+            String preamble = String.format(header, version, timestamp, user);
+            writer.append(preamble);
+            for (String key : keySet()) {
+                String value = get(key);
+                String property = String.format(PROPERTY, key, value);
+                writer.append(property).append(NEWLINE);
+            }
+            String footer = Joiner.on(NEWLINE).join(FOOTER);
+            writer.append(footer);
+        } catch (IOException ioe) {
+            throw Throwables.propagate(ioe);
+        }
+    }
+
+    public void save(File file) {
+        CharSink sink = Files.asCharSink(file, Charsets.UTF_8);
+        save(sink);
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T get(String key, T defaultValue) {
         String value = get(key);
@@ -223,6 +276,10 @@ public class Config extends ForwardingSortedMap<String, String> {
         } else {
             return (T) cast(value, defaultValue.getClass());
         }
+    }
+
+    public void set(String key, Object value) {
+        put(key, Objects.toString(value));
     }
 
     @SuppressWarnings("unchecked")
@@ -269,4 +326,5 @@ public class Config extends ForwardingSortedMap<String, String> {
     public String toString() {
         return Joiner.on(",").useForNull("").withKeyValueSeparator("=").join(this);
     }
+
 }
