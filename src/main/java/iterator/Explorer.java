@@ -702,18 +702,21 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 if (!fullScreen) setResizable(false);
                 viewer.reset();
                 viewer.start();
+                editor.stop();
                 break;
             case DETAILS:
                 export.setEnabled(false);
                 print.setEnabled(true);
                 if (!fullScreen) setResizable(true);
                 viewer.stop();
+                editor.stop();
                 break;
             case EDITOR:
                 export.setEnabled(false);
                 print.setEnabled(false);
                 if (!fullScreen) setResizable(true);
                 viewer.stop();
+                editor.start();
                 break;
             default:
                 throw new IllegalStateException("Unknown view type: " + current);

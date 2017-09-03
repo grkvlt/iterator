@@ -123,7 +123,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
         timer = new Timer(50, this);
         timer.setCoalesce(true);
-        timer.start();
 
         transformMenu = new JPopupMenu();
         properties = new AbstractAction(messages.getText(MENU_TRANSFORM_PROPERTIES)) {
@@ -335,18 +334,32 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
     @Override
     public void actionPerformed(ActionEvent e) {
         if (isVisible() && ifs.size() > 0) {
-            Viewer viewer = controller.getViewer();
-            long n = getTransforms().size();
-            long m = getReflections().size() + 1;
-            long k = Math.min(1_500_000, 100_000 * (long) Math.pow(2d, n * m));
-            controller.debug("Rendering in editor: k = %d, n = %d, m = %d", k, n, m);
-            resetImage();
-            viewer.reset();
-            viewer.iterate(image, 4, k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d), Render.STANDARD, Mode.IFS_COLOUR);
-            if (controller.getRender().isDensity()) {
-                viewer.plotDensity(image, 4, Render.LOG_DENSITY, Mode.IFS_COLOUR);
-            }
-            repaint();
+            SwingUtilities.invokeLater(() -> {
+                Viewer viewer = controller.getViewer();
+                long n = getTransforms().size();
+                long m = getReflections().size() + 1;
+                long k = Math.min(1_500_000, 100_000 * (long) Math.pow(2d, n * m));
+                controller.debug("Rendering in editor: k = %d, n = %d, m = %d", k, n, m);
+                resetImage();
+                viewer.reset();
+                viewer.iterate(image, 4, k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d), Render.STANDARD, controller.getMode());
+                if (controller.getRender().isDensity()) {
+                    viewer.plotDensity(image, 4, Render.LOG_DENSITY, Mode.IFS_COLOUR);
+                }
+                repaint();
+            });
+        }
+    }
+
+    public void start() {
+        if (!timer.isRunning()) {
+            timer.start();
+        }
+    }
+
+    public void stop() {
+        if (timer.isRunning()) {
+            timer.stop();
         }
     }
 
