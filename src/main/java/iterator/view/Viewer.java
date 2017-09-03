@@ -601,7 +601,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                             rgb[1] = (color >> 8) & 0xff;
                             rgb[2] = (color >> 0) & 0xff;
                             if (render == Render.LOG_DENSITY_FLAME || render == Render.LOG_DENSITY_FLAME_INVERSE) {
-                                float alpha = (float) Math.pow(Math.log(density[p]) / density[p], gamma);
+                                float alpha = (float) (Math.log(density[p]) / density[p]);
+                                alpha = (float) Math.pow(invert ? alpha : 1f - alpha, gamma);
                                 rgb[0] *= alpha;
                                 rgb[1] *= alpha;
                                 rgb[2] *= alpha;
@@ -615,7 +616,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         } else {
                             g.setPaint(new Color(gray, gray, gray, (float) ratio));
                         }
-                        int side = (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) ? (int) (r * (1f - gray) * 4f) : r;
+                        int side = (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) ? (int) ((invert ? ratio : 1d - ratio) * r * 4f) : r;
                         Rectangle rect = new Rectangle(x, y, side, side);
                         g.fill(rect);
                     }
