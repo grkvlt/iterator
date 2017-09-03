@@ -46,6 +46,7 @@ import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
 import iterator.util.Formatter;
+import iterator.util.Formatter.DoubleFormatter;
 import iterator.util.Subscriber;
 
 /**
@@ -124,21 +125,70 @@ public class Details extends JTextPane implements Printable, Subscriber {
         if (ifs.getTransforms().isEmpty()) {
             html.append("<h2>Empty</h2>");
         } else {
-            try {
-                AbstractFormatter four = Formatter.doubles(4);
-                AbstractFormatter one = Formatter.doubles(1);
+            DoubleFormatter four = Formatter.doubles(4);
+            DoubleFormatter one = Formatter.doubles(1);
 
-                int columns = controller.getWidth() / 380;
-                html.append("<table>")
-                    .append("<tr><td><h2>Transforms</h2></td></tr>");
-                int i = 0, f = 0;
-                for (Transform t : Ordering.from(IFS.IDENTITY).immutableSortedCopy(ifs.getTransforms())) {
+            int columns = controller.getWidth() / 380;
+            html.append("<table>")
+                .append("<tr><td><h2>Transforms</h2></td></tr>");
+            int i = 0, f = 0;
+            for (Transform t : Ordering.from(IFS.IDENTITY).immutableSortedCopy(ifs.getTransforms())) {
+                if (i % columns == 0) html.append("<tr>");
+                html.append("<td>")
+                    .append("<table class=\"ifs\">");
+
+                double[] matrix = new double[6];
+                t.getTransform().getMatrix(matrix);
+
+                Color c = Color.WHITE;
+                if (controller.isColour()) {
+                    if (controller.hasPalette()) {
+                        c = Iterables.get(controller.getColours(), f % controller.getPaletteSize());
+                    } else {
+                        c = Color.getHSBColor((float) f / (float) ifs.size(), 0.8f, 0.8f);
+                    }
+                }
+
+                String transform = String.format(
+                        "<tr class=\"transform\">" +
+                            "<td class=\"id\" width=\"50px\">%02d</td>" +
+                            "<td class=\"bracketl\" rowspan=\"2\">&nbsp;</td>" +
+                            "<td class=\"matrixr1\" align=\"right\">%s</td>" +
+                            "<td class=\"matrixr1\" align=\"right\">%s</td>" +
+                            "<td class=\"matrixr1\" align=\"right\">%s</td>" +
+                            "<td class=\"bracketr\" rowspan=\"2\">&nbsp;</td>" +
+                        "</tr>" +
+                        "<tr class=\"transform\">" +
+                            "<td class=\"info\" width=\"50px\">%.1f%%" +
+                                "<div style=\"width: 15px; height: 10px; border: 1px solid %s; " +
+                                "background: #%02x%02x%02x; padding: 0; margin: 0;\">&nbsp;</div>" +
+                            "</td>" +
+                            "<td class=\"matrixr2\" align=\"right\">%s</td>" +
+                            "<td class=\"matrixr2\" align=\"right\">%s</td>" +
+                            "<td class=\"matrixr2\" align=\"right\">%s</td>" +
+                        "</tr>" +
+                        "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
+                        t.getId(),
+                        four.toString(matrix[0]), four.toString(matrix[2]), one.toString(matrix[4]),
+                        100d * t.getWeight() / weight(ifs.getTransforms()),
+                        controller.isColour() ? "black" : "white",
+                        c.getRed(), c.getGreen(), c.getBlue(),
+                        four.toString(matrix[1]), four.toString(matrix[2]), one.toString(matrix[5]));
+                html.append(transform)
+                    .append("</table>")
+                    .append("</td>");
+                i++; f++;
+                if (i % columns == 0) html.append("</tr>");
+            }
+
+            if (ifs.getReflections().size() > 0) {
+                if (i % columns != 0) html.append("</tr>");
+                html.append("<tr><td><h2>Reflections</h2></td></tr>");
+                i = 0;
+                for (Reflection r : Ordering.from(IFS.IDENTITY).immutableSortedCopy(ifs.getReflections())) {
                     if (i % columns == 0) html.append("<tr>");
                     html.append("<td>")
                         .append("<table class=\"ifs\">");
-
-                    double[] matrix = new double[6];
-                    t.getTransform().getMatrix(matrix);
 
                     Color c = Color.WHITE;
                     if (controller.isColour()) {
@@ -149,82 +199,29 @@ public class Details extends JTextPane implements Printable, Subscriber {
                         }
                     }
 
-                    String transform = String.format(
-                            "<tr class=\"transform\">" +
-                                "<td class=\"id\" width=\"50px\">%02d</td>" +
-                                "<td class=\"bracketl\" rowspan=\"2\">&nbsp;</td>" +
-                                "<td class=\"matrixr1\" align=\"right\">%s</td>" +
-                                "<td class=\"matrixr1\" align=\"right\">%s</td>" +
-                                "<td class=\"matrixr1\" align=\"right\">%s</td>" +
-                                "<td class=\"bracketr\" rowspan=\"2\">&nbsp;</td>" +
-                            "</tr>" +
-                            "<tr class=\"transform\">" +
-                                "<td class=\"info\" width=\"50px\">%.1f%%" +
+                    String reflection = String.format(
+                            "<tr class=\"reflection\">" +
+                                "<td class=\"id\" width=\"50px\">%02d" +
                                     "<div style=\"width: 15px; height: 10px; border: 1px solid %s; " +
                                     "background: #%02x%02x%02x; padding: 0; margin: 0;\">&nbsp;</div>" +
                                 "</td>" +
-                                "<td class=\"matrixr2\" align=\"right\">%s</td>" +
-                                "<td class=\"matrixr2\" align=\"right\">%s</td>" +
-                                "<td class=\"matrixr2\" align=\"right\">%s</td>" +
+                                "<td class=\"reflect\" align=\"right\" colspan=\"3\">(%s,&nbsp;%s)</td>" +
+                                "<td class=\"reflect\" align=\"right\" colspan=\"2\">%s&nbsp;°</td>" +
                             "</tr>" +
                             "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
-                            t.getId(),
-                            four.valueToString(matrix[0]), four.valueToString(matrix[2]), one.valueToString(matrix[4]),
-                            100d * t.getWeight() / weight(ifs.getTransforms()),
+                            r.getId(),
                             controller.isColour() ? "black" : "white",
                             c.getRed(), c.getGreen(), c.getBlue(),
-                            four.valueToString(matrix[1]), four.valueToString(matrix[2]), one.valueToString(matrix[5]));
-                    html.append(transform)
+                            one.toString(r.x), one.toString(r.y), one.toString(Math.toDegrees(r.r)));
+                    html.append(reflection)
                         .append("</table>")
                         .append("</td>");
                     i++; f++;
                     if (i % columns == 0) html.append("</tr>");
                 }
-
-                if (ifs.getReflections().size() > 0) {
-                    if (i % columns != 0) html.append("</tr>");
-                    html.append("<tr><td><h2>Reflections</h2></td></tr>");
-                    i = 0;
-                    for (Reflection r : Ordering.from(IFS.IDENTITY).immutableSortedCopy(ifs.getReflections())) {
-                        if (i % columns == 0) html.append("<tr>");
-                        html.append("<td>")
-                            .append("<table class=\"ifs\">");
-
-                        Color c = Color.WHITE;
-                        if (controller.isColour()) {
-                            if (controller.hasPalette()) {
-                                c = Iterables.get(controller.getColours(), f % controller.getPaletteSize());
-                            } else {
-                                c = Color.getHSBColor((float) f / (float) ifs.size(), 0.8f, 0.8f);
-                            }
-                        }
-
-                        String reflection = String.format(
-                                "<tr class=\"reflection\">" +
-                                    "<td class=\"id\" width=\"50px\">%02d" +
-                                        "<div style=\"width: 15px; height: 10px; border: 1px solid %s; " +
-                                        "background: #%02x%02x%02x; padding: 0; margin: 0;\">&nbsp;</div>" +
-                                    "</td>" +
-                                    "<td class=\"reflect\" align=\"right\" colspan=\"3\">(%s,&nbsp;%s)</td>" +
-                                    "<td class=\"reflect\" align=\"right\" colspan=\"2\">%s&nbsp;°</td>" +
-                                "</tr>" +
-                                "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
-                                r.getId(),
-                                controller.isColour() ? "black" : "white",
-                                c.getRed(), c.getGreen(), c.getBlue(),
-                                one.valueToString(r.x), one.valueToString(r.y), one.valueToString(Math.toDegrees(r.r)));
-                        html.append(reflection)
-                            .append("</table>")
-                            .append("</td>");
-                        i++; f++;
-                        if (i % columns == 0) html.append("</tr>");
-                    }
-                }
-                html.append("</tr>")
-                    .append("</table>");
-            } catch (ParseException pe) {
-               controller.error(pe, "Failure parsing IFS values for display");
             }
+            html.append("</tr>")
+                .append("</table>");
         }
 
         html.append("</html>");

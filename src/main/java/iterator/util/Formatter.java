@@ -28,47 +28,47 @@ import com.google.common.base.Strings;
  */
 public class Formatter {
 
-    public static AbstractFormatter doubles()  {
+    public static DoubleFormatter doubles()  {
         return new DoubleFormatter();
     }
 
-    public static AbstractFormatter doubles(int digits)  {
+    public static DoubleFormatter doubles(int digits)  {
         return new DoubleFormatter(digits);
     }
 
-    public static AbstractFormatter optionalDoubles()  {
+    public static OptionalDoubleFormatter optionalDoubles()  {
         return new OptionalDoubleFormatter();
     }
 
-    public static AbstractFormatter optionalDoubles(int digits)  {
+    public static OptionalDoubleFormatter optionalDoubles(int digits)  {
         return new OptionalDoubleFormatter(digits);
     }
 
-    public static AbstractFormatter floats()  {
+    public static FloatFormatter floats()  {
         return new FloatFormatter();
     }
 
-    public static AbstractFormatter floats(int digits)  {
+    public static FloatFormatter floats(int digits)  {
         return new FloatFormatter(digits);
     }
 
-    public static AbstractFormatter integers()  {
+    public static IntegerFormatter integers()  {
         return new IntegerFormatter();
     }
 
-    public static AbstractFormatter integers(int min, int max)  {
+    public static IntegerFormatter integers(int min, int max)  {
         return new IntegerFormatter(min, max);
     }
 
-    public static AbstractFormatter longs()  {
+    public static LongFormatter longs()  {
         return new LongFormatter();
     }
 
-    public static AbstractFormatter longs(int min, int max)  {
+    public static LongFormatter longs(int min, int max)  {
         return new LongFormatter(min, max);
     }
 
-    public static AbstractFormatter strings()  {
+    public static StringFormatter strings()  {
         return new StringFormatter();
     }
 
@@ -96,11 +96,11 @@ public class Formatter {
             }
         }
 
-        protected abstract T tryParse(String text);
+        public abstract T tryParse(String text);
 
-        protected abstract String toString(T value);
+        public abstract String toString(T value);
 
-        protected abstract T getDefault();
+        public abstract T getDefault();
 
     }
 
@@ -109,12 +109,12 @@ public class Formatter {
         protected BaseFormatter<T> formatter;
 
         @Override
-        protected Optional<T> tryParse(String text) {
+        public Optional<T> tryParse(String text) {
             return Optional.of(formatter.tryParse(text));
         }
 
         @Override
-        protected String toString(Optional<T> value) {
+        public String toString(Optional<T> value) {
             if (value.isPresent()) {
                 return formatter.toString(value.get());
             } else {
@@ -123,7 +123,7 @@ public class Formatter {
         }
 
         @Override
-        protected Optional<T> getDefault() { return Optional.absent(); }
+        public Optional<T> getDefault() { return Optional.absent(); }
 
     }
 
@@ -143,12 +143,12 @@ public class Formatter {
         }
 
         @Override
-        protected Double tryParse(String text) {
+        public Double tryParse(String text) {
             return Double.valueOf(text);
         }
 
         @Override
-        protected String toString(Double value) {
+        public String toString(Double value) {
             String text = String.format("%." + digits + "f", value);
             if (text.matches("^-?[0-9]*\\.0+$")) { // ###.000
                 text = text.replaceAll("\\.0+$", ""); // ###
@@ -157,7 +157,7 @@ public class Formatter {
         }
 
         @Override
-        protected Double getDefault() { return 0d; }
+        public Double getDefault() { return 0d; }
 
     }
 
@@ -192,19 +192,19 @@ public class Formatter {
         }
 
         @Override
-        protected Float tryParse(String text) {
+        public Float tryParse(String text) {
             Double doubleValue = formatter.tryParse(text);
             return doubleValue.floatValue();
         }
 
         @Override
-        protected String toString(Float value) {
+        public String toString(Float value) {
             Double doubleValue = value.doubleValue();
             return formatter.toString(doubleValue);
         }
 
         @Override
-        protected Float getDefault() { return 0f; }
+        public Float getDefault() { return 0f; }
 
     }
 
@@ -225,17 +225,17 @@ public class Formatter {
         }
 
         @Override
-        protected Integer tryParse(String text) {
+        public Integer tryParse(String text) {
             return Integer.min(max, Integer.max(min, Integer.valueOf(text)));
         }
 
         @Override
-        protected String toString(Integer value) {
+        public String toString(Integer value) {
             return Integer.toString(value);
         }
 
         @Override
-        protected Integer getDefault() { return 0; }
+        public Integer getDefault() { return 0; }
 
     }
 
@@ -256,17 +256,17 @@ public class Formatter {
         }
 
         @Override
-        protected Long tryParse(String text) {
+        public Long tryParse(String text) {
             return Long.min(max, Long.max(min, Long.valueOf(text)));
         }
 
         @Override
-        protected String toString(Long value) {
+        public String toString(Long value) {
             return Long.toString(value);
         }
 
         @Override
-        protected Long getDefault() { return 0l; }
+        public Long getDefault() { return 0l; }
 
     }
 
@@ -278,17 +278,17 @@ public class Formatter {
         StringFormatter() { }
 
         @Override
-        protected String tryParse(String text) {
+        public String tryParse(String text) {
             return text;
         }
 
         @Override
-        protected String toString(String value) {
+        public String toString(String value) {
             return value;
         }
 
         @Override
-        protected String getDefault() { return ""; }
+        public String getDefault() { return ""; }
 
     }
 
