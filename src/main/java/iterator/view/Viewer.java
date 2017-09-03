@@ -633,10 +633,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     @Override
     public void actionPerformed(ActionEvent e) {
         if (isVisible() && controller.getRender().isDensity()) {
-            resetImage();
-            plotDensity(image, 1, controller.getRender(), controller.getMode());
+            SwingUtilities.invokeLater(() -> {
+                resetImage();
+                plotDensity(image, 1, controller.getRender(), controller.getMode());
+                repaint();
+            });
         }
-        repaint();
     }
 
     /**
