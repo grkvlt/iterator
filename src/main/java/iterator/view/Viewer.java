@@ -125,6 +125,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private Point2D centre;
     private Dimension size;
     private Rectangle zoom;
+    private ThreadGroup group = new ThreadGroup("iterator");
     private ExecutorService executor = Executors.newCachedThreadPool(this);
     private List<Future<Void>> tasks = Lists.newArrayList();
     private boolean overlay, info, grid;
@@ -685,8 +686,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     /** @see java.util.concurrent.ThreadFactory#newThread(Runnable) */
     @Override
     public Thread newThread(Runnable r) {
-        Thread t = new Thread(r);
+        Thread t = new Thread(group, r);
         t.setName("iterator-" + task.incrementAndGet());
+        t.setPriority(Thread.MIN_PRIORITY);
         return t;
     }
 
