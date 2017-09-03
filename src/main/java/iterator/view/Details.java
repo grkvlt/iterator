@@ -15,6 +15,7 @@
  */
 package iterator.view;
 
+import static iterator.Utils.context;
 import static iterator.Utils.weight;
 
 import java.awt.Color;
@@ -237,9 +238,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
     public int print(Graphics graphics, PageFormat pf, int page) throws PrinterException {
         if (page > 0) return NO_SUCH_PAGE;
 
-        Graphics2D g = (Graphics2D) graphics.create();
-
-        try {
+        context(controller, graphics, g -> {
             g.translate(pf.getImageableX(), pf.getImageableY());
             double scale = pf.getImageableWidth() / (double) getWidth();
             if ((scale * getHeight()) > pf.getImageableHeight()) {
@@ -247,11 +246,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
             }
             g.scale(scale, scale);
             printAll(g);
-        } catch (Exception e) {
-            controller.error(e, "Failure printing details");
-        } finally {
-            g.dispose();
-        }
+        });
 
         return PAGE_EXISTS;
     }

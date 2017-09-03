@@ -17,6 +17,7 @@ package iterator.dialog;
 
 import static iterator.Utils.calibri;
 import static iterator.Utils.consolas;
+import static iterator.Utils.context;
 import static iterator.Utils.loadImage;
 
 import java.awt.BorderLayout;
@@ -82,16 +83,10 @@ public class About extends JPanel implements Dialog, MouseListener {
 
     @Override
     public void paint(Graphics graphics) {
-        Graphics2D g = (Graphics2D) graphics.create();
-
-        try {
+        context(controller, graphics, g -> {
             g.drawImage(image, AffineTransform.getTranslateInstance(0d, 0d), null);
             paintSplashText(g, getWidth(), getHeight());
-        } catch (Exception e) {
-            controller.error(e, "Failure painting about dialog");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     /**
