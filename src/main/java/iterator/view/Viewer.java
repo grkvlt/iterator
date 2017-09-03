@@ -15,7 +15,11 @@
  */
 package iterator.view;
 
+import static iterator.Utils.DASHED_LINE_1;
+import static iterator.Utils.DASHED_LINE_2;
+import static iterator.Utils.DOTTED_LINE_2;
 import static iterator.Utils.RGB24;
+import static iterator.Utils.SOLID_LINE_2;
 import static iterator.Utils.alpha;
 import static iterator.Utils.calibri;
 import static iterator.Utils.unity;
@@ -28,7 +32,6 @@ import static iterator.util.Messages.MENU_VIEWER_RESUME;
 import static iterator.util.Messages.MENU_VIEWER_ZOOM;
 
 import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -251,7 +254,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
             if (zoom != null) {
                 g.setPaint(controller.getRender().getForeground());
-                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
+                g.setStroke(DOTTED_LINE_2);
                 g.draw(zoom);
             }
 
@@ -311,7 +314,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             // Draw the outline
             Color c = alpha(controller.getRender().getForeground(), 128);
             g.setPaint(c);
-            g.setStroke(new BasicStroke(2f));
+            g.setStroke(SOLID_LINE_2);
             g.draw(rect);
             g.setPaint(alpha(Color.GRAY, 8));
             g.fill(rect);
@@ -335,7 +338,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             // Draw the line
             Color c = alpha(controller.getRender().getForeground(), 128);
             g.setPaint(c);
-            g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 10f, 10f }, 0f));
+            g.setStroke(DASHED_LINE_2);
             Path2D line = new Path2D.Double(Path2D.WIND_NON_ZERO);
             if ((r.r < Math.toRadians(0.1d) && r.r > Math.toRadians(-0.1d)) ||
                     (r.r < Math.toRadians(180.1d) && r.r > Math.toRadians(179.9d))) {
@@ -362,7 +365,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             // Set colour and width
             Color c = alpha(controller.getRender().getForeground(), 64);
             g.setPaint(c);
-            g.setStroke(new BasicStroke(1f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
+            g.setStroke(DASHED_LINE_1);
 
             // Transform unit square to view space
             double x0 = (size.getWidth() / 2d) - (centre.getX() * scale);

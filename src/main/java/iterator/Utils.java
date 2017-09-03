@@ -15,8 +15,10 @@
  */
 package iterator;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -103,6 +105,23 @@ public class Utils {
     public static Font consolas(int style, int size) {
         return(new Font(CONSOLAS, style, size));
     }
+
+    /** Solid {@link BasicStroke line}. */
+    public static Stroke solid(float width) {
+        return new BasicStroke(width);
+    }
+
+    /** Dashed {@link BasicStroke line}. */
+    public static Stroke dashed(float width, float[] pattern) {
+        return new BasicStroke(width, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, pattern, 0f);
+    }
+
+    public static final Stroke SOLID_LINE_1 = solid(1f);
+    public static final Stroke SOLID_LINE_2 = solid(2f);
+    public static final Stroke DASHED_LINE_1 = dashed(1f, new float[] { 5f, 5f });
+    public static final Stroke DASHED_LINE_2 = dashed(2f, new float[] { 10f, 10f });
+    public static final Stroke DOTTED_LINE_2 = dashed(2f, new float[] { 5f, 5f });
+    public static final Stroke PATTERNED_LINE_2 = dashed(2f, new float[] { 15f, 10f, 5f, 10f });
 
     /**
      * Returns a new {@link Color} with the same RGB value but updated alpha channel.

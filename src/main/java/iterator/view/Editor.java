@@ -15,6 +15,11 @@
  */
 package iterator.view;
 
+import static iterator.Utils.DASHED_LINE_2;
+import static iterator.Utils.DOTTED_LINE_2;
+import static iterator.Utils.PATTERNED_LINE_2;
+import static iterator.Utils.SOLID_LINE_1;
+import static iterator.Utils.SOLID_LINE_2;
 import static iterator.Utils.alpha;
 import static iterator.Utils.calibri;
 import static iterator.Utils.concatenate;
@@ -34,7 +39,6 @@ import static iterator.util.Messages.MENU_TRANSFORM_PROPERTIES;
 import static iterator.util.Messages.MENU_TRANSFORM_RAISE;
 
 import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -399,7 +403,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
                 if (reflection == null && selected == null && start != null && end != null) {
                     g.setPaint(Color.BLACK);
-                    g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5f, 5f }, 0f));
+                    g.setStroke(DOTTED_LINE_2);
                     Transform ants = getAnts();
                     g.draw(new Rectangle(ants.x.intValue(), ants.y.intValue(), ants.w.intValue(), ants.h.intValue()));
                 }
@@ -419,11 +423,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         try {
             // Draw the outline
             g.setPaint(Color.BLACK);
-            if (highlight) {
-                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 10f, 10f }, 0f));
-            } else {
-                g.setStroke(new BasicStroke(2f));
-            }
+            g.setStroke(highlight ? DASHED_LINE_2 : SOLID_LINE_2);
             g.draw(rect);
 
             // Fill the rectangle
@@ -440,7 +440,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
             if (!t.isMatrix()) {
                 // Draw the resize handles
-                g.setStroke(new BasicStroke(2f));
+                g.setStroke(SOLID_LINE_2);
                 g.setPaint(Color.BLACK);
                 int[] cornerX = new int[] { 0, 0, getWidth(), getWidth() };
                 int[] cornerY = new int[] { 0, getHeight(), getHeight(), 0 };
@@ -514,11 +514,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
         try {
             // Set the line pattern
-            if (highlight) {
-                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 10f, 10f }, 0f));
-            } else {
-                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[] { 15f, 10f, 5f, 10f }, 0f));
-            }
+            g.setStroke(highlight ? DASHED_LINE_2 : PATTERNED_LINE_2);
             g.setPaint(Color.BLACK);
 
             // Draw the line
@@ -542,7 +538,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             g.drawString(id, (int) (r.x + 10), (int) (r.y + 10));
 
             // Add the select handle
-            g.setStroke(new BasicStroke(2f));
+            g.setStroke(SOLID_LINE_2);
             Rectangle handle = new Rectangle((int) (r.x - 4), (int) (r.y - 4), 8, 8);
             g.fill(handle);
         } catch (Exception e) {
@@ -562,7 +558,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             g.setPaint(Color.WHITE);
             g.fill(s);
             g.setPaint(Color.LIGHT_GRAY);
-            g.setStroke(new BasicStroke(1f));
+            g.setStroke(SOLID_LINE_1);
             for (int x = 0; x < getWidth(); x += min) {
                 g.drawLine(x, 0, x, getHeight());
             }
@@ -570,7 +566,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                 g.drawLine(0, y, getWidth(), y);
             }
             g.setPaint(Color.GRAY);
-            g.setStroke(new BasicStroke(2f));
+            g.setStroke(SOLID_LINE_2);
             for (int x = 0; x < getWidth(); x += max) {
                 g.drawLine(x, 0, x, getHeight());
             }
