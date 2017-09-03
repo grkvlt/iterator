@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Charsets;
@@ -46,6 +47,8 @@ import com.google.common.io.CharSink;
 import com.google.common.io.CharSource;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
+
+import iterator.Explorer;
 
 /**
  * Configuration {@link Map}.
@@ -90,16 +93,11 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Integer MIN_WINDOW_SIZE = 400; // Details view requires 350px
     public static final Integer MIN_THREADS = 2;
 
-    public static final List<String> HEADER = Arrays.asList(
-            "##",
-            "# IFS Explorer %s Configuration",
+    public static final List<String> FOOTER = Arrays.asList(
+            "#",
             "# Generated on %s by %s",
             "##",
             "");
-    public static final List<String> FOOTER = Arrays.asList(
-            "##",
-            "");
-    public static final String PROPERTY = "%s = %s";
 
     public static enum Mode {
         COLOUR(true, false, false, false),
@@ -244,20 +242,23 @@ public class Config extends ForwardingSortedMap<String, String> {
     }
 
     public void save(CharSink sink) {
+        String header = Explorer.BANNER.stream()
+                .map("# "::concat)
+                .map(String::trim)
+                .collect(Collectors.joining(NEWLINE));
+        String version = Version.instance().get();
+        String footer = Joiner.on(NEWLINE).join(FOOTER);
+        String timestamp = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now());
+        String user = StandardSystemProperty.USER_NAME.value();
+
         try (Writer writer = sink.openStream()) {
-            String header = Joiner.on(NEWLINE).join(HEADER);
-            String version = Version.instance().get();
-            String timestamp = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now());
-            String user = StandardSystemProperty.USER_NAME.value();
-            String preamble = String.format(header, version, timestamp, user);
-            writer.append(preamble);
-            for (String key : keySet()) {
-                String value = get(key);
-                String property = String.format(PROPERTY, key, value);
-                writer.append(property).append(NEWLINE);
-            }
-            String footer = Joiner.on(NEWLINE).join(FOOTER);
-            writer.append(footer);
+            writer.append("##")
+                  .append(NEWLINE)
+                  .append(String.format(header, version))
+                  .append(NEWLINE)
+                  .append(Joiner.on(NEWLINE).withKeyValueSeparator(" = ").join(this))
+                  .append(NEWLINE)
+                  .append(String.format(footer, timestamp, user));
         } catch (IOException ioe) {
             throw Throwables.propagate(ioe);
         }
