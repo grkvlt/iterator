@@ -97,6 +97,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
@@ -121,7 +122,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
@@ -734,12 +734,20 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public void updated(IFS updated) {
         ifs = updated;
         debug("Updated: %s", ifs);
-        String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
+        String name = Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED).toLowerCase(Locale.UK);
+        name = Splitter.onPattern("[^a-z0-9]")
+                .omitEmptyStrings()
+                .splitToList(name)
+                .stream()
+                .map(s -> s.substring(0, 1).toUpperCase(Locale.UK) + s.substring(1))
+                .collect(Collectors.joining(" "));
         setTitle(name);
+
         if (!ifs.isEmpty()) {
             save.setEnabled(true);
             saveAs.setEnabled(true);
         }
+
         repaint();
     }
 
