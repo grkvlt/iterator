@@ -99,6 +99,7 @@ import iterator.model.Reflection;
 import iterator.model.Transform;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
+import iterator.util.Dialog;
 import iterator.util.Formatter;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
@@ -155,7 +156,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         viewer.add(new AbstractAction(messages.getText(MENU_VIEWER_ZOOM)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                properties.showDialog();
+                Dialog.show(() -> properties);
             }
         });
         pause = new JMenuItem(new AbstractAction(messages.getText(MENU_VIEWER_PAUSE)) {

@@ -31,6 +31,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
 
 import iterator.model.IFS;
+import iterator.util.Dialog;
 
 /**
  * Apple OSX native support.
@@ -66,7 +67,7 @@ public class AppleSupport implements OpenFilesHandler, AboutHandler, Preferences
     /** @see com.apple.eawt.PreferencesHandler#handlePreferences(com.apple.eawt.AppEvent.PreferencesEvent) */
     @Override
     public void handlePreferences(PreferencesEvent e) {
-        controller.getPreferences().showDialog();
+        Dialog.show(controller::getPreferences);
     }
 
     /** @see com.apple.eawt.QuitHandler#handleQuitRequestWith(com.apple.eawt.AppEvent.QuitEvent, com.apple.eawt.QuitResponse) */
@@ -79,6 +80,6 @@ public class AppleSupport implements OpenFilesHandler, AboutHandler, Preferences
     /** @see com.apple.eawt.AboutHandler#handleAbout(com.apple.eawt.AppEvent.AboutEvent) */
     @Override
     public void handleAbout(AboutEvent e) {
-        controller.getAbout().showDialog();
+        Dialog.show(controller::getAbout);
     }
 }

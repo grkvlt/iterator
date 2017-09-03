@@ -131,4 +131,10 @@ public class About extends JPanel implements Dialog, MouseListener {
     @Override
     public void mouseExited(MouseEvent e) { }
 
+    /** @see java.lang.AutoCloseable#close() */
+    @Override
+    public void close() throws Exception {
+        about.dispose();
+    }
+
 }

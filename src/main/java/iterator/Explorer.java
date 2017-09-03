@@ -100,6 +100,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
@@ -140,6 +141,7 @@ import iterator.model.IFS;
 import iterator.util.Config;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
+import iterator.util.Dialog;
 import iterator.util.Messages;
 import iterator.util.Platform;
 import iterator.util.Subscriber;
@@ -424,7 +426,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             file.add(new AbstractAction(messages.getText(MENU_FILE_ABOUT)) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    about.showDialog();
+                    Dialog.show(() -> about);
                 }
             });
         }
@@ -466,7 +468,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     File saveAs = new File(cwd, ifs.getName() + ".xml");
                     save(saveAs);
                     save.setEnabled(false);
-                    bus.post(ifs);
                 }
             }
         });
@@ -476,26 +477,12 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         saveAs = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_SAVE_AS)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                boolean running = viewer.stop();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter(messages.getText(DIALOG_FILES_XML), "xml");
-                JFileChooser chooser = new JFileChooser();
-                chooser.setCurrentDirectory(cwd);
-                chooser.setFileFilter(filter);
-                chooser.setSelectedFile(new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".xml"));
-                int result = chooser.showSaveDialog(null);
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    File saveAs = chooser.getSelectedFile();
-                    String name = saveAs.getName();
-                    if (!name.toLowerCase().endsWith(".xml")) {
-                        saveAs = new File(saveAs.getParent(), name + ".xml");
-                    }
-                    ifs.setName(saveAs.getName().replace(".xml", ""));
-                    save(saveAs);
+                File file = new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".xml");
+                saveDialog(file, DIALOG_FILES_XML, "xml", f -> {
+                    ifs.setName(f.getName().replace(".xml", ""));
+                    save(f);
                     bus.post(ifs);
-                }
-                if (current.equals(VIEWER) && running) {
-                    viewer.start();
-                }
+                });
             }
         });
         saveAs.setEnabled(false);
@@ -503,23 +490,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         export = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_EXPORT)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                viewer.stop();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter(messages.getText(DIALOG_FILES_PNG), "png");
-                JFileChooser chooser = new JFileChooser();
-                chooser.setCurrentDirectory(cwd);
-                chooser.setFileFilter(filter);
-                chooser.setSelectedFile(new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED)+ ".png"));
-                int result = chooser.showSaveDialog(null);
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    File export = chooser.getSelectedFile();
-                    String name = export.getName();
-                    if (!name.toLowerCase().endsWith(".png")) {
-                        export = new File(export.getParent(), name + ".png");
-                    }
-                    viewer.save(export);
-                    cwd = export.getParentFile();
-                }
-                viewer.start();
+                File file = new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".png");
+                saveDialog(file, DIALOG_FILES_PNG, "png", f -> {
+                    viewer.save(f);
+                });
             }
         });
         export.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -527,37 +501,32 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         print = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_PRINT)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                boolean viewerStopped = false;
-                if (current.equals(VIEWER)) {
-                    viewerStopped = viewer.stop();
-                }
-                PrinterJob job = PrinterJob.getPrinterJob();
-                job.setJobName(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
-                PageFormat pf = job.defaultPage();
-                if (getWidth() > getHeight()) {
-                    pf.setOrientation(PageFormat.LANDSCAPE);
-                } else {
-                    pf.setOrientation(PageFormat.PORTRAIT);
-                }
-                switch (current) {
-                    case VIEWER:
-                        job.setPrintable(viewer, pf);
-                        break;
-                    case DETAILS:
-                        job.setPrintable(details, pf);
-                        break;
-                }
-                boolean ok = job.printDialog();
-                if (ok) {
-                    try {
-                        job.print();
-                    } catch (PrinterException pe) {
-                        Throwables.propagate(pe);
+                pauseViewer(() -> {
+                    PrinterJob job = PrinterJob.getPrinterJob();
+                    job.setJobName(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
+                    PageFormat pf = job.defaultPage();
+                    if (getWidth() > getHeight()) {
+                        pf.setOrientation(PageFormat.LANDSCAPE);
+                    } else {
+                        pf.setOrientation(PageFormat.PORTRAIT);
                     }
-                }
-                if (current.equals(VIEWER) && viewerStopped) {
-                    viewer.start();
-                }
+                    switch (current) {
+                        case VIEWER:
+                            job.setPrintable(viewer, pf);
+                            break;
+                        case DETAILS:
+                            job.setPrintable(details, pf);
+                            break;
+                    }
+                    boolean ok = job.printDialog();
+                    if (ok) {
+                        try {
+                            job.print();
+                        } catch (PrinterException pe) {
+                            Throwables.propagate(pe);
+                        }
+                    }
+                });
             }
         });
         print.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -567,28 +536,17 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             file.add(new AbstractAction(messages.getText(MENU_FILE_PREFERENCES)) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    prefs.showDialog();
+                    Dialog.show(() -> prefs);
                 }
             });
         }
         file.add(new AbstractAction(messages.getText(MENU_FILE_PREFERENCES_SAVE)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                FileNameExtensionFilter filter = new FileNameExtensionFilter(messages.getText(DIALOG_FILES_PROPERTIES), "properties");
-                JFileChooser chooser = new JFileChooser();
-                chooser.setCurrentDirectory(cwd);
-                chooser.setFileFilter(filter);
-                chooser.setSelectedFile(Optional.fromNullable(override).or(new File(Config.PROPERTIES_FILE)));
-                int result = chooser.showSaveDialog(null);
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    File preferences = chooser.getSelectedFile();
-                    String name = preferences.getName();
-                    if (!name.toLowerCase().endsWith(".properties")) {
-                        preferences = new File(preferences.getParent(), name + ".properties");
-                    }
-                    config.save(preferences);
-                    cwd = preferences.getParentFile();
-                }
+                File file = Optional.fromNullable(override).or(new File(Config.PROPERTIES_FILE));
+                saveDialog(file, DIALOG_FILES_PROPERTIES, "properties", f -> {
+                    config.save(f);
+                });
             }
         });
         if (platform != Platform.MAC_OS_X) {
@@ -700,6 +658,38 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
 
         setVisible(true);
+    }
+
+    public void saveDialog(File file, String filterText, String extension, Consumer<File> action) {
+        pauseViewer(() -> {
+            FileNameExtensionFilter filter = new FileNameExtensionFilter(messages.getText(filterText), extension);
+            JFileChooser chooser = new JFileChooser();
+            chooser.setCurrentDirectory(cwd);
+            chooser.setFileFilter(filter);
+            chooser.setSelectedFile(file);
+            int result = chooser.showSaveDialog(null);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selected = chooser.getSelectedFile();
+                String name = selected.getName();
+                if (!name.toLowerCase().endsWith("." + extension)) {
+                    selected = new File(selected.getParent(), name + "." + extension);
+                }
+                try {
+                    action.accept(selected);
+                } catch (Exception e) {
+                    error(e, "Error saving file %s", name);
+                }
+                cwd = selected.getParentFile();
+            }
+        });
+    }
+
+    public void pauseViewer(Runnable action) {
+        boolean viewerStopped = viewer.stop();
+        action.run();
+        if (current.equals(VIEWER) && viewerStopped) {
+            viewer.start();
+        }
     }
 
     public void show(String name) {

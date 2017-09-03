@@ -18,11 +18,14 @@ package iterator.util;
 import static iterator.Utils.calibri;
 
 import java.awt.Font;
+import java.util.function.Consumer;
+
+import com.google.common.base.Supplier;
 
 /**
  * Dialog box interface.
  */
-public interface Dialog {
+public interface Dialog extends AutoCloseable {
 
     Font CALIBRI_PLAIN_14 = calibri(Font.PLAIN, 14);
     Font CALIBRI_ITALIC_14 = calibri(Font.ITALIC, 14);
@@ -31,5 +34,15 @@ public interface Dialog {
 
     /** Method to display the dialog box. */
     void showDialog();
+
+    static void show(Supplier<Dialog> supplier, Consumer<Exception>...exceptionHandlers) {
+        try (Dialog dialog = supplier.get()) {
+            dialog.showDialog();
+        } catch (Exception ex) {
+            for (Consumer<Exception> handler : exceptionHandlers) {
+                handler.accept(ex);
+            }
+        }
+    }
 
 }

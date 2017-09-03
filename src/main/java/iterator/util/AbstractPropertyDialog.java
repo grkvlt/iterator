@@ -309,4 +309,10 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     @Override
     public void keyReleased(KeyEvent e) { }
 
+    /** @see java.lang.AutoCloseable#close() */
+    @Override
+    public void close() throws Exception {
+        dispose();
+    }
+
 }

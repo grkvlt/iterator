@@ -87,6 +87,7 @@ import iterator.model.Reflection;
 import iterator.model.Transform;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
+import iterator.util.Dialog;
 import iterator.util.Formatter;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
@@ -127,18 +128,14 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         properties = new AbstractAction(messages.getText(MENU_TRANSFORM_PROPERTIES)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Properties properties = new Properties(selected, ifs, controller);
-                properties.showDialog();
-                properties.dispose();
+                Dialog.show(() -> new Properties(selected, ifs, controller));
             }
         };
         transformMenu.add(properties);
         transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_MATRIX)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Matrix matrix = new Matrix(selected, ifs, controller);
-                matrix.showDialog();
-                matrix.dispose();
+                Dialog.show(() -> new Matrix(selected, ifs, controller));
             }
         });
         transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_DELETE)) {
@@ -206,9 +203,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         reflectionMenu.add(new AbstractAction(messages.getText(MENU_REFLECTION_PROPERTIES)) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Properties properties = new Properties(reflection, ifs, controller);
-                properties.showDialog();
-                properties.dispose();
+                Dialog.show(() -> new Properties(reflection, ifs, controller));
             }
         });
         reflectionMenu.add(new AbstractAction(messages.getText(MENU_REFLECTION_DELETE)) {
