@@ -116,7 +116,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private BufferedImage image;
     private int top[];
     private long density[];
-    private double rgb[];
+    private double colour[];
     private long max;
     private Timer timer;
     private double points[] = new double[4];
@@ -415,7 +415,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
         top = new int[size.width * size.height];
         density = new long[size.width * size.height];
-        rgb = new double[size.width * size.height];
+        colour = new double[size.width * size.height];
         max = 1;
 
         count.set(0l);
@@ -494,6 +494,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             int n = transforms.size();
             int m = reflections.size();
             int l = size.width * size.height;
+            float hsb[] = new float[3];
 
             for (long i = 0L; i < k; i++) {
                 if (i % 1000L == 0L) {
@@ -578,9 +579,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         }
                         if (render.isDensity()) {
                             if (mode.isIFSColour()) {
-                                rgb[p] = (double) color.getRGB() / (double) RGB24;
+                                colour[p] = (double) (color.getRGB() & RGB24) / (double) RGB24;
                             } else {
-                                rgb[p] = (rgb[p] + (double) color.getRGB() / (double) RGB24) / 2d;
+                                colour[p] = (colour[p] + (double) (color.getRGB() & RGB24) / (double) RGB24) / 2d;
                             }
                         }
                     }
@@ -593,7 +594,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                             color = new Color(color.getRed(), color.getGreen(), color.getBlue());
                         } else {
                             color = new Color(top[p]);
-                            float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+                            Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
                             if (hsb[2] < 0.66f) {
                                 color = color.brighter();
                             }
@@ -624,27 +625,37 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         try {
             boolean log = render.isLog();
             boolean invert = render.isInverse() && isVisible();
-            int min = isVisible() ? 0 : 16;
+            int min = isVisible() ? 0 : 256;
+            float hsb[] = new float[3];
+            int rgb[] = new int[3];
+            float gamma = controller.getGamma();
             for (int x = 0; x < size.width; x++) {
                 for (int y = 0; y < size.height; y++) {
                     int p = x + y * size.width;
                     if (density[p] > min) {
-                        double ratio = unity().apply(log ? (double) (Math.log(density[p]) / Math.log(max)) : ((double) density[p] / (double) max));
-                        double gray = invert ? ratio : 1d - ratio;
+                        double ratio = unity().apply(log ? Math.log(density[p]) / Math.log(max) : (double) density[p] / (double) max);
+                        float gray = (float) Math.pow(invert ? ratio : 1d - ratio, gamma);
                         if (mode.isColour()) {
-                            Color color = new Color((int) (rgb[p] * RGB24));
+                            int color = (int) (colour[p] * RGB24);
+                            rgb[0] = (color >> 16) & 0xff;
+                            rgb[1] = (color >> 8) & 0xff;
+                            rgb[2] = (color >> 0) & 0xff;
                             if (render == Render.LOG_DENSITY_FLAME || render == Render.LOG_DENSITY_FLAME_INVERSE) {
-                                float alpha = (float) (Math.log(density[p]) / density[p]);
-                                color = new Color((int) (alpha * color.getRed()), (int) (alpha * color.getGreen()), (int) (alpha * color.getBlue()));
+                                float alpha = (float) Math.pow(Math.log(density[p]) / density[p], gamma);
+                                rgb[0] *= alpha;
+                                rgb[1] *= alpha;
+                                rgb[2] *= alpha;
                             } else {
-                                color = new Color((int) (gray * color.getRed()), (int) (gray * color.getGreen()), (int) (gray * color.getBlue()));
+                                rgb[0] *= gray;
+                                rgb[1] *= gray;
+                                rgb[2] *= gray;
                             }
-                            float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
-                            g.setPaint(alpha(new Color(Color.HSBtoRGB(hsb[0], hsb[1], (float) gray)), (int) (ratio * 255)));
+                            Color.RGBtoHSB(rgb[0], rgb[1], rgb[2], hsb);
+                            g.setPaint(alpha(new Color(Color.HSBtoRGB(hsb[0], hsb[1], gray)), (int) (ratio * 255)));
                         } else {
-                            g.setPaint(new Color((float) gray, (float) gray, (float) gray, (float) ratio));
+                            g.setPaint(new Color(gray, gray, gray, (float) ratio));
                         }
-                        int side = (render == Render.LOG_DENSITY_BLUR) ? (int) (r * ratio * 8f) : r;
+                        int side = (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) ? (int) (r * (1f - gray) * 4f) : r;
                         Rectangle rect = new Rectangle(x, y, side, side);
                         g.fill(rect);
                     }
