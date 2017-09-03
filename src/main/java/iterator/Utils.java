@@ -18,6 +18,8 @@ package iterator;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -25,6 +27,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.DoubleFunction;
 import java.util.function.IntFunction;
 import java.util.function.LongFunction;
@@ -125,6 +128,22 @@ public class Utils {
     public static final Stroke DASHED_LINE_2 = dashed(2f, new float[] { 10f, 10f });
     public static final Stroke DOTTED_LINE_2 = dashed(2f, new float[] { 5f, 5f });
     public static final Stroke PATTERNED_LINE_2 = dashed(2f, new float[] { 15f, 10f, 5f, 10f });
+
+    /** Perform an {@link Consumer action} with a disposable {@link Graphics2D graphics context}. */
+    public static void context(Explorer controller, Graphics graphics, Consumer<Graphics2D> action) {
+        Graphics2D g = (Graphics2D) graphics.create();
+        try {
+            action.accept(g);
+        } catch (Throwable t) {
+            controller.error(t,  "Error executing graphics context action");
+        } finally {
+            g.dispose();
+        }
+    }
+
+    public static Consumer<Exception> printError(Explorer controller, String message) {
+        return e -> { controller.error(e, message); };
+    }
 
     /**
      * Returns a new {@link Color} with the same RGB value but updated alpha channel.

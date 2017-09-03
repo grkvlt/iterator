@@ -23,6 +23,7 @@ import static iterator.Utils.SOLID_LINE_2;
 import static iterator.Utils.alpha;
 import static iterator.Utils.calibri;
 import static iterator.Utils.concatenate;
+import static iterator.Utils.context;
 import static iterator.Utils.weight;
 import static iterator.util.Messages.MENU_EDITOR_NEW_IFS;
 import static iterator.util.Messages.MENU_EDITOR_NEW_REFLECTION;
@@ -66,7 +67,6 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -89,6 +89,7 @@ import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Dialog;
 import iterator.util.Formatter;
+import iterator.util.Formatter.DoubleFormatter;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
 
@@ -351,23 +352,16 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
     public void resetImage() {
         image = new BufferedImage(getSize().width, getSize().height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = image.createGraphics();
-        try {
+        context(controller, image.getGraphics(), g -> {
             g.setColor(new Color(1f, 1f, 1f, 0f));
             g.fillRect(0, 0, getSize().width, getSize().height);
-        } catch (Exception ex) {
-            controller.error(ex, "Failure resetting image");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     /** @see javax.swing.JComponent#paintComponent(Graphics) */
     @Override
     protected void paintComponent(Graphics graphics) {
-        Graphics2D g = (Graphics2D) graphics.create();
-
-        try {
+        context(controller, graphics, g -> {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             paintGrid(g);
@@ -403,19 +397,14 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     g.draw(new Rectangle(ants.x.intValue(), ants.y.intValue(), ants.w.intValue(), ants.h.intValue()));
                 }
             }
-        } catch (Exception e) {
-            controller.error(e, "Failure painting IFS editor");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     public void paintTransform(Transform t, boolean highlight, Graphics2D graphics) {
         Rectangle unit = new Rectangle(getSize());
         Shape rect = t.getTransform().createTransformedShape(unit);
-        Graphics2D g = (Graphics2D) graphics.create();
 
-        try {
+        context(controller, graphics, g -> {
             // Draw the outline
             g.setPaint(Color.BLACK);
             g.setStroke(highlight ? DASHED_LINE_2 : SOLID_LINE_2);
@@ -456,17 +445,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
             // Draw the number
             paintTransformNumber(t, highlight, g);
-        } catch (Exception e) {
-            controller.error(e, "Failure painting transform");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     public void paintTransformNumber(Transform t, boolean highlight, Graphics2D graphics) {
-        Graphics2D g = (Graphics2D) graphics.create();
-
-        try {
+        context(controller, graphics, g -> {
             if (highlight) {
                 g.setPaint(Color.BLACK);
             } else {
@@ -490,24 +473,18 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             g.setTransform(rotation);
 
             // Draw the label
-            AbstractFormatter one = Formatter.doubles(1);
+            DoubleFormatter one = Formatter.doubles(1);
             String id = String.format("T%s %s%% %s",
                     (t.getId() == -1 ? "--" : String.format("%02d", t.getId())),
-                    one.valueToString(100d * t.getWeight() / weight(concatenate(ifs.getTransforms(), selected))),
-                    ((highlight && rotate != null) ? String.format("(%s)", one.valueToString(Math.toDegrees(t.r))) : ""));
+                    one.toString(100d * t.getWeight() / weight(concatenate(ifs.getTransforms(), selected))),
+                    ((highlight && rotate != null) ? String.format("(%s)", one.toString(Math.toDegrees(t.r))) : ""));
             g.setFont(calibri(Font.BOLD, 25));
             g.drawString(id, text.x + 5, text.y + 25);
-        } catch (Exception e) {
-            controller.error(e, "Failure painting transform number");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     public void paintReflection(Reflection r, boolean highlight, Graphics2D graphics) {
-        Graphics2D g = (Graphics2D) graphics.create();
-
-        try {
+        context(controller, graphics, g -> {
             // Set the line pattern
             g.setStroke(highlight ? DASHED_LINE_2 : PATTERNED_LINE_2);
             g.setPaint(Color.BLACK);
@@ -525,10 +502,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             g.draw(line);
 
             // Draw the label
-            AbstractFormatter one = Formatter.doubles(1);
+            DoubleFormatter one = Formatter.doubles(1);
             String id = String.format("R%s %s",
                     (r.getId() == -1 ? "--" : String.format("%02d", r.getId())),
-                    highlight ? String.format("(%s)", one.valueToString(Math.toDegrees(r.r))) : "");
+                    highlight ? String.format("(%s)", one.toString(Math.toDegrees(r.r))) : "");
             g.setFont(calibri(Font.BOLD, 25));
             g.drawString(id, (int) (r.x + 10), (int) (r.y + 10));
 
@@ -536,17 +513,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             g.setStroke(SOLID_LINE_2);
             Rectangle handle = new Rectangle((int) (r.x - 4), (int) (r.y - 4), 8, 8);
             g.fill(handle);
-        } catch (Exception e) {
-            controller.error(e, "Failure painting reflection");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     public void paintGrid(Graphics2D graphics) {
-        Graphics2D g = (Graphics2D) graphics.create();
-
-        try {
+        context(controller, graphics, g -> {
             int min = controller.getMinGrid();
             int max = controller.getMaxGrid();
             Rectangle s = new Rectangle(getSize());
@@ -568,11 +539,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             for (int y = 0; y < getHeight(); y += max) {
                 g.drawLine(0, y, getWidth(), y);
             }
-        } catch (Exception e) {
-            controller.error(e, "Failure painting grid");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     public Transform getTransformAt(int x, int y) {

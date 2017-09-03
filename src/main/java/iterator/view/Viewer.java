@@ -22,6 +22,7 @@ import static iterator.Utils.RGB24;
 import static iterator.Utils.SOLID_LINE_2;
 import static iterator.Utils.alpha;
 import static iterator.Utils.calibri;
+import static iterator.Utils.context;
 import static iterator.Utils.unity;
 import static iterator.Utils.weight;
 import static iterator.util.Messages.MENU_VIEWER_GRID;
@@ -76,7 +77,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -101,6 +101,8 @@ import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Dialog;
 import iterator.util.Formatter;
+import iterator.util.Formatter.DoubleFormatter;
+import iterator.util.Formatter.FloatFormatter;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
 
@@ -241,9 +243,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     /** @see javax.swing.JComponent#paintComponent(Graphics) */
     @Override
     protected void paintComponent(Graphics graphics) {
-        Graphics2D g = (Graphics2D) graphics.create();
-
-        try {
+        context(controller, graphics, g -> {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
@@ -269,15 +269,15 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             }
 
             if (info) {
-                AbstractFormatter one = Formatter.floats(1);
-                AbstractFormatter four = Formatter.doubles(4);
+                FloatFormatter one = Formatter.floats(1);
+                DoubleFormatter four = Formatter.doubles(4);
                 String scaleText = String.format("%sx (%s,%s) %s/%s %s y%s (%s)",
-                        one.valueToString(scale),
-                        four.valueToString(centre.getX() / size.getWidth()),
-                        four.valueToString(centre.getY() / size.getHeight()),
+                        one.toString(scale),
+                        four.toString(centre.getX() / size.getWidth()),
+                        four.toString(centre.getY() / size.getHeight()),
                         controller.getMode(), controller.getRender(),
                         controller.hasPalette() ? controller.getPaletteFile() : (controller.isColour() ? "hsb" : "black"),
-                        one.valueToString(controller.getGamma()),
+                        one.toString(controller.getGamma()),
                         isRunning() ? Long.toString(tasks.stream().filter(t -> !t.isDone()).count()) : "-");
                 String countText = String.format("%,dK", count.get()).replaceAll("[^0-9K+]", " ");
 
@@ -292,17 +292,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             if (grid) {
                 paintGrid(g);
             }
-        } catch (Exception e) {
-            controller.error(e, "Failure painting IFS");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     public void paintTransform(Transform t, Graphics2D graphics) {
-        Graphics2D g = (Graphics2D) graphics.create();
-
-        try {
+        context(controller, graphics, g -> {
             // Transform unit square to view space
             double x = (size.getWidth() / 2d) - (centre.getX() * scale);
             double y = (size.getHeight() / 2d) - (centre.getY() * scale);
@@ -319,17 +313,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             g.draw(rect);
             g.setPaint(alpha(Color.GRAY, 8));
             g.fill(rect);
-        } catch (Exception e) {
-            controller.error(e, "Failure painting transform");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     public void paintReflection(Reflection r, Graphics2D graphics) {
-        Graphics2D g = (Graphics2D) graphics.create();
-
-        try {
+        context(controller, graphics, g -> {
             // Transform unit square to view space
             double x = (size.getWidth() / 2d) - (centre.getX() * scale);
             double y = (size.getHeight() / 2d) - (centre.getY() * scale);
@@ -352,17 +340,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         r.y + (size.getWidth() / Math.tan(r.r)) + (size.getWidth() / (Math.tan(r.r) * scale)));
             }
             g.draw(view.createTransformedShape(line));
-        } catch (Exception e) {
-            controller.error(e, "Failure painting reflection");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     public void paintGrid(Graphics2D graphics) {
-        Graphics2D g = (Graphics2D) graphics.create();
-
-        try {
+        context(controller, graphics, g -> {
             // Set colour and width
             Color c = alpha(controller.getRender().getForeground(), 64);
             g.setPaint(c);
@@ -388,11 +370,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 Line2D line = new Line2D.Double(-ox, y, ox + size.getWidth(), y);
                 g.draw(view.createTransformedShape(line));
             }
-        } catch (Exception e) {
-            controller.error(e, "Failure painting grid");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     public void rescale(float scale, Point2D centre) {
@@ -424,15 +402,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
     public void resetImage() {
         image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = image.createGraphics();
-        try {
+        context(controller, image.getGraphics(), g -> {
             g.setColor(controller.getRender().getBackground());
             g.fillRect(0, 0, size.width, size.height);
-        } catch (Exception e) {
-            controller.error(e, "Failure resetting image");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     public void save(File file) {
@@ -452,9 +425,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public int print(Graphics graphics, PageFormat pf, int page) throws PrinterException {
         if (page > 0) return NO_SUCH_PAGE;
 
-        Graphics2D g = (Graphics2D) graphics.create();
-
-        try {
+        context(controller, graphics, g -> {
             g.translate(pf.getImageableX(), pf.getImageableY());
             double scale = pf.getImageableWidth() / size.getWidth();
             if ((scale * getHeight()) > pf.getImageableHeight()) {
@@ -463,19 +434,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             g.scale(scale, scale);
             g.setClip(0, 0, size.width, size.height);
             printAll(g);
-        } catch (Exception e) {
-            controller.error(e, "Failure printing image");
-        } finally {
-            g.dispose();
-        }
+        });
 
         return PAGE_EXISTS;
     }
 
     public void iterate(BufferedImage targetImage, int s, long k, float scale, Point2D centre, Render render, Mode mode) {
-        Graphics2D g = targetImage.createGraphics();
-
-        try {
+        context(controller, targetImage.getGraphics(), g -> {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
@@ -497,8 +462,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             int l = size.width * size.height;
             float hsb[] = new float[3];
 
-            for (long i = 0L; i < k; i++) {
-                if (i % 1000L == 0L) {
+            for (long i = 0l; i < k; i++) {
+                if (i % 1000l == 0l) {
                     count.incrementAndGet();
                 }
 
@@ -613,17 +578,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     }
                 }
             }
-        } catch (Exception e) {
-            controller.error(e, "Failure iterating IFS");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     public void plotDensity(BufferedImage targetImage, int r, Render render, Mode mode) {
-        Graphics2D g = targetImage.createGraphics();
-
-        try {
+        context(controller, targetImage.getGraphics(), g -> {
             boolean log = render.isLog();
             boolean invert = render.isInverse() && isVisible();
             int min = isVisible() ? 0 : 256;
@@ -662,11 +621,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     }
                 }
             }
-        } catch (Exception e) {
-            controller.error(e, "Failure plotting density map");
-        } finally {
-            g.dispose();
-        }
+        });
     }
 
     /**
