@@ -17,6 +17,7 @@ package iterator;
 
 import static iterator.Utils.loadImage;
 import static iterator.util.Config.DEBUG_PROPERTY;
+import static iterator.util.Config.DEFAULT_GAMMA;
 import static iterator.util.Config.DEFAULT_GRID_MAX;
 import static iterator.util.Config.DEFAULT_GRID_MIN;
 import static iterator.util.Config.DEFAULT_GRID_SNAP;
@@ -27,6 +28,7 @@ import static iterator.util.Config.DEFAULT_PALETTE_SEED;
 import static iterator.util.Config.DEFAULT_PALETTE_SIZE;
 import static iterator.util.Config.DEFAULT_RENDER;
 import static iterator.util.Config.DEFAULT_WINDOW_SIZE;
+import static iterator.util.Config.GAMMA_PROPERTY;
 import static iterator.util.Config.GRID_PROPERTY;
 import static iterator.util.Config.ITERATIONS_PROPERTY;
 import static iterator.util.Config.MAX_PALETTE_SIZE;
@@ -191,6 +193,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private int paletteSize;
     private String paletteFile;
     private long seed;
+    private float gamma;
 
     private Platform platform = Platform.getPlatform();
     private int threads;
@@ -290,6 +293,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             setPaletteFile(config.get(PALETTE_PROPERTY + ".file", DEFAULT_PALETTE_FILE));
         }
         setPaletteSize(config.get(PALETTE_PROPERTY + ".size", DEFAULT_PALETTE_SIZE));
+        setGamma(config.get(GAMMA_PROPERTY, DEFAULT_GAMMA));
         debug("Configured rendering as %s/%s %s", render, mode, mode.isPalette() ? paletteFile : mode.isColour() ? "hsb" : "black");
 
         // Load colour palette if required
@@ -365,6 +369,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public void setMode(Mode value) {
         mode = value;
+    }
+
+    public void setGamma(float value) {
+        gamma = value;
     }
 
     public void loadColours() {
@@ -741,6 +749,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public Render getRender() { return render; }
 
     public Mode getMode() { return mode; }
+
+    public float getGamma() { return gamma; }
 
     public long getSeed() { return seed; }
 

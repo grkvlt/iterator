@@ -97,6 +97,7 @@ public class Messages {
     public static final String DIALOG_PREFERENCES_PALETTE_SEED = "explorer.dialog.preferences.palette.seed";
     public static final String DIALOG_PREFERENCES_THREADS = "explorer.dialog.preferences.threads";
     public static final String DIALOG_PREFERENCES_DEBUG = "explorer.dialog.preferences.debug";
+    public static final String DIALOG_PREFERENCES_GAMMA = "explorer.dialog.preferences.gamma";
     public static final String DIALOG_PREFERENCES_BUTTON_UPDATE = "explorer.dialog.preferences.button.update";
     public static final String DIALOG_PREFERENCES_BUTTON_CANCEL = "explorer.dialog.preferences.button.cancel";
 

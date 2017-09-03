@@ -49,6 +49,7 @@ public class Config extends ForwardingSortedMap<String, String> {
 
     public static final String EXPLORER_PROPERTY = "explorer";
     public static final String PALETTE_PROPERTY = EXPLORER_PROPERTY + ".palette";
+    public static final String GAMMA_PROPERTY = EXPLORER_PROPERTY + ".gamma";
     public static final String GRID_PROPERTY =  EXPLORER_PROPERTY + ".grid";
     public static final String WINDOW_PROPERTY =  EXPLORER_PROPERTY + ".window";
     public static final String DEBUG_PROPERTY = EXPLORER_PROPERTY + ".debug";
@@ -63,6 +64,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Integer MIN_PALETTE_SIZE = 16;
     public static final Integer MAX_PALETTE_SIZE = 255;
     public static final Long DEFAULT_PALETTE_SEED = 0L;
+    public static final Float DEFAULT_GAMMA = 1f;
     public static final Integer DEFAULT_GRID_MIN = 10;
     public static final Integer DEFAULT_GRID_MAX = 50;
     public static final Integer DEFAULT_GRID_SNAP = 5;

@@ -267,12 +267,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             if (info) {
                 AbstractFormatter one = Formatter.floats(1);
                 AbstractFormatter four = Formatter.doubles(4);
-                String scaleText = String.format("%sx (%s, %s) %s/%s %s (%s)",
+                String scaleText = String.format("%sx (%s,%s) %s/%s %s y%s (%s)",
                         one.valueToString(scale),
                         four.valueToString(centre.getX() / size.getWidth()),
                         four.valueToString(centre.getY() / size.getHeight()),
                         controller.getMode(), controller.getRender(),
                         controller.hasPalette() ? controller.getPaletteFile() : (controller.isColour() ? "hsb" : "black"),
+                        one.valueToString(controller.getGamma()),
                         isRunning() ? Long.toString(tasks.stream().filter(t -> !t.isDone()).count()) : "-");
                 String countText = String.format("%,dK", count.get()).replaceAll("[^0-9K+]", " ");
 
