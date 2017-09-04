@@ -133,7 +133,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private Rectangle zoom;
     private ThreadGroup group = new ThreadGroup("iterator");
     private ExecutorService executor = Executors.newCachedThreadPool(this);
-    private List<Future<Void>> tasks = Lists.newArrayList();
+    private List<Future<?>> tasks = Lists.newArrayList();
     private boolean overlay, info, grid;
     private JPopupMenu viewer;
     private Zoom properties;
@@ -632,12 +632,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (isVisible() && controller.getRender().isDensity()) {
-            SwingUtilities.invokeLater(() -> {
-                resetImage();
-                plotDensity(image, 1, controller.getRender(), controller.getMode());
-                repaint();
-            });
+        if (isVisible()) {
+            repaint();
         }
     }
 
@@ -674,6 +670,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             for (int i = 0; i < controller.getThreads(); i++) {
                 tasks.add(executor.submit(this));
             }
+            if (controller.getRender().isDensity()) {
+                tasks.add(executor.submit(() -> {
+                    do {
+                        resetImage();
+                        plotDensity(image, 1, controller.getRender(), controller.getMode());
+                    } while (running.get());
+                }));
+            }
             pause.setEnabled(true);
             resume.setEnabled(false);
             timer.start();
@@ -686,7 +690,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         if (stopped) {
             controller.debug("Stopping");
             timer.stop();
-            for (Future<Void> task : tasks) {
+            for (Future<?> task : tasks) {
                 task.cancel(true);
             }
             tasks.clear();
