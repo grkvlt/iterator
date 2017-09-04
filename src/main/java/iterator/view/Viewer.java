@@ -353,22 +353,33 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             // Transform unit square to view space
             double x0 = (size.getWidth() / 2d) - (centre.getX() * scale);
             double y0 = (size.getHeight() / 2d) - (centre.getY() * scale);
-            double spacing = controller.getMaxGrid() / scale;
             AffineTransform view = AffineTransform.getTranslateInstance(x0, y0);
             view.scale(scale, scale);
 
             // Draw grid lines
-            double cx = Math.abs(centre.getX()) + getWidth() / scale;
-            double cy = Math.abs(centre.getY()) + getHeight() / scale;
-            double ox = Math.max(size.getWidth() / scale, cx);
-            double oy = Math.max(size.getHeight() / scale, cy);
-            for (double x = -ox; x < ox + size.getWidth(); x += spacing) {
-                Line2D line = new Line2D.Double(x, -oy, x, oy + size.getHeight());
-                g.draw(view.createTransformedShape(line));
+            Rectangle unit = new Rectangle(getSize());
+            double spacing = controller.getMaxGrid() / scale;
+            double mx = centre.getX() - (size.getWidth() / 2d / scale);
+            double my = centre.getY() - (size.getHeight() / 2d / scale);
+            double nx = centre.getX() + (size.getWidth() / 2d / scale);
+            double ny = centre.getY() + (size.getHeight() / 2d / scale);
+            double rx = Math.IEEEremainder(mx, spacing);
+            double ry = Math.IEEEremainder(my, spacing);
+            double sx = mx < 0 ? mx - (spacing - rx) : mx - rx;
+            double sy = my < 0 ? my - (spacing - ry) : my - ry;
+            for (double x = sx; x < nx; x += spacing) {
+                Line2D line = new Line2D.Double(x, my, x, ny);
+                Shape s = view.createTransformedShape(line);
+                if (s.intersects(unit)) {
+                    g.draw(s);
+                }
             }
-            for (double y = -oy; y < oy + size.getWidth(); y += spacing) {
-                Line2D line = new Line2D.Double(-ox, y, ox + size.getWidth(), y);
-                g.draw(view.createTransformedShape(line));
+            for (double y = sy; y < ny; y += spacing) {
+                Line2D line = new Line2D.Double(mx, y, nx, y);
+                Shape s = view.createTransformedShape(line);
+                if (s.intersects(unit)) {
+                    g.draw(s);
+                }
             }
         });
     }
