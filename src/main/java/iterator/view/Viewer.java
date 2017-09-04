@@ -148,7 +148,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         this.bus = controller.getEventBus();
         this.messages = controller.getMessages();
 
-        timer = new Timer(100, this);
+        timer = new Timer(50, this);
         timer.setCoalesce(true);
 
         size = getSize();
@@ -396,7 +396,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public void reset() {
         if (size.getWidth() <= 0 && size.getHeight() <= 0) return;
 
-        resetImage();
+        image = newImage(getSize());
 
         points[0] = random.nextInt(size.width);
         points[1] = random.nextInt(size.height);
@@ -411,12 +411,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         count.set(0l);
     }
 
-    public void resetImage() {
-        image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
+    public BufferedImage newImage(Dimension size) {
+        BufferedImage image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
         context(controller, image.getGraphics(), g -> {
             g.setColor(controller.getRender().getBackground());
             g.fillRect(0, 0, size.width, size.height);
         });
+        return image;
     }
 
     public void save(File file) {
@@ -566,19 +567,17 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     // Set the paint colour according to the rendering mode
                     if (render == Render.IFS) {
                         g.setPaint(alpha(color, 255));
-                    } else if (render == Render.MEASURE) {
-                        if (top[p] == 0) {
-                            color = new Color(color.getRed(), color.getGreen(), color.getBlue());
-                        } else {
-                            color = new Color(top[p]);
-                            Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
-                            if (hsb[2] < 0.66f) {
-                                color = color.brighter();
-                            }
-                        }
-                        top[p] = color.getRGB();
-                        g.setPaint(alpha(color, isVisible() ? 16 : 128));
                     } else {
+                        if (render == Render.MEASURE) {
+                            if (top[p] != 0) {
+                                color = new Color(top[p]);
+                                Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
+                                if (hsb[2] < 0.8f) {
+                                    color = color.brighter();
+                                }
+                            }
+                            top[p] = color.getRGB();
+                        }
                         g.setPaint(alpha(color, isVisible() ? 16 : 128));
                     }
 
@@ -595,17 +594,18 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public void plotDensity(BufferedImage targetImage, int r, Render render, Mode mode) {
         context(controller, targetImage.getGraphics(), g -> {
             boolean log = render.isLog();
-            boolean invert = render.isInverse() && isVisible();
-            int min = isVisible() ? 0 : 256;
+            boolean invert = render.isInverse();
             float hsb[] = new float[3];
             int rgb[] = new int[3];
             float gamma = controller.getGamma();
+            int n = 0;
             for (int x = 0; x < size.width; x++) {
                 for (int y = 0; y < size.height; y++) {
                     int p = x + y * size.width;
-                    if (density[p] > min) {
-                        double ratio = unity().apply(log ? Math.log(density[p]) / Math.log(max) : (double) density[p] / (double) max);
-                        float gray = (float) Math.pow(invert ? ratio : 1d - ratio, gamma);
+                    double ratio = unity().apply(log ? Math.log(density[p]) / Math.log(max) : (double) density[p] / (double) max);
+                    float gray = (float) Math.pow(invert ? ratio : 1d - ratio, gamma);
+                    if (ratio > 0.05d) {
+                        n++;
                         if (mode.isColour()) {
                             int color = (int) (colour[p] * RGB24);
                             rgb[0] = (color >> 16) & 0xff;
@@ -659,7 +659,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         controller.debug("Started task %s", name);;
         do {
             iterate(image, 1, controller.getIterations(), scale, centre, controller.getRender(), controller.getMode());
-        } while (running.get());
+        } while (isRunning());
         controller.debug("Stopped task %s", name);;
         return null;
     }
@@ -678,15 +678,16 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             controller.debug("Starting");
             loop = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
             tasks.clear();
-            for (int i = 0; i < controller.getThreads(); i++) {
+            for (int i = 0; i < controller.getThreads() - (controller.getRender().isDensity() ? 1 : 0); i++) {
                 tasks.add(executor.submit(this));
             }
             if (controller.getRender().isDensity()) {
                 tasks.add(executor.submit(() -> {
                     do {
-                        resetImage();
-                        plotDensity(image, 1, controller.getRender(), controller.getMode());
-                    } while (running.get());
+                        BufferedImage plot = newImage(getSize());
+                        plotDensity(plot, 1, controller.getRender(), controller.getMode());
+                        context(controller, image.getGraphics(), g -> g.drawImage(plot, 0, 0, null));
+                    } while (isRunning());
                 }));
             }
             pause.setEnabled(true);
@@ -734,7 +735,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         if (isVisible()) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_SPACE:
-                    if (running.get()) {
+                    if (isRunning()) {
                         stop();
                     } else {
                         start();
@@ -810,18 +811,17 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
     /** @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent) */
     @Override public void mouseDragged(MouseEvent e) {
-        if (zoom != null) {
-            Point one = e.getPoint();
-            Point two = new Point(zoom.x, zoom.y);
-            int x1 = Math.min(one.x, two.x);
-            int x2 = Math.max(one.x, two.x);
-            int y1 = Math.min(one.y, two.y);
-            int y2 = Math.max(one.y, two.y);
+        if (SwingUtilities.isLeftMouseButton(e) && zoom != null) {
+            Point end = e.getPoint();
+            int x1 = Math.min(end.x, zoom.x);
+            int x2 = Math.max(end.x, zoom.x);
+            int y1 = Math.min(end.y, zoom.y);
+            int y2 = Math.max(end.y, zoom.y);
             int side = Math.min(x2 - x1,  y2 - y1);
             if (side < controller.getSnapGrid()) {
                 side = 0;
             }
-            zoom = new Rectangle(x1, y1, side, side);
+            zoom.setSize(new Dimension(side, side));
             repaint();
         }
     }
@@ -836,12 +836,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 // Calculate new centre point and scale
                 Point2D origin = new Point2D.Double((centre.getX() * scale) - (size.getWidth() / 2d), (centre.getY() * scale) - (size.getHeight() / 2d));
                 Point2D updated = new Point2D.Double((zoom.x + (zoom.width / 2d) + origin.getX()) / scale, (zoom.y + (zoom.height / 2d) + origin.getY()) / scale);
-                if (zoom.width < 2 *  controller.getSnapGrid()) {
+                if (zoom.width == 0) {
                     rescale(scale * 2f, updated);
                 } else {
                     rescale(scale * ((float) size.getWidth() / (float) zoom.width), updated);
                 }
-
                 controller.debug("Zoom: %.1fx scale, centre (%.1f, %.1f) via click at (%d, %d)",
                         scale, centre.getX(), centre.getY(), (int) (zoom.x + (zoom.width / 2d)), (int) (zoom.y + (zoom.height / 2d)));
 
