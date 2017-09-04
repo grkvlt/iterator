@@ -695,9 +695,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             if (controller.getRender().isDensity()) {
                 tasks.add(executor.submit(() -> {
                     do {
+                        BufferedImage old = image.get();
                         BufferedImage plot = newImage(getSize());
                         plotDensity(plot, 1, controller.getRender(), controller.getMode());
-                        image.set(plot);
+                        image.compareAndSet(old, plot);
                     } while (isRunning());
                 }));
             }
@@ -843,7 +844,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         if (SwingUtilities.isLeftMouseButton(e)) {
             if (zoom != null) {
                 stop();
-                image.set(null);
 
                 // Calculate new centre point and scale
                 Point2D origin = new Point2D.Double((centre.getX() * scale) - (size.getWidth() / 2d), (centre.getY() * scale) - (size.getHeight() / 2d));
