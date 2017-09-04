@@ -95,6 +95,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -897,9 +899,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void debug(String format, Object...varargs) {
-        if (isDebug()) {
-            output(System.err, DEBUG + format, varargs);
-        }
+        output(isDebug() ? System.out : System.err, DEBUG + format, varargs);
     }
 
     public void error(String format, Object...varargs) {
@@ -929,6 +929,23 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             System.err.println(trace);
         }
         System.exit(1);
+    }
+
+    public void timestamp(String format, Object...varargs) {
+        String message = String.format(format,  varargs);
+        String timestamp = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now());
+        debug("%s at %s", message, timestamp);
+    }
+
+    public void dumpStack() {
+        List<StackTraceElement> stack = Arrays.asList(Thread.getAllStackTraces().get(Thread.currentThread()));
+        String trace = stack.stream()
+                .skip(3)
+                .map(e -> String.format("  %s.%s(%s:%d)", e.getClassName(), e.getMethodName(), e.getFileName(), e.getLineNumber()))
+                .map(STACK::concat)
+                .collect(Collectors.joining(NEWLINE));
+        timestamp("Dumping stack");
+        System.err.println(trace);
     }
 
     public void print(String format, Object...varargs) {
@@ -986,6 +1003,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         SwingUtilities.invokeLater(() -> {
             Explorer explorer = new Explorer(argv);
             explorer.print("Starting Explorer UI");
+            explorer.timestamp("Started");
             explorer.start();
         });
     }
