@@ -73,6 +73,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -116,7 +117,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private final Messages messages;
 
     private IFS ifs;
-    private BufferedImage image;
+    private AtomicReference<BufferedImage> image = new AtomicReference<>();
     private int top[];
     private long density[];
     private double colour[];
@@ -249,8 +250,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-            if (image != null) {
-                g.drawImage(image, new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
+            if (getImage() != null) {
+                g.drawImage(getImage(), new AffineTransformOp(new AffineTransform(), AffineTransformOp.TYPE_BILINEAR), 0, 0);
             }
 
             if (zoom != null) {
@@ -396,7 +397,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public void reset() {
         if (size.getWidth() <= 0 && size.getHeight() <= 0) return;
 
-        image = newImage(getSize());
+        image.set(newImage(getSize()));
 
         points[0] = random.nextInt(size.width);
         points[1] = random.nextInt(size.height);
@@ -420,9 +421,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         return image;
     }
 
+    public BufferedImage getImage() {
+        return image.get();
+    }
+
     public void save(File file) {
         try {
-            ImageIO.write(image, "png", file);
+            ImageIO.write(getImage(), "png", file);
 
             controller.debug("File %s: %d transforms/%d reflections: %.1fx scale at (%.2f, %.2f) with %,dK iterations",
                     file.getName(), ifs.getTransforms().size(), ifs.getReflections().size(),
@@ -658,7 +663,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         String name = Thread.currentThread().getName();
         controller.debug("Started task %s", name);;
         do {
-            iterate(image, 1, controller.getIterations(), scale, centre, controller.getRender(), controller.getMode());
+            iterate(getImage(), 1, controller.getIterations(), scale, centre, controller.getRender(), controller.getMode());
         } while (isRunning());
         controller.debug("Stopped task %s", name);;
         return null;
@@ -686,7 +691,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     do {
                         BufferedImage plot = newImage(getSize());
                         plotDensity(plot, 1, controller.getRender(), controller.getMode());
-                        context(controller, image.getGraphics(), g -> g.drawImage(plot, 0, 0, null));
+                        image.set(plot);
                     } while (isRunning());
                 }));
             }
