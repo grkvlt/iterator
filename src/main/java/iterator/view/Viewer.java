@@ -64,12 +64,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -91,6 +89,9 @@ import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.math.LongMath;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 
 import iterator.Explorer;
 import iterator.dialog.Zoom;
@@ -110,7 +111,7 @@ import iterator.util.Subscriber;
 /**
  * Rendered IFS viewer.
  */
-public class Viewer extends JPanel implements ActionListener, KeyListener, MouseInputListener, Printable, Subscriber, Callable<Void>, ThreadFactory {
+public class Viewer extends JPanel implements ActionListener, KeyListener, MouseInputListener, Printable, Subscriber, Runnable, ThreadFactory {
 
     private final Explorer controller;
     private final EventBus bus;
@@ -124,17 +125,18 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private long max;
     private Timer timer;
     private double points[] = new double[4];
-    private AtomicLong count = new AtomicLong(0);
+    private AtomicLong count = new AtomicLong(0l);
     private AtomicInteger task = new AtomicInteger(0);
     private AtomicBoolean running = new AtomicBoolean(false);
+    private AtomicLong token = new AtomicLong(0l);
     private Random random = new Random();
     private float scale = 1.0f;
     private Point2D centre;
     private Dimension size;
     private Rectangle zoom;
     private ThreadGroup group = new ThreadGroup("iterator");
-    private ExecutorService executor = Executors.newCachedThreadPool(this);
-    private List<Future<?>> tasks = Lists.newArrayList();
+    private ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool(this));
+    private CopyOnWriteArrayList<Future<?>> tasks = Lists.newCopyOnWriteArrayList();
     private boolean overlay, info, grid;
     private JPopupMenu viewer;
     private Zoom properties;
@@ -272,14 +274,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             if (info) {
                 FloatFormatter one = Formatter.floats(1);
                 DoubleFormatter four = Formatter.doubles(4);
-                String scaleText = String.format("%sx (%s,%s) %s/%s %s y%s (%s)",
+                String scaleText = String.format("%sx (%s,%s) %s/%s %s y%s [%s]",
                         one.toString(scale),
                         four.toString(centre.getX() / size.getWidth()),
                         four.toString(centre.getY() / size.getHeight()),
                         controller.getMode(), controller.getRender(),
                         controller.hasPalette() ? controller.getPaletteFile() : (controller.isColour() ? "hsb" : "black"),
                         one.toString(controller.getGamma()),
-                        isRunning() ? Long.toString(tasks.stream().filter(t -> !t.isDone()).count()) : "-");
+                        tasks.isEmpty() ? "-" : Integer.toString(tasks.size()));
                 String countText = String.format("%,dK", count.get()).replaceAll("[^0-9K+]", " ");
 
                 g.setPaint(controller.getRender().getForeground());
@@ -662,17 +664,21 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     /**
      * Called as a task to render the IFS.
      *
-     * @see java.util.concurrent.Callable#call()
+     * @see java.lang.Runnable#run()
      */
     @Override
-    public Void call() {
+    public void run() {
+        task(() -> iterate(getImage(), 1, controller.getIterations(), scale, centre, controller.getRender(), controller.getMode()));
+    }
+
+    public void task(Runnable task) {
+        long initial = token.get();
         String name = Thread.currentThread().getName();
-        controller.debug("Started task %s", name);;
+        controller.debug("Started task %s", name);
         do {
-            iterate(getImage(), 1, controller.getIterations(), scale, centre, controller.getRender(), controller.getMode());
-        } while (isRunning());
-        controller.debug("Stopped task %s", name);;
-        return null;
+            task.run();
+        } while (token.get() == initial);
+        controller.debug("Stopped task %s", name);
     }
 
     /** @see java.util.concurrent.ThreadFactory#newThread(Runnable) */
@@ -688,19 +694,26 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         if (running.compareAndSet(false, true)) {
             controller.debug("Starting");
             loop = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
-            tasks.clear();
+            Runnable listener = () -> {
+                tasks.removeIf(f -> f.isDone());
+                repaint();
+            };
             for (int i = 0; i < controller.getThreads() - (controller.getRender().isDensity() ? 1 : 0); i++) {
-                tasks.add(executor.submit(this));
+                ListenableFuture<?> future = executor.submit(this);
+                future.addListener(listener, executor);
+                tasks.add(future);
             }
             if (controller.getRender().isDensity()) {
-                tasks.add(executor.submit(() -> {
-                    do {
+                ListenableFuture<?> future = executor.submit(() -> {
+                    task(() -> {
                         BufferedImage old = image.get();
                         BufferedImage plot = newImage(getSize());
                         plotDensity(plot, 1, controller.getRender(), controller.getMode());
                         image.compareAndSet(old, plot);
-                    } while (isRunning());
-                }));
+                    });
+                });
+                future.addListener(listener, executor);
+                tasks.add(future);
             }
             pause.setEnabled(true);
             resume.setEnabled(false);
@@ -713,18 +726,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         boolean stopped = running.compareAndSet(true, false);
         if (stopped) {
             controller.debug("Stopping");
+            token.incrementAndGet();
             timer.stop();
-            for (Future<?> task : tasks) {
-                task.cancel(true);
-            }
-            tasks.clear();
-            try {
-                boolean result = executor.awaitTermination(1, TimeUnit.SECONDS);
-                controller.debug("Executor %s all tasks", result ? "stopped" : "failed to stop");;
-            } catch (InterruptedException e) {
-                Thread.interrupted();
-                controller.debug("Executor interrupted while stopping tasks");
-            }
             pause.setEnabled(false);
             resume.setEnabled(true);
             loop.exit();
