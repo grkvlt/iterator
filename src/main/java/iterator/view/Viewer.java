@@ -22,6 +22,7 @@ import static iterator.Utils.RGB24;
 import static iterator.Utils.SOLID_LINE_2;
 import static iterator.Utils.alpha;
 import static iterator.Utils.calibri;
+import static iterator.Utils.clamp;
 import static iterator.Utils.context;
 import static iterator.Utils.unity;
 import static iterator.Utils.weight;
@@ -63,8 +64,9 @@ import java.awt.print.PrinterException;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
@@ -86,9 +88,13 @@ import javax.swing.event.MouseInputListener;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.math.LongMath;
+import com.google.common.util.concurrent.Atomics;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -99,6 +105,7 @@ import iterator.model.Function;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
+import iterator.util.Config;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Dialog;
@@ -113,12 +120,14 @@ import iterator.util.Subscriber;
  */
 public class Viewer extends JPanel implements ActionListener, KeyListener, MouseInputListener, Printable, Subscriber, Runnable, ThreadFactory {
 
+    private static enum Task { ITERATE, PLOT_DENSITY }
+
     private final Explorer controller;
     private final EventBus bus;
     private final Messages messages;
 
     private IFS ifs;
-    private AtomicReference<BufferedImage> image = new AtomicReference<>();
+    private AtomicReference<BufferedImage> image = Atomics.newReference();
     private int top[];
     private long density[];
     private double colour[];
@@ -136,13 +145,27 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private Rectangle zoom;
     private ThreadGroup group = new ThreadGroup("iterator");
     private ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool(this));
-    private CopyOnWriteArrayList<Future<?>> tasks = Lists.newCopyOnWriteArrayList();
+    private Multimap<Task, Future<?>> tasks = Multimaps.synchronizedListMultimap(Multimaps.newListMultimap(Maps.newHashMap(), Lists::newArrayList));
+    private ConcurrentMap<Future<?>, AtomicBoolean> state = Maps.newConcurrentMap();
     private boolean overlay, info, grid;
     private JPopupMenu viewer;
     private Zoom properties;
     private JCheckBoxMenuItem showGrid, showOverlay, showInfo;
     private JMenuItem pause, resume;
     private SecondaryLoop loop;
+
+    // Listener task to clean up task state collections
+    private Runnable cleaner = () -> {
+            synchronized (tasks) {
+                List<Future<?>> done = tasks.values()
+                        .stream()
+                        .filter(f -> f.isDone())
+                        .collect(Collectors.toList());
+                tasks.values().removeAll(done);
+                state.keySet().removeAll(done);
+            }
+            repaint();
+        };
 
     public Viewer(Explorer controller) {
         super();
@@ -274,14 +297,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             if (info) {
                 FloatFormatter one = Formatter.floats(1);
                 DoubleFormatter four = Formatter.doubles(4);
-                String scaleText = String.format("%sx (%s,%s) %s/%s %s y%s [%s]",
+                String scaleText = String.format("%sx (%s,%s) %s/%s %s y%s [%s/%d]",
                         one.toString(scale),
                         four.toString(centre.getX() / size.getWidth()),
                         four.toString(centre.getY() / size.getHeight()),
                         controller.getMode(), controller.getRender(),
                         controller.hasPalette() ? controller.getPaletteFile() : (controller.isColour() ? "hsb" : "black"),
                         one.toString(controller.getGamma()),
-                        tasks.isEmpty() ? "-" : Integer.toString(tasks.size()));
+                        tasks.isEmpty() ? "-" : Integer.toString(tasks.size()), controller.getThreads());
                 String countText = String.format("%,dK", count.get()).replaceAll("[^0-9K+]", " ");
 
                 g.setPaint(controller.getRender().getForeground());
@@ -610,14 +633,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             int rgb[] = new int[3];
             float gamma = controller.getGamma();
             Rectangle rect = new Rectangle(0, 0, r, r);
-            int n = 0;
             for (int x = 0; x < size.width; x++) {
                 for (int y = 0; y < size.height; y++) {
                     int p = x + y * size.width;
                     double ratio = unity().apply(log ? Math.log(density[p]) / Math.log(max) : (double) density[p] / (double) max);
                     float gray = (float) Math.pow(invert ? ratio : 1d - ratio, gamma);
                     if (ratio > 0.05d) {
-                        n++;
                         if (mode.isColour()) {
                             int color = (int) (colour[p] * RGB24);
                             rgb[0] = (color >> 16) & 0xff;
@@ -668,17 +689,29 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
      */
     @Override
     public void run() {
-        task(() -> iterate(getImage(), 1, controller.getIterations(), scale, centre, controller.getRender(), controller.getMode()));
+        iterate(getImage(), 1, controller.getIterations(), scale, centre, controller.getRender(), controller.getMode());
     }
 
-    public void task(Runnable task) {
-        long initial = token.get();
-        String name = Thread.currentThread().getName();
-        controller.debug("Started task %s", name);
-        do {
-            task.run();
-        } while (token.get() == initial);
-        controller.debug("Stopped task %s", name);
+    public Runnable task(AtomicBoolean cancel, Runnable task) {
+        return () -> {
+            long initial = token.get();
+            String name = Thread.currentThread().getName();
+            controller.debug("Started task %s", name);
+            do {
+                task.run();
+            } while (!cancel.get() && token.get() == initial);
+            controller.debug("Stopped task %s", name);
+        };
+    }
+
+    public void submit(Task type, Runnable task) {
+        AtomicBoolean cancel = new AtomicBoolean(false);
+        ListenableFuture<?> future = executor.submit(task(cancel, task));
+        future.addListener(cleaner, executor);
+        synchronized (tasks) {
+            tasks.put(type, future);
+            state.put(future, cancel);
+        }
     }
 
     /** @see java.util.concurrent.ThreadFactory#newThread(Runnable) */
@@ -694,26 +727,16 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         if (running.compareAndSet(false, true)) {
             controller.debug("Starting");
             loop = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
-            Runnable listener = () -> {
-                tasks.removeIf(f -> f.isDone());
-                repaint();
-            };
             for (int i = 0; i < controller.getThreads() - (controller.getRender().isDensity() ? 1 : 0); i++) {
-                ListenableFuture<?> future = executor.submit(this);
-                future.addListener(listener, executor);
-                tasks.add(future);
+                submit(Task.ITERATE, this);
             }
             if (controller.getRender().isDensity()) {
-                ListenableFuture<?> future = executor.submit(() -> {
-                    task(() -> {
+                submit(Task.PLOT_DENSITY, () -> {
                         BufferedImage old = image.get();
                         BufferedImage plot = newImage(getSize());
                         plotDensity(plot, 1, controller.getRender(), controller.getMode());
                         image.compareAndSet(old, plot);
                     });
-                });
-                future.addListener(listener, executor);
-                tasks.add(future);
             }
             pause.setEnabled(true);
             resume.setEnabled(false);
@@ -727,6 +750,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         if (stopped) {
             controller.debug("Stopping");
             token.incrementAndGet();
+            synchronized (tasks) {
+                state.values().forEach(b -> b.compareAndSet(false, true));
+            }
             timer.stop();
             pause.setEnabled(false);
             resume.setEnabled(true);
@@ -786,6 +812,32 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     break;
                 case KeyEvent.VK_G:
                     setGrid(!grid);
+                    break;
+                case KeyEvent.VK_UP:
+                    int increased = clamp(Config.MIN_THREADS, Runtime.getRuntime().availableProcessors()).apply(controller.getThreads() + 1);
+                    if (increased > controller.getThreads()) {
+                        controller.setThreads(increased);
+                        if (isRunning()) {
+                            submit(Task.ITERATE, this);
+                        }
+                        repaint();
+                    }
+                    break;
+                case KeyEvent.VK_DOWN:
+                    int decreased = clamp(Config.MIN_THREADS, Runtime.getRuntime().availableProcessors()).apply(controller.getThreads() - 1);
+                    if (decreased < controller.getThreads()) {
+                        controller.setThreads(decreased);
+                        if (isRunning()) {
+                            synchronized (tasks) {
+                                Optional<Future<?>> cancel = tasks.get(Task.ITERATE)
+                                        .stream()
+                                        .filter(f -> !f.isDone())
+                                        .findFirst();
+                                cancel.ifPresent(f -> state.get(f).set(true));
+                            }
+                        }
+                        repaint();
+                    }
                     break;
             }
         }
