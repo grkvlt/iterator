@@ -478,6 +478,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             int m = reflections.size();
             int l = size.width * size.height;
             float hsb[] = new float[3];
+            Rectangle rect = new Rectangle(0, 0, s, s);
 
             for (long i = 0l; i < k; i++) {
                 if (i % 1000l == 0l) {
@@ -588,7 +589,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
                     // Paint pixels unless using density rendering
                     if (!render.isDensity()) {
-                        Rectangle rect = new Rectangle(x, y, s, s);
+                        // Apply controller gamma correction
+                        Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
+                        g.setPaint(alpha(new Color(Color.HSBtoRGB(hsb[0], hsb[1], (float) Math.pow(hsb[2], controller.getGamma()))), color.getAlpha()));
+                        rect.setLocation(x, y);
                         g.fill(rect);
                     }
                 }
@@ -603,6 +607,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             float hsb[] = new float[3];
             int rgb[] = new int[3];
             float gamma = controller.getGamma();
+            Rectangle rect = new Rectangle(0, 0, r, r);
             int n = 0;
             for (int x = 0; x < size.width; x++) {
                 for (int y = 0; y < size.height; y++) {
@@ -632,8 +637,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         } else {
                             g.setPaint(new Color(gray, gray, gray, (float) ratio));
                         }
-                        int side = (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) ? (int) ((invert ? ratio : 1d - ratio) * r * 4f) : r;
-                        Rectangle rect = new Rectangle(x, y, side, side);
+                        int s = (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) ? (int) ((invert ? ratio : 1d - ratio) * r * 4f) : r;
+                        rect.setLocation(x, y);
+                        rect.setSize(s, s);
                         g.fill(rect);
                     }
                 }
@@ -837,6 +843,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         if (SwingUtilities.isLeftMouseButton(e)) {
             if (zoom != null) {
                 stop();
+                image.set(null);
 
                 // Calculate new centre point and scale
                 Point2D origin = new Point2D.Double((centre.getX() * scale) - (size.getWidth() / 2d), (centre.getY() * scale) - (size.getHeight() / 2d));
