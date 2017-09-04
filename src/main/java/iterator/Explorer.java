@@ -702,16 +702,16 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 export.setEnabled(true);
                 print.setEnabled(true);
                 if (!fullScreen) setResizable(false);
+                editor.stop();
                 viewer.reset();
                 viewer.start();
-                editor.stop();
                 break;
             case DETAILS:
                 export.setEnabled(false);
                 print.setEnabled(true);
                 if (!fullScreen) setResizable(true);
-                viewer.stop();
                 editor.stop();
+                viewer.stop();
                 break;
             case EDITOR:
                 export.setEnabled(false);
