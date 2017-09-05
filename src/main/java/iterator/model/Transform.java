@@ -18,6 +18,7 @@ package iterator.model;
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.util.Arrays;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -55,9 +56,9 @@ public class Transform implements Function {
     @XmlAttribute(required = false)
     public Double weight;
     @XmlAttribute
-    private double sw;
+    private int sw;
     @XmlAttribute
-    private double sh;
+    private int sh;
     @XmlAttribute(required = false)
     private double matrix[] = null;
 
@@ -72,8 +73,8 @@ public class Transform implements Function {
     private Transform(int id, int zIndex, Dimension size) {
         this.id = id;
         this.zIndex = zIndex;
-        this.sw = size.getWidth();
-        this.sh = size.getHeight();
+        this.sw = size.width;
+        this.sh = size.height;
         this.x = 0d;
         this.y = 0d;
         this.w = 0d;
@@ -104,13 +105,17 @@ public class Transform implements Function {
     }
 
     public void duplicate(Transform original) {
-        this.x = original.x;
-        this.y = original.y;
-        this.w = original.w;
-        this.h = original.h;
-        this.r = original.r;
-        this.shx = original.shx;
-        this.shy = original.shy;
+        if (original.isMatrix()) {
+            this.matrix = Arrays.copyOf(original.matrix, matrix.length);
+        } else {
+            this.x = original.x;
+            this.y = original.y;
+            this.w = original.w;
+            this.h = original.h;
+            this.r = original.r;
+            this.shx = original.shx;
+            this.shy = original.shy;
+        }
         this.weight = original.weight;
     }
 
@@ -134,11 +139,11 @@ public class Transform implements Function {
 
     @Override
     public Dimension getSize() {
-        return new Dimension((int) sw, (int) sh);
+        return new Dimension(sw, sh);
     }
 
     public void setMatrix(double[] matrix) {
-        this.matrix = matrix;
+        this.matrix = Arrays.copyOf(matrix, matrix.length);
         this.x = null;
         this.y = null;
         this.w = null;
@@ -155,14 +160,14 @@ public class Transform implements Function {
     }
 
     public Double getWeight() {
-        return weight != null ? weight : getTransform().getDeterminant();
+        return weight != null ? weight : getDeterminant();
     }
 
     @Override
     public void setSize(Dimension size) {
         Point2D scale = new Point2D.Double(size.getWidth() / sw, size.getHeight() / sh);
-        sw = size.getWidth();
-        sh = size.getHeight();
+        sw = size.width;
+        sh = size.height;
 
         if (isMatrix()) {
             AffineTransform transform = getTransform();
@@ -246,8 +251,6 @@ public class Transform implements Function {
                 .omitNullValues()
                 .add("id", id)
                 .add("zIndex", zIndex)
-                .add("sw", sw)
-                .add("sh", sh)
                 .add("x", x)
                 .add("y", y)
                 .add("w", w)
@@ -255,6 +258,7 @@ public class Transform implements Function {
                 .add("r", r)
                 .add("shx", shx)
                 .add("shy", shy)
+                .add("weight", weight)
                 .add("matrix", matrix)
                 .toString();
     }

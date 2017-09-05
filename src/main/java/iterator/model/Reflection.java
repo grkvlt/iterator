@@ -132,8 +132,7 @@ public class Reflection implements Function {
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .omitNullValues()
-                .add("sw", sw)
-                .add("sh", sh)
+                .add("id", id)
                 .add("x", x)
                 .add("y", y)
                 .add("r", r)
