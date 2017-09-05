@@ -18,6 +18,7 @@ package iterator;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static iterator.Utils.saveImage;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
@@ -305,7 +306,7 @@ public class Animator implements Subscriber {
                 } else {
                     Thread.sleep(delay);
                 }
-                viewer.save(new File(output, String.format("%04d.png", frame++)));
+                saveImage(viewer.getImage(), new File(output, String.format("%04d.png", frame++)));
             }
         }
 

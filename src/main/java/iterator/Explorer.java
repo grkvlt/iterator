@@ -16,7 +16,10 @@
 package iterator;
 
 import static iterator.Utils.NEWLINE;
+import static iterator.Utils.checkbox;
 import static iterator.Utils.loadImage;
+import static iterator.Utils.menuItem;
+import static iterator.Utils.saveImage;
 import static iterator.util.Config.DEBUG_PROPERTY;
 import static iterator.util.Config.DEFAULT_GAMMA;
 import static iterator.util.Config.DEFAULT_GRID_MAX;
@@ -74,7 +77,6 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.SplashScreen;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
@@ -106,7 +108,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -425,138 +426,108 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         menuBar = new JMenuBar();
         JMenu file = new JMenu(messages.getText(MENU_FILE));
         if (platform != Platform.MAC_OS_X) {
-            file.add(new AbstractAction(messages.getText(MENU_FILE_ABOUT)) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Dialog.show(() -> about);
-                }
-            });
+            file.add(menuItem(messages.getText(MENU_FILE_ABOUT), e -> {
+                Dialog.show(() -> about);
+            }));
         }
-        JMenuItem newIfs = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_NEW)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                IFS untitled = new IFS();
-                show(EDITOR);
-                bus.post(untitled);
-                getEditor().resetImage();
-            }
+        JMenuItem newIfs = menuItem(messages.getText(MENU_FILE_NEW), e -> {
+            IFS untitled = new IFS();
+            show(EDITOR);
+            bus.post(untitled);
+            getEditor().resetImage();
         });
         newIfs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         file.add(newIfs);
-        JMenuItem open = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_OPEN)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                FileNameExtensionFilter filter = new FileNameExtensionFilter(messages.getText(DIALOG_FILES_XML), "xml");
-                JFileChooser chooser = new JFileChooser();
-                chooser.setCurrentDirectory(cwd);
-                chooser.setFileFilter(filter);
-                int result = chooser.showOpenDialog(null);
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    IFS loaded = load(chooser.getSelectedFile());
-                    loaded.setSize(size);
-                    show(EDITOR);
-                    bus.post(loaded);
-                }
+        JMenuItem open = menuItem(messages.getText(MENU_FILE_OPEN), e -> {
+            FileNameExtensionFilter filter = new FileNameExtensionFilter(messages.getText(DIALOG_FILES_XML), "xml");
+            JFileChooser chooser = new JFileChooser();
+            chooser.setCurrentDirectory(cwd);
+            chooser.setFileFilter(filter);
+            int result = chooser.showOpenDialog(null);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                IFS loaded = load(chooser.getSelectedFile());
+                loaded.setSize(size);
+                show(EDITOR);
+                bus.post(loaded);
             }
         });
         open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         file.add(open);
-        save = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_SAVE)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (ifs.getName() == null) {
-                    saveAs.doClick();
-                } else {
-                    File saveAs = new File(cwd, ifs.getName() + ".xml");
-                    save(saveAs);
-                    save.setEnabled(false);
-                }
+        save = menuItem(messages.getText(MENU_FILE_SAVE), e -> {
+            if (ifs.getName() == null) {
+                saveAs.doClick();
+            } else {
+                File saveAs = new File(cwd, ifs.getName() + ".xml");
+                save(saveAs);
+                save.setEnabled(false);
             }
         });
         save.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         save.setEnabled(false);
         file.add(save);
-        saveAs = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_SAVE_AS)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                File file = new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".xml");
-                saveDialog(file, DIALOG_FILES_XML, "xml", f -> {
-                    ifs.setName(f.getName().replace(".xml", ""));
-                    save(f);
-                    bus.post(ifs);
-                });
-            }
+        saveAs = menuItem(messages.getText(MENU_FILE_SAVE_AS), e -> {
+            File target = new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".xml");
+            saveDialog(target, DIALOG_FILES_XML, "xml", f -> {
+                ifs.setName(f.getName().replace(".xml", ""));
+                save(f);
+                bus.post(ifs);
+            });
         });
         saveAs.setEnabled(false);
         file.add(saveAs);
-        export = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_EXPORT)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                File file = new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".png");
-                saveDialog(file, DIALOG_FILES_PNG, "png", f -> {
-                    viewer.save(f);
-                });
-            }
+        export = menuItem(messages.getText(MENU_FILE_EXPORT), e -> {
+            File target = new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".png");
+            saveDialog(target, DIALOG_FILES_PNG, "png", f -> {
+                saveImage(viewer.getImage(), f);
+            });
         });
         export.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         file.add(export);
-        print = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_PRINT)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                pauseViewer(() -> {
-                    PrinterJob job = PrinterJob.getPrinterJob();
-                    job.setJobName(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
-                    PageFormat pf = job.defaultPage();
-                    if (getWidth() > getHeight()) {
-                        pf.setOrientation(PageFormat.LANDSCAPE);
-                    } else {
-                        pf.setOrientation(PageFormat.PORTRAIT);
+        print = menuItem(messages.getText(MENU_FILE_PRINT), e -> {
+            pauseViewer(() -> {
+                PrinterJob job = PrinterJob.getPrinterJob();
+                job.setJobName(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
+                PageFormat pf = job.defaultPage();
+                if (getWidth() > getHeight()) {
+                    pf.setOrientation(PageFormat.LANDSCAPE);
+                } else {
+                    pf.setOrientation(PageFormat.PORTRAIT);
+                }
+                switch (current) {
+                    case VIEWER:
+                        job.setPrintable(viewer, pf);
+                        break;
+                    case DETAILS:
+                        job.setPrintable(details, pf);
+                        break;
+                }
+                boolean ok = job.printDialog();
+                if (ok) {
+                    try {
+                        job.print();
+                    } catch (PrinterException pe) {
+                        Throwables.propagate(pe);
                     }
-                    switch (current) {
-                        case VIEWER:
-                            job.setPrintable(viewer, pf);
-                            break;
-                        case DETAILS:
-                            job.setPrintable(details, pf);
-                            break;
-                    }
-                    boolean ok = job.printDialog();
-                    if (ok) {
-                        try {
-                            job.print();
-                        } catch (PrinterException pe) {
-                            Throwables.propagate(pe);
-                        }
-                    }
-                });
-            }
+                }
+            });
         });
         print.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         print.setEnabled(false);
         file.add(print);
         if (platform != Platform.MAC_OS_X) {
-            file.add(new AbstractAction(messages.getText(MENU_FILE_PREFERENCES)) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Dialog.show(() -> prefs);
-                }
-            });
+            file.add(menuItem(messages.getText(MENU_FILE_PREFERENCES), e -> {
+                Dialog.show(() -> prefs);
+            }));
         }
-        file.add(new AbstractAction(messages.getText(MENU_FILE_PREFERENCES_SAVE)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                File file = Optional.fromNullable(override).or(new File(Config.PROPERTIES_FILE));
-                saveDialog(file, DIALOG_FILES_PROPERTIES, "properties", f -> {
-                    config.save(f);
-                });
-            }
-        });
+        file.add(menuItem(messages.getText(MENU_FILE_PREFERENCES_SAVE), e -> {
+            File target = Optional.fromNullable(override).or(new File(Config.PROPERTIES_FILE));
+            saveDialog(target, DIALOG_FILES_PROPERTIES, "properties", f -> {
+                config.save(f);
+            });
+        }));
         if (platform != Platform.MAC_OS_X) {
-            JMenuItem quit = new JMenuItem(new AbstractAction(messages.getText(MENU_FILE_QUIT)) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    System.exit(0);
-                }
+            JMenuItem quit = menuItem(messages.getText(MENU_FILE_QUIT), e -> {
+                System.exit(0);
             });
             quit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
             file.add(quit);
@@ -565,27 +536,18 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
         JMenu system = new JMenu(messages.getText(MENU_DISPLAY));
         ButtonGroup displayGroup = new ButtonGroup();
-        showEditor = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_DISPLAY_EDITOR)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                show(EDITOR);
-            }
+        showEditor = checkbox(messages.getText(MENU_DISPLAY_EDITOR), e -> {
+            show(EDITOR);
         });
         system.add(showEditor);
         displayGroup.add(showEditor);
-        showViewer = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_DISPLAY_VIEWER)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                show(VIEWER);
-            }
+        showViewer = checkbox(messages.getText(MENU_DISPLAY_VIEWER), e -> {
+            show(VIEWER);
         });
         system.add(showViewer);
         displayGroup.add(showViewer);
-        showDetails = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_DISPLAY_DETAILS)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                show(DETAILS);
-            }
+        showDetails = checkbox(messages.getText(MENU_DISPLAY_DETAILS), e -> {
+            show(DETAILS);
         });
         system.add(showDetails);
         displayGroup.add(showDetails);

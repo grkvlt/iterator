@@ -24,6 +24,7 @@ import static iterator.Utils.alpha;
 import static iterator.Utils.calibri;
 import static iterator.Utils.concatenate;
 import static iterator.Utils.context;
+import static iterator.Utils.menuItem;
 import static iterator.Utils.weight;
 import static iterator.util.Messages.MENU_EDITOR_NEW_IFS;
 import static iterator.util.Messages.MENU_EDITOR_NEW_REFLECTION;
@@ -65,8 +66,6 @@ import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -85,7 +84,6 @@ import iterator.dialog.Properties;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
-import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Dialog;
 import iterator.util.Formatter;
@@ -103,7 +101,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
     private final Messages messages;
 
     private JPopupMenu transformMenu, reflectionMenu, editor;
-    private Action properties;
+    private JMenuItem properties;
 
     private Timer timer;
     private BufferedImage image;
@@ -125,134 +123,95 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         timer.setCoalesce(true);
 
         transformMenu = new JPopupMenu();
-        properties = new AbstractAction(messages.getText(MENU_TRANSFORM_PROPERTIES)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Dialog.show(() -> new Properties(selected, ifs, controller));
-            }
-        };
+        properties = menuItem(messages.getText(MENU_TRANSFORM_PROPERTIES), e -> {
+            Dialog.show(() -> new Properties(selected, ifs, controller));
+        });
         transformMenu.add(properties);
-        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_MATRIX)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Dialog.show(() -> new Matrix(selected, ifs, controller));
+        transformMenu.add(menuItem(messages.getText(MENU_TRANSFORM_MATRIX), e -> {
+            Dialog.show(() -> new Matrix(selected, ifs, controller));
+        }));
+        transformMenu.add(menuItem(messages.getText(MENU_TRANSFORM_DELETE), e -> {
+            ifs.getTransforms().remove(selected);
+            selected = null;
+            bus.post(ifs);
+        }));
+        transformMenu.add(menuItem(messages.getText(MENU_TRANSFORM_DUPLICATE), e -> {
+            Transform copy = Transform.create(getSize());
+            if (selected.isMatrix()) {
+                double[] matrix = new double[6];
+                AffineTransform tmp = selected.getTransform();
+                tmp.translate(controller.getMinGrid(), controller.getMinGrid());
+                tmp.getMatrix(matrix);
+                copy.setMatrix(matrix);
+            } else {
+                copy.duplicate(selected);
+                copy.x += controller.getMinGrid();
+                copy.y += controller.getMinGrid();
             }
-        });
-        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_DELETE)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ifs.getTransforms().remove(selected);
-                selected = null;
-                bus.post(ifs);
-            }
-        });
-        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_DUPLICATE)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Transform copy = Transform.create(getSize());
-                if (selected.isMatrix()) {
-                    double[] matrix = new double[6];
-                    AffineTransform tmp = selected.getTransform();
-                    tmp.translate(controller.getMinGrid(), controller.getMinGrid());
-                    tmp.getMatrix(matrix);
-                    copy.setMatrix(matrix);
-                } else {
-                    copy.duplicate(selected);
-                    copy.x += controller.getMinGrid();
-                    copy.y += controller.getMinGrid();
-                }
-                ifs.add(copy);
-                selected = copy;
-                bus.post(ifs);
-            }
-        });
+            ifs.add(copy);
+            selected = copy;
+            bus.post(ifs);
+        }));
         JMenuItem separator = new JMenuItem("-");
         separator.setEnabled(false);
         transformMenu.add(separator);
-        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_RAISE)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selected.setZIndex(selected.getZIndex() + 1);
-                bus.post(ifs);
-            }
-        });
-        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_LOWER)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selected.setZIndex(selected.getZIndex() - 1);
-                bus.post(ifs);
-            }
-        });
-        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_FRONT)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selected.setZIndex(Ordering.from(IFS.Z_ORDER).max(ifs.getTransforms()).getZIndex() + 1);
-                bus.post(ifs);
-            }
-        });
-        transformMenu.add(new AbstractAction(messages.getText(MENU_TRANSFORM_BACK)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selected.setZIndex(Ordering.from(IFS.Z_ORDER).min(ifs.getTransforms()).getZIndex() - 1);
-                bus.post(ifs);
-            }
-        });
+        transformMenu.add(menuItem(messages.getText(MENU_TRANSFORM_RAISE), e -> {
+            selected.setZIndex(selected.getZIndex() + 1);
+            bus.post(ifs);
+        }));
+        transformMenu.add(menuItem(messages.getText(MENU_TRANSFORM_LOWER), e -> {
+            selected.setZIndex(selected.getZIndex() - 1);
+            bus.post(ifs);
+        }));
+        transformMenu.add(menuItem(messages.getText(MENU_TRANSFORM_FRONT), e -> {
+            selected.setZIndex(Ordering.from(IFS.Z_ORDER).max(ifs.getTransforms()).getZIndex() + 1);
+            bus.post(ifs);
+        }));
+        transformMenu.add(menuItem(messages.getText(MENU_TRANSFORM_BACK), e -> {
+            selected.setZIndex(Ordering.from(IFS.Z_ORDER).min(ifs.getTransforms()).getZIndex() - 1);
+            bus.post(ifs);
+        }));
         add(transformMenu);
 
         reflectionMenu = new JPopupMenu();
-        reflectionMenu.add(new AbstractAction(messages.getText(MENU_REFLECTION_PROPERTIES)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Dialog.show(() -> new Properties(reflection, ifs, controller));
-            }
-        });
-        reflectionMenu.add(new AbstractAction(messages.getText(MENU_REFLECTION_DELETE)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ifs.getReflections().remove(reflection);
-                reflection = null;
-                bus.post(ifs);
-            }
-        });
+        reflectionMenu.add(menuItem(messages.getText(MENU_REFLECTION_PROPERTIES), e -> {
+            Dialog.show(() -> new Properties(reflection, ifs, controller));
+        }));
+        reflectionMenu.add(menuItem(messages.getText(MENU_REFLECTION_DELETE), e -> {
+            ifs.getReflections().remove(reflection);
+            reflection = null;
+            bus.post(ifs);
+        }));
         add(reflectionMenu);
 
         editor = new JPopupMenu();
-        editor.add(new AbstractAction(messages.getText(MENU_EDITOR_NEW_IFS)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                IFS untitled = new IFS();
-                bus.post(untitled);
-                resetImage();
-            }
-        });
-        editor.add(new AbstractAction(messages.getText(MENU_EDITOR_NEW_TRANSFORM)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Transform t = Transform.create(getSize());
-                double side = getSize().getWidth() / 4d;
-                double origin = (getSize().getWidth() - side) / 2d;
-                t.x = origin;
-                t.y = origin;
-                t.w = side;
-                t.h = side;
-                t.r = 0d;
-                ifs.add(t);
-                selected = t;
-                bus.post(ifs);
-            }
-        });
-        editor.add(new AbstractAction(messages.getText(MENU_EDITOR_NEW_REFLECTION)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Reflection r = Reflection.create(getSize());
-                double origin = getSize().getWidth() / 2d;
-                r.x = origin;
-                r.y = origin;
-                r.r = 0d;
-                ifs.add(r);
-                bus.post(ifs);
-            }
-        });
+        editor.add(menuItem(messages.getText(MENU_EDITOR_NEW_IFS), e -> {
+            IFS untitled = new IFS();
+            bus.post(untitled);
+            resetImage();
+        }));
+        editor.add(menuItem(messages.getText(MENU_EDITOR_NEW_TRANSFORM), e -> {
+            Transform t = Transform.create(getSize());
+            double side = getSize().getWidth() / 4d;
+            double origin = (getSize().getWidth() - side) / 2d;
+            t.x = origin;
+            t.y = origin;
+            t.w = side;
+            t.h = side;
+            t.r = 0d;
+            ifs.add(t);
+            selected = t;
+            bus.post(ifs);
+        }));
+        editor.add(menuItem(messages.getText(MENU_EDITOR_NEW_REFLECTION), e -> {
+            Reflection r = Reflection.create(getSize());
+            double origin = getSize().getWidth() / 2d;
+            r.x = origin;
+            r.y = origin;
+            r.r = 0d;
+            ifs.add(r);
+            bus.post(ifs);
+        }));
         add(editor);
 
         addMouseListener(this);

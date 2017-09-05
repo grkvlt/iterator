@@ -21,7 +21,9 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
@@ -33,6 +35,10 @@ import java.util.function.IntFunction;
 import java.util.function.LongFunction;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
 
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Throwables;
@@ -141,6 +147,23 @@ public class Utils {
         }
     }
 
+    public static Action action(String text, Consumer<ActionEvent> action) {
+        return new AbstractAction(text) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                action.accept(e);
+            }
+        };
+    }
+
+    public static JMenuItem menuItem(String text, Consumer<ActionEvent> handler) {
+        return new JMenuItem(action(text, handler));
+    }
+
+    public static JCheckBoxMenuItem checkbox(String text, Consumer<ActionEvent> handler) {
+        return new JCheckBoxMenuItem(action(text, handler));
+    }
+
     public static Consumer<Exception> printError(Explorer controller, String message) {
         return e -> { controller.error(e, message); };
     }
@@ -165,6 +188,20 @@ public class Utils {
     public static BufferedImage loadImage(URL url) {
         try {
             return ImageIO.read(url);
+        } catch (IOException ioe) {
+            throw Throwables.propagate(ioe);
+        }
+    }
+
+    /**
+     * Saves a {@link BufferedImage} to a {@link File} as a {@literal PNG}.
+     *
+     * @param url
+     * @return the loaded image
+     */
+    public static void saveImage(BufferedImage source, File file) {
+        try {
+            ImageIO.write(source, "png", file);
         } catch (IOException ioe) {
             throw Throwables.propagate(ioe);
         }

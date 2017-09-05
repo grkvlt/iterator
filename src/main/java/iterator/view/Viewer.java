@@ -24,6 +24,8 @@ import static iterator.Utils.alpha;
 import static iterator.Utils.calibri;
 import static iterator.Utils.clamp;
 import static iterator.Utils.context;
+import static iterator.Utils.checkbox;
+import static iterator.Utils.menuItem;
 import static iterator.Utils.unity;
 import static iterator.Utils.weight;
 import static iterator.util.Messages.MENU_VIEWER_GRID;
@@ -184,48 +186,30 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
         properties = new Zoom(controller);
         viewer = new JPopupMenu();
-        viewer.add(new AbstractAction(messages.getText(MENU_VIEWER_ZOOM)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Dialog.show(() -> properties);
-            }
-        });
-        pause = new JMenuItem(new AbstractAction(messages.getText(MENU_VIEWER_PAUSE)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                stop();
-            }
+        viewer.add(menuItem(messages.getText(MENU_VIEWER_ZOOM), e -> {
+            Dialog.show(() -> properties);
+        }));
+        pause = menuItem(messages.getText(MENU_VIEWER_PAUSE), e -> {
+            stop();
         });
         viewer.add(pause);
-        resume = new JMenuItem(new AbstractAction(messages.getText(MENU_VIEWER_RESUME)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                start();
-            }
+        resume = menuItem(messages.getText(MENU_VIEWER_RESUME), e -> {
+            start();
         });
         viewer.add(resume);
         JMenuItem separator = new JMenuItem("-");
         separator.setEnabled(false);
         viewer.add(separator);
-        showGrid = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_VIEWER_GRID)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setGrid(!grid);
-            }
+        showGrid = checkbox(messages.getText(MENU_VIEWER_GRID), e -> {
+            setGrid(!grid);
         });
         viewer.add(showGrid);
-        showOverlay = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_VIEWER_OVERLAY)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setOverlay(!overlay);
-            }
+        showOverlay = checkbox(messages.getText(MENU_VIEWER_OVERLAY), e -> {
+            setOverlay(!overlay);
         });
         viewer.add(showOverlay);
-        showInfo = new JCheckBoxMenuItem(new AbstractAction(messages.getText(MENU_VIEWER_INFO)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setInfo(!info);
-            }
+        showInfo = checkbox(messages.getText(MENU_VIEWER_INFO), e -> {
+            setInfo(!info);
         });
         viewer.add(showInfo);
         add(viewer);
@@ -451,18 +435,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
     public BufferedImage getImage() {
         return image.get();
-    }
-
-    public void save(File file) {
-        try {
-            ImageIO.write(getImage(), "png", file);
-
-            controller.debug("File %s: %d transforms/%d reflections: %.1fx scale at (%.2f, %.2f) with %,dK iterations",
-                    file.getName(), ifs.getTransforms().size(), ifs.getReflections().size(),
-                    scale, centre.getX(), centre.getY(), count.get());
-        } catch (IOException e) {
-            controller.error(e,  "Error saving image file %s", file.getName());
-        }
     }
 
     /** @see java.awt.print.Printable#print(Graphics, PageFormat, int) */
