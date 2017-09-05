@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.DoubleFunction;
@@ -134,6 +135,15 @@ public class Utils {
     public static final Stroke DASHED_LINE_2 = dashed(2f, new float[] { 10f, 10f });
     public static final Stroke DOTTED_LINE_2 = dashed(2f, new float[] { 5f, 5f });
     public static final Stroke PATTERNED_LINE_2 = dashed(2f, new float[] { 15f, 10f, 5f, 10f });
+
+    public static void sleep(long duration, TimeUnit unit) {
+        long millis = unit.toMillis(duration);
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ie) {
+            Thread.interrupted();
+        }
+    }
 
     /** Perform an {@link Consumer action} with a disposable {@link Graphics2D graphics context}. */
     public static void context(Explorer controller, Graphics graphics, Consumer<Graphics2D> action) {

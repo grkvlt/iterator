@@ -26,6 +26,7 @@ import static iterator.Utils.checkbox;
 import static iterator.Utils.clamp;
 import static iterator.Utils.context;
 import static iterator.Utils.menuItem;
+import static iterator.Utils.sleep;
 import static iterator.Utils.unity;
 import static iterator.Utils.weight;
 import static iterator.util.Messages.MENU_VIEWER_GRID;
@@ -70,6 +71,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -164,6 +166,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         .collect(Collectors.toList());
                 tasks.values().removeAll(done);
                 state.keySet().removeAll(done);
+            }
+            if (tasks.isEmpty() && isRunning()) {
+                stop();
             }
             repaint();
         };
@@ -658,7 +663,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
      */
     @Override
     public void run() {
-        iterate(getImage(), 1, controller.getIterations(), scale, centre, controller.getRender(), controller.getMode());
+        if (controller.isIterationsUnlimited() || count.get() < controller.getIterationsLimit()) {
+            iterate(getImage(), 1, controller.getIterations(), scale, centre, controller.getRender(), controller.getMode());
+        } else {
+            token.incrementAndGet();
+        }
     }
 
     public Runnable task(AtomicBoolean cancel, Runnable task) {
@@ -701,11 +710,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             }
             if (controller.getRender().isDensity()) {
                 submit(Task.PLOT_DENSITY, () -> {
-                        BufferedImage old = image.get();
-                        BufferedImage plot = newImage(getSize());
-                        plotDensity(plot, 1, controller.getRender(), controller.getMode());
-                        image.compareAndSet(old, plot);
-                    });
+                    BufferedImage old = image.get();
+                    BufferedImage plot = newImage(getSize());
+                    plotDensity(plot, 1, controller.getRender(), controller.getMode());
+                    image.compareAndSet(old, plot);
+                });
             }
             pause.setEnabled(true);
             resume.setEnabled(false);
