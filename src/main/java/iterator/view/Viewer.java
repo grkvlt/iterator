@@ -556,15 +556,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                                 case LOG_DENSITY_POWER:
                                 case DENSITY_POWER:
                                 case LOG_DENSITY_POWER_INVERSE:
-                                    density[q] = LongMath.checkedMultiply(density[q], 2l);
+                                    density[q] = (long) Math.min(((double) density[q]) * 1.01d, Long.MAX_VALUE);
                                     break;
                                 default:
                                     break;
                             }
                             max = Math.max(max, density[p]);
-                        } catch (ArithmeticException ae) {
-                            controller.debug("Overflow calculating density: %s", ae.getMessage());
-                        }
+                        } catch (ArithmeticException ae) { /* ignored */ }
                     }
 
                     // Choose the colour based on the display mode
