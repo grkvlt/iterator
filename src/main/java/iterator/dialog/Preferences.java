@@ -19,6 +19,7 @@ import static iterator.util.Messages.DIALOG_PREFERENCES_BUTTON_CANCEL;
 import static iterator.util.Messages.DIALOG_PREFERENCES_BUTTON_UPDATE;
 import static iterator.util.Messages.DIALOG_PREFERENCES_DEBUG;
 import static iterator.util.Messages.DIALOG_PREFERENCES_GAMMA;
+import static iterator.util.Messages.DIALOG_PREFERENCES_ITERATIONS_LIMIT;
 import static iterator.util.Messages.DIALOG_PREFERENCES_MODE;
 import static iterator.util.Messages.DIALOG_PREFERENCES_PALETTE_FILE;
 import static iterator.util.Messages.DIALOG_PREFERENCES_PALETTE_SEED;
@@ -27,6 +28,8 @@ import static iterator.util.Messages.DIALOG_PREFERENCES_RENDER;
 import static iterator.util.Messages.DIALOG_PREFERENCES_THREADS;
 import static iterator.util.Messages.DIALOG_PREFERENCES_TITLE;
 
+import com.google.common.base.Optional;
+
 import iterator.Explorer;
 import iterator.util.AbstractPropertyDialog;
 import iterator.util.Config;
@@ -34,6 +37,7 @@ import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Formatter;
 import iterator.util.Property;
+import iterator.util.Property.OptionalProperty;
 
 /**
  * Preferences dialog.
@@ -45,6 +49,7 @@ public class Preferences extends AbstractPropertyDialog {
     private final Property<String> paletteFile;
     private final Property<Integer> paletteSize, threads;
     private final Property<Long> seed;
+    private final OptionalProperty<Long> limit;
     private final Property<Float> gamma;
     private final Property<Boolean> debug;
 
@@ -55,14 +60,15 @@ public class Preferences extends AbstractPropertyDialog {
 
         setLabel(messages.getText(DIALOG_PREFERENCES_TITLE));
 
-        mode = addDropDown(messages.getText(DIALOG_PREFERENCES_MODE), controller.getMode(), Mode.values());
-        render = addDropDown(messages.getText(DIALOG_PREFERENCES_RENDER), controller.getRender(), Render.values());
-        paletteFile = addDropDown(messages.getText(DIALOG_PREFERENCES_PALETTE_FILE), controller.getPaletteFile(), Config.PALETTE_FILES);
-        paletteSize = addSpinner(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), controller.getPaletteSize(), Config.MIN_PALETTE_SIZE, Config.MAX_PALETTE_SIZE);
-        seed = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SEED), controller.getSeed(), Formatter.longs());
-        gamma = addProperty(messages.getText(DIALOG_PREFERENCES_GAMMA), controller.getGamma(), Formatter.floats(1));
-        threads = addSpinner(messages.getText(DIALOG_PREFERENCES_THREADS), controller.getThreads(), Config.MIN_THREADS, Runtime.getRuntime().availableProcessors());
-        debug = addCheckBox(messages.getText(DIALOG_PREFERENCES_DEBUG), controller.isDebug());
+        mode = addDropDown(messages.getText(DIALOG_PREFERENCES_MODE), Mode.values());
+        render = addDropDown(messages.getText(DIALOG_PREFERENCES_RENDER), Render.values());
+        paletteFile = addDropDown(messages.getText(DIALOG_PREFERENCES_PALETTE_FILE), Config.PALETTE_FILES);
+        paletteSize = addSpinner(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), Config.MIN_PALETTE_SIZE, Config.MAX_PALETTE_SIZE);
+        seed = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SEED), Formatter.longs());
+        gamma = addProperty(messages.getText(DIALOG_PREFERENCES_GAMMA), Formatter.floats(1));
+        limit = addOptionalProperty(messages.getText(DIALOG_PREFERENCES_ITERATIONS_LIMIT), Formatter.optionalLongs());
+        threads = addSpinner(messages.getText(DIALOG_PREFERENCES_THREADS), Config.MIN_THREADS, Runtime.getRuntime().availableProcessors());
+        debug = addCheckBox(messages.getText(DIALOG_PREFERENCES_DEBUG));
 
         setSuccess(messages.getText(DIALOG_PREFERENCES_BUTTON_UPDATE));
         setCancel(messages.getText(DIALOG_PREFERENCES_BUTTON_CANCEL));
@@ -81,6 +87,7 @@ public class Preferences extends AbstractPropertyDialog {
         paletteSize.set(controller.getPaletteSize());
         seed.set(controller.getSeed());
         gamma.set(controller.getGamma());
+        limit.set(controller.isIterationsUnlimited() ? Optional.absent() : Optional.of(controller.getIterationsLimit()));
         threads.set(controller.getThreads());
         debug.set(controller.isDebug());
 
@@ -95,6 +102,13 @@ public class Preferences extends AbstractPropertyDialog {
         controller.setPaletteSize(paletteSize.get());
         controller.setSeed(seed.get());
         controller.setGamma(gamma.get());
+
+        if (limit.isPresent()) {
+            controller.setIterationsLimit(limit.get().get());
+            controller.setIterationsUnimited(false);
+        } else {
+            controller.setIterationsUnimited(true);
+        }
         controller.setThreads(threads.get());
         controller.setDebug(debug.get());
         controller.loadColours();

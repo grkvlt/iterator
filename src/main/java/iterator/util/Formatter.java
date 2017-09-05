@@ -64,8 +64,16 @@ public class Formatter {
         return new LongFormatter();
     }
 
-    public static LongFormatter longs(int min, int max)  {
+    public static LongFormatter longs(long min, long max)  {
         return new LongFormatter(min, max);
+    }
+
+    public static OptionalLongFormatter optionalLongs()  {
+        return new OptionalLongFormatter();
+    }
+
+    public static OptionalLongFormatter optionalLongs(long min, long max)  {
+        return new OptionalLongFormatter();
     }
 
     public static StringFormatter strings()  {
@@ -267,6 +275,21 @@ public class Formatter {
 
         @Override
         public Long getDefault() { return 0l; }
+
+    }
+
+    /**
+     * Formatter for {@link Optional<Double>} values in {@link JFormattedTextField}s.
+     */
+    public static class OptionalLongFormatter extends BaseOptionalFormatter<Long> {
+
+        OptionalLongFormatter() {
+            this(Long.MIN_VALUE, Long.MAX_VALUE);
+        }
+
+        OptionalLongFormatter(long min, long max) {
+            this.formatter = new LongFormatter(min, max);
+        }
 
     }
 

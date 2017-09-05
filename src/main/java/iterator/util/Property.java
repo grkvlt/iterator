@@ -15,14 +15,103 @@
  */
 package iterator.util;
 
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
+import javax.swing.JSpinner;
+
+import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 
 /**
  * Dialog box property.
+ * <p>
+ * Includes helper methods to create properties for different types of Swing component.
  */
 public interface Property<T> extends Supplier<T> {
 
     /** Method to set the property. */
     void set(T value);
 
+    interface OptionalProperty<T> extends Property<Optional<T>> {
+
+        /** Method to check if the value is present. */
+        default boolean isPresent() {
+            return get().isPresent();
+        }
+
+        /** Return either the value or {@literal null}. */
+        default T getNullable() {
+            return get().orNull();
+        }
+
+        static <T> OptionalProperty<T> attach(JFormattedTextField field) {
+            return new OptionalProperty<T>() {
+                @SuppressWarnings("unchecked")
+                @Override
+                public Optional<T> get() {
+                    return (Optional<T>) field.getValue();
+                }
+                @Override
+                public void set(Optional<T> value) {
+                    field.setValue(value);
+                }
+            };
+        }
+    }
+
+    static <T> Property<T> attach(JFormattedTextField field) {
+        return new Property<T>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public T get() {
+                return (T) field.getValue();
+            }
+            @Override
+            public void set(T value) {
+                field.setValue(value);
+            }
+        };
+    }
+
+    static <T> Property<T> attach(JComboBox<T> field) {
+        return new Property<T>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public T get() {
+                return (T) field.getSelectedItem();
+            }
+            @Override
+            public void set(T value) {
+                field.setSelectedItem(value);
+            }
+        };
+    }
+
+    static Property<Integer> attach(JSpinner field) {
+        return new Property<Integer>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public Integer get() {
+                return (Integer) field.getValue();
+            }
+            @Override
+            public void set(Integer value) {
+                field.setValue(value);
+            }
+        };
+    }
+
+    static Property<Boolean> attach(JCheckBox field) {
+        return new Property<Boolean>() {
+            @Override
+            public Boolean get() {
+                return field.isSelected();
+            }
+            @Override
+            public void set(Boolean value) {
+                field.setSelected(value);
+            }
+        };
+    }
 }

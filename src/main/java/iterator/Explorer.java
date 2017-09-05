@@ -21,11 +21,14 @@ import static iterator.Utils.loadImage;
 import static iterator.Utils.menuItem;
 import static iterator.Utils.saveImage;
 import static iterator.util.Config.DEBUG_PROPERTY;
+import static iterator.util.Config.DEFAULT_DEBUG;
 import static iterator.util.Config.DEFAULT_GAMMA;
 import static iterator.util.Config.DEFAULT_GRID_MAX;
 import static iterator.util.Config.DEFAULT_GRID_MIN;
 import static iterator.util.Config.DEFAULT_GRID_SNAP;
 import static iterator.util.Config.DEFAULT_ITERATIONS;
+import static iterator.util.Config.DEFAULT_ITERATIONS_LIMIT;
+import static iterator.util.Config.DEFAULT_ITERATIONS_UNLIMITED;
 import static iterator.util.Config.DEFAULT_MODE;
 import static iterator.util.Config.DEFAULT_PALETTE_FILE;
 import static iterator.util.Config.DEFAULT_PALETTE_SEED;
@@ -36,7 +39,9 @@ import static iterator.util.Config.GAMMA_PROPERTY;
 import static iterator.util.Config.GRID_MAX_PROPERTY;
 import static iterator.util.Config.GRID_MIN_PROPERTY;
 import static iterator.util.Config.GRID_SNAP_PROPERTY;
+import static iterator.util.Config.ITERATIONS_LIMIT_PROPERTY;
 import static iterator.util.Config.ITERATIONS_PROPERTY;
+import static iterator.util.Config.ITERATIONS_UNLIMITED_PROPERTY;
 import static iterator.util.Config.MAX_PALETTE_SIZE;
 import static iterator.util.Config.MIN_PALETTE_SIZE;
 import static iterator.util.Config.MIN_THREADS;
@@ -204,10 +209,12 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private String paletteFile;
     private long seed;
     private float gamma;
-
-    private Platform platform = Platform.getPlatform();
     private int threads;
     private boolean debug;
+    private long limit;
+    private boolean unlimited;
+
+    private Platform platform = Platform.getPlatform();
     private BufferedImage icon, source;
     private Preferences prefs;
     private About about;
@@ -293,7 +300,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
         // Set performance properties
         threads = config.get(THREADS_PROPERTY, Math.max(Runtime.getRuntime().availableProcessors() / 2, MIN_THREADS));
-        debug = config.get(DEBUG_PROPERTY, Boolean.FALSE);
+        debug = config.get(DEBUG_PROPERTY, DEFAULT_DEBUG);
+        limit = config.get(ITERATIONS_LIMIT_PROPERTY, DEFAULT_ITERATIONS_LIMIT);
+        unlimited = config.get(ITERATIONS_UNLIMITED_PROPERTY, DEFAULT_ITERATIONS_UNLIMITED);
 
         // Set colour mode and rendering configuration
         setMode(config.get(MODE_PROPERTY, Strings.isNullOrEmpty(paletteFile) ? DEFAULT_MODE : Mode.PALETTE));
@@ -391,6 +400,16 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public void setGamma(float value) {
         gamma = value;
         config.set(GAMMA_PROPERTY, gamma);
+    }
+
+    public void setIterationsLimit(long value) {
+        limit = value;
+        config.set(ITERATIONS_LIMIT_PROPERTY, limit);
+    }
+
+    public void setIterationsUnimited(boolean value) {
+        unlimited = value;
+        config.set(ITERATIONS_UNLIMITED_PROPERTY, unlimited);
     }
 
     public void loadColours() {
@@ -766,6 +785,16 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     /** Snap to grid distance. */
     public int getSnapGrid() { return config.get(GRID_SNAP_PROPERTY, DEFAULT_GRID_SNAP); }
 
+    public int getThreads() { return threads; }
+
+    /** Number of iterations each thread loop. */
+    public long getIterations() { return config.get(ITERATIONS_PROPERTY, DEFAULT_ITERATIONS); }
+
+    /** Maximum number of iterations. */
+    public long getIterationsLimit() { return limit; }
+
+    public boolean isIterationsUnlimited() { return unlimited; }
+
     public BufferedImage getIcon() { return icon; }
 
     public JScrollPane getScroll() { return scroll; }
@@ -795,11 +824,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public IFS getIFS() { return ifs; }
 
     public EventBus getEventBus() { return bus; }
-
-    public int getThreads() { return threads; }
-
-    /** Number of iterations each thread loop. */
-    public long getIterations() { return config.get(ITERATIONS_PROPERTY, DEFAULT_ITERATIONS); }
 
     /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
     @Override

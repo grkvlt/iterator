@@ -44,9 +44,9 @@ public class Zoom extends AbstractPropertyDialog {
 
         setLabel(messages.getText(DIALOG_ZOOM_TITLE));
 
-        x = addProperty(messages.getText(DIALOG_ZOOM_X), 0d, Formatter.doubles(4));
-        y = addProperty(messages.getText(DIALOG_ZOOM_Y), 0d, Formatter.doubles(4));
-        scale = addProperty(messages.getText(DIALOG_ZOOM_SCALE), 1f, Formatter.floats(2));
+        x = addProperty(messages.getText(DIALOG_ZOOM_X), Formatter.doubles(4));
+        y = addProperty(messages.getText(DIALOG_ZOOM_Y), Formatter.doubles(4));
+        scale = addProperty(messages.getText(DIALOG_ZOOM_SCALE), Formatter.floats(2));
 
         setSuccess(messages.getText(DIALOG_ZOOM_BUTTON_UPDATE));
         setCancel(messages.getText(DIALOG_ZOOM_BUTTON_CANCEL));

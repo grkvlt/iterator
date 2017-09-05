@@ -49,11 +49,22 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 
 import iterator.Explorer;
+import iterator.dialog.Preferences;
 
 /**
- * Configuration {@link Map}.
+ * A global {@link Map} for preferences and configuration.
  * <p>
- * Global cobfiguration values for use in preferences dialog.
+ * Preferences are loaded from configuration files and the JVM system
+ * properties, using the values here as defaults. The configuration can also
+ * be saved to a {@code .properties} file containing all the non-default
+ * values that have been set during program operation.
+ * <p>
+ * The {@link Explorer controller} mediates access to the configuration
+ * data, and it should not accessed directly.
+ *
+ * @see Explorer#start()
+ * @see Preferences
+ * @see Preferences#onSuccess()
  */
 public class Config extends ForwardingSortedMap<String, String> {
 
@@ -76,22 +87,27 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String MODE_PROPERTY = EXPLORER_PROPERTY + ".mode";
     public static final String THREADS_PROPERTY = EXPLORER_PROPERTY + ".threads";
     public static final String RENDER_PROPERTY = EXPLORER_PROPERTY + ".render";
-    public static final String ITERATIONS_PROPERTY =  EXPLORER_PROPERTY + ".iterations";
+    public static final String ITERATIONS_PROPERTY = EXPLORER_PROPERTY + ".iterations";
+    public static final String ITERATIONS_LIMIT_PROPERTY = ITERATIONS_PROPERTY + ".limit";
+    public static final String ITERATIONS_UNLIMITED_PROPERTY = ITERATIONS_PROPERTY + ".unlimited";
 
     public static final String[] PALETTE_FILES = { "abstract", "autumn", "car", "car2", "forest", "lego", "night", "trees", "wave" };
     public static final String DEFAULT_PALETTE_FILE = "abstract";
     public static final Integer DEFAULT_PALETTE_SIZE = 64;
     public static final Integer MIN_PALETTE_SIZE = 16;
     public static final Integer MAX_PALETTE_SIZE = 255;
-    public static final Long DEFAULT_PALETTE_SEED = 0L;
+    public static final Long DEFAULT_PALETTE_SEED = 0l;
     public static final Float DEFAULT_GAMMA = 1f;
     public static final Integer DEFAULT_GRID_MIN = 10;
     public static final Integer DEFAULT_GRID_MAX = 50;
     public static final Integer DEFAULT_GRID_SNAP = 5;
     public static final Integer DEFAULT_WINDOW_SIZE = 600;
-    public static final Long DEFAULT_ITERATIONS = 10_000L;
+    public static final Long DEFAULT_ITERATIONS = 10_000l;
+    public static final Long DEFAULT_ITERATIONS_LIMIT = 10_000_000l;
     public static final Integer MIN_WINDOW_SIZE = 400; // Details view requires 350px
     public static final Integer MIN_THREADS = 2;
+    public static final Boolean DEFAULT_DEBUG = false;
+    public static final Boolean DEFAULT_ITERATIONS_UNLIMITED = true;
 
     public static final List<String> FOOTER = Arrays.asList(
             "#",

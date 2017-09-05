@@ -35,15 +35,17 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
-import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
+import com.google.common.base.Optional;
 import com.google.common.eventbus.EventBus;
 
 import iterator.Explorer;
+import iterator.util.Formatter.BaseFormatter;
+import iterator.util.Property.OptionalProperty;
 
 /**
  * Abstract dialog box for setting properties.
@@ -124,22 +126,25 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         add(cancel);
     }
 
-    protected <T> Property<T> addProperty(String string, T value, AbstractFormatter formatter) {
-        return addFormattedTextField(string, value, formatter, true);
+    protected <T, P extends Property<T>> P addProperty(String string,  BaseFormatter<T> formatter) {
+        return addFormattedTextField(string, formatter, true, false);
     }
 
-    protected <T> Property<T> addReadOnlyProperty(String string, T value, AbstractFormatter formatter) {
-        return addFormattedTextField(string, value, formatter, false);
+    protected <T, P extends Property<T>> P addReadOnlyProperty(String string, BaseFormatter<T> formatter) {
+        return addFormattedTextField(string, formatter, false, false);
     }
 
-    protected <T> Property<T> addFormattedTextField(String string, T value, AbstractFormatter formatter, boolean editable) {
+    protected <T> OptionalProperty<T> addOptionalProperty(String string, BaseFormatter<Optional<T>> formatter) {
+        return addFormattedTextField(string, formatter, true, true);
+    }
+
+    protected <T, P extends Property<T>> P addFormattedTextField(String string, BaseFormatter<T> formatter, boolean editable, boolean optional) {
         addLabel(string, editable ? CALIBRI_PLAIN_14 : CALIBRI_ITALIC_14);
 
         final JFormattedTextField field = new JFormattedTextField(formatter);
         field.setHorizontalAlignment(JTextField.LEFT);
         field.setBorder(editable ? BorderFactory.createLoweredSoftBevelBorder() : BorderFactory.createEmptyBorder(3, 3, 3, 3));
         field.setMargin(new Insets(2, 2, 2, 2));
-        field.setValue(value);
         field.setFont(CALIBRI_ITALIC_14);
         field.addKeyListener(this);
         field.setEditable(editable);
@@ -147,26 +152,18 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         setConstraints(field);
         add(field);
 
-        Property<T> property = new Property<T>() {
-            @SuppressWarnings("unchecked")
-            @Override
-            public T get() {
-                return (T) field.getValue();
-            }
-            @Override
-            public void set(T value) {
-                field.setValue(value);
-            }
-        };
-        return property;
+        if (optional) {
+            return (P) OptionalProperty.attach(field);
+        } else {
+            return (P) Property.attach(field);
+        }
     }
 
-    protected <T> Property<T> addDropDown(String string, T value, T...items) {
+    protected <T> Property<T> addDropDown(String string, T...items) {
         addLabel(string);
 
-        final JComboBox field = new JComboBox<T>(items);
+        final JComboBox<T> field = new JComboBox<T>(items);
         field.setBorder(BorderFactory.createEmptyBorder());
-        field.setSelectedItem(value);
         field.setEditable(false);
         field.setFont(CALIBRI_ITALIC_14);
         field.addKeyListener(this);
@@ -174,24 +171,13 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         setConstraints(field);
         add(field);
 
-        Property<T> property = new Property<T>() {
-            @SuppressWarnings("unchecked")
-            @Override
-            public T get() {
-                return (T) field.getSelectedItem();
-            }
-            @Override
-            public void set(T value) {
-                field.setSelectedItem(value);
-            }
-        };
-        return property;
+        return Property.attach(field);
     }
 
-    protected Property<Integer> addSpinner(String string, int value, int min, int max) {
+    protected Property<Integer> addSpinner(String string, int min, int max) {
         addLabel(string);
 
-        SpinnerNumberModel model = new SpinnerNumberModel(value, min, max, 1);
+        SpinnerNumberModel model = new SpinnerNumberModel(min, min, max, 1);
         final JSpinner field = new JSpinner(model);
         field.setBorder(BorderFactory.createEmptyBorder());
         field.addKeyListener(this);
@@ -200,43 +186,21 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         setConstraints(field);
         add(field);
 
-        Property<Integer> property = new Property<Integer>() {
-            @SuppressWarnings("unchecked")
-            @Override
-            public Integer get() {
-                return (Integer) field.getValue();
-            }
-            @Override
-            public void set(Integer value) {
-                field.setValue(value);
-            }
-        };
-        return property;
+        return Property.attach(field);
     }
 
-    protected Property<Boolean> addCheckBox(String string, Boolean value) {
+    protected Property<Boolean> addCheckBox(String string) {
         addLabel(string);
 
         final JCheckBox field = new JCheckBox();
         field.setBorder(BorderFactory.createEmptyBorder());
-        field.setSelected(value);
         field.addKeyListener(this);
         field.setFont(CALIBRI_ITALIC_14);
 
         setConstraints(field);
         add(field);
 
-        Property<Boolean> property = new Property<Boolean>() {
-            @Override
-            public Boolean get() {
-                return field.isSelected();
-            }
-            @Override
-            public void set(Boolean value) {
-                field.setSelected(value);
-            }
-        };
-        return property;
+        return Property.attach(field);
     }
 
     private void addLabel(String string) {

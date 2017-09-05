@@ -100,6 +100,7 @@ public class Messages {
     public static final String DIALOG_PREFERENCES_THREADS = "explorer.dialog.preferences.threads";
     public static final String DIALOG_PREFERENCES_DEBUG = "explorer.dialog.preferences.debug";
     public static final String DIALOG_PREFERENCES_GAMMA = "explorer.dialog.preferences.gamma";
+    public static final String DIALOG_PREFERENCES_ITERATIONS_LIMIT = "explorer.dialog.preferences.iterations.limit";
     public static final String DIALOG_PREFERENCES_BUTTON_UPDATE = "explorer.dialog.preferences.button.update";
     public static final String DIALOG_PREFERENCES_BUTTON_CANCEL = "explorer.dialog.preferences.button.cancel";
 
