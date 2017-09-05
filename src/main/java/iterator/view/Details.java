@@ -21,15 +21,12 @@ import static iterator.Utils.weight;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JTextPane;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;

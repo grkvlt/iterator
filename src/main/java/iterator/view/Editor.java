@@ -46,7 +46,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -63,6 +62,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -77,6 +77,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Ordering;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import com.google.common.primitives.Ints;
 
 import iterator.Explorer;
 import iterator.dialog.Matrix;
@@ -110,7 +111,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
     private Transform selected;
     private Transform resize, move, rotate;
     private Point start, end;
-    private Cursor corner;
+    private Corner corner;
 
     public Editor(Explorer controller) {
         super();
@@ -356,17 +357,17 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     paintReflection(reflection, true, g);
                 }
 
-                if (reflection == null && selected == null && start != null && end != null) {
+                Transform ants = getAnts();
+                if (ants != null) {
                     g.setPaint(Color.BLACK);
                     g.setStroke(DOTTED_LINE_2);
-                    Transform ants = getAnts();
                     g.draw(new Rectangle(ants.x.intValue(), ants.y.intValue(), ants.w.intValue(), ants.h.intValue()));
                 }
             }
         });
     }
 
-    public void paintTransform(Transform t, boolean highlight, Graphics2D graphics) {
+    public void paintTransform(Transform t, boolean highlight, Graphics graphics) {
         Rectangle unit = new Rectangle(getSize());
         Shape rect = t.getTransform().createTransformedShape(unit);
 
@@ -414,14 +415,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         });
     }
 
-    public void paintTransformNumber(Transform t, boolean highlight, Graphics2D graphics) {
+    public void paintTransformNumber(Transform t, boolean highlight, Graphics graphics) {
         context(controller, graphics, g -> {
-            if (highlight) {
-                g.setPaint(Color.BLACK);
-            } else {
-                g.setPaint(alpha(Color.BLACK, 128));
-            }
-
             // Set the position and angle
             Point text = new Point();
             t.getTransform().transform(new Point(0, 0), text);
@@ -444,12 +439,13 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     (t.getId() == -1 ? "--" : String.format("%02d", t.getId())),
                     one.toString(100d * t.getWeight() / weight(concatenate(ifs.getTransforms(), selected))),
                     ((highlight && rotate != null) ? String.format("(%s)", one.toString(Math.toDegrees(t.r))) : ""));
+            g.setPaint(Color.BLACK);
             g.setFont(calibri(Font.BOLD, 25));
             g.drawString(id, text.x + 5, text.y + 25);
         });
     }
 
-    public void paintReflection(Reflection r, boolean highlight, Graphics2D graphics) {
+    public void paintReflection(Reflection r, boolean highlight, Graphics graphics) {
         context(controller, graphics, g -> {
             // Set the line pattern
             g.setStroke(highlight ? DASHED_LINE_2 : PATTERNED_LINE_2);
@@ -482,7 +478,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         });
     }
 
-    public void paintGrid(Graphics2D graphics) {
+    public void paintGrid(Graphics graphics) {
         context(controller, graphics, g -> {
             int min = controller.getMinGrid();
             int max = controller.getMaxGrid();
@@ -545,19 +541,71 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         return getCorner(t, point) != null;
     }
 
-    public Cursor getCorner(Transform t, Point point) {
-        int[] cornerX = new int[] { 0, 0, getWidth(), getWidth() };
-        int[] cornerY = new int[] { 0, getHeight(), getHeight(), 0 };
-        int[] cursors = new int[] { Cursor.NW_RESIZE_CURSOR, Cursor.SW_RESIZE_CURSOR, Cursor.SE_RESIZE_CURSOR, Cursor.NE_RESIZE_CURSOR };
-        for (int i = 0; i < 4; i++) {
-            Point center = new Point(cornerX[i], cornerY[i]);
+    public static enum Corner {
+        NW(Cursor.NW_RESIZE_CURSOR, 0, 0),
+        SW(Cursor.SW_RESIZE_CURSOR, 0, 1),
+        SE(Cursor.SE_RESIZE_CURSOR, 1, 1),
+        NE(Cursor.NE_RESIZE_CURSOR, 1, 0);
+
+        private final Cursor cursor;
+        private final int x, y;
+
+        private Corner(int cursor, int x, int y) {
+            this.cursor = new Cursor(cursor);
+            this.x = x;
+            this.y = y;
+        }
+
+        public Cursor getCursor() { return cursor; }
+        public int getX() { return x; }
+        public int getY() { return y; }
+
+        public Point getPoint(Rectangle rect) {
+            return new Point(rect.x + x * rect.width, rect.y + y * rect.height);
+        }
+    }
+
+    public Corner getCorner(Transform t, Point point) {
+        for (Corner corner : Corner.values()) {
+            Point center = corner.getPoint(unit());
             t.getTransform().transform(center, center);
-            Rectangle corner = new Rectangle(center.x - 5, center.y - 5, 10, 10);
-            if (corner.contains(point)) {
-                return new Cursor(cursors[i]);
+            Rectangle handle = new Rectangle(center.x - 5, center.y - 5, 10, 10);
+            if (handle.contains(point)) {
+                return corner;
             }
         }
         return null;
+    }
+
+    public void setCornerCursor(Transform t, Point point) {
+        Corner c = getCorner(t, point);
+
+        List<Corner> we = Arrays.asList(Corner.values());
+        Collections.sort(we, (a, b) -> {
+            Point pa = a.getPoint(unit());
+            Point pb = b.getPoint(unit());
+            t.getTransform().transform(pa, pa);
+            t.getTransform().transform(pb, pb);
+            return Ints.compare(pa.x, pb.x);
+        });
+        boolean west = (we.get(0) == c || we.get(1) == c);
+
+        List<Corner> ns = west ? Arrays.asList(we.get(0), we.get(1)) : Arrays.asList(we.get(2), we.get(3));
+        Collections.sort(ns, (a, b) -> {
+            Point pa = a.getPoint(unit());
+            Point pb = b.getPoint(unit());
+            t.getTransform().transform(pa, pa);
+            t.getTransform().transform(pb, pb);
+            return Ints.compare(pa.y, pb.y);
+        });
+        boolean north = (ns.get(0) == c);
+
+        Corner actual = north ? (west ? Corner.NW : Corner.NE) : (west ? Corner.SW : Corner.SE);
+        setCursor(actual.getCursor());
+    }
+
+    public Rectangle unit() {
+        return new Rectangle(new Point(0, 0), getSize());
     }
 
     /** @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent) */
@@ -593,20 +641,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                 }
                 if (resize != null) {
                     corner = getCorner(resize, e.getPoint());
-                    setCursor(corner);
-                    Point nw = new Point(0, 0);
-                    Point ne = new Point(getWidth(), 0);
-                    Point sw = new Point(0, getHeight());
-                    Point se = new Point(getWidth(), getHeight());
-                    resize.getTransform().transform(nw, nw);
-                    resize.getTransform().transform(ne, ne);
-                    resize.getTransform().transform(sw, sw);
-                    resize.getTransform().transform(se, se);
-                    switch (corner.getType()) {
-                        case Cursor.NW_RESIZE_CURSOR: start = nw; break;
-                        case Cursor.NE_RESIZE_CURSOR: start = ne; break;
-                        case Cursor.SW_RESIZE_CURSOR: start = sw; break;
-                        case Cursor.SE_RESIZE_CURSOR: start = se; break;
+                    if (corner != null) {
+                        Point cp = corner.getPoint(unit());
+                        resize.getTransform().transform(cp, cp);
+                        start = cp;
+                        setCornerCursor(resize, e.getPoint());
                     }
                     ifs.getTransforms().remove(resize);
                     selected = resize;
@@ -763,14 +802,14 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     double x = resize.x;
                     double y = resize.y;
 
-                    switch (corner.getType()) {
-                        case Cursor.NW_RESIZE_CURSOR:
+                    switch (corner) {
+                        case NW:
                             x += (inverseX.x + inverseY.x);
                             y += (inverseX.y + inverseY.y);
                             w -= delta.x;
                             h -= delta.y;
                             break;
-                        case Cursor.NE_RESIZE_CURSOR:
+                        case NE:
                             x += inverseY.x;
                             y += inverseY.y;
                             if (e.isShiftDown()) {
@@ -780,7 +819,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                             }
                             h -= delta.y;
                             break;
-                        case Cursor.SW_RESIZE_CURSOR:
+                        case SW:
                             if (e.isShiftDown()) {
                                 x -= inverseX.x;
                                 y -= inverseX.y;
@@ -792,7 +831,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                             }
                             h += delta.y;
                             break;
-                        case Cursor.SE_RESIZE_CURSOR:
+                        case SE:
                             w += delta.x;
                             h += delta.y;
                             break;
@@ -848,9 +887,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
     public void mouseMoved(MouseEvent e) {
         if (start == null) {
             for (Transform t : ifs.getTransforms()) {
-                Cursor corner = getCorner(t, e.getPoint());
-                if (corner != null) {
-                    setCursor(corner);
+                if (getCorner(t, e.getPoint()) != null) {
+                    setCornerCursor(t, e.getPoint());
                     return;
                 }
             }
