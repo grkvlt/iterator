@@ -185,12 +185,12 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public static final String VIEWER = "viewer";
     public static final String DETAILS = "details";
 
-    private static final Version version = Version.instance();
+    public static final Version version = Version.instance();
 
-    private static final String DEBUG = "[?] ";
-    private static final String PRINT = "[-] ";
-    private static final String ERROR = "[!] ";
-    private static final String STACK = "[>] ";
+    public static final String DEBUG = "[?] ";
+    public static final String PRINT = "[-] ";
+    public static final String ERROR = "[!] ";
+    public static final String STACK = "[>] ";
 
     private Config config;
     private File override;

@@ -74,6 +74,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -85,6 +86,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
 
+import com.google.common.base.CaseFormat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -100,6 +102,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import iterator.Explorer;
+import iterator.Utils;
 import iterator.dialog.Zoom;
 import iterator.model.Function;
 import iterator.model.IFS;
@@ -812,6 +815,27 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     break;
                 case KeyEvent.VK_G:
                     setGrid(!grid);
+                    break;
+                case KeyEvent.VK_T:
+                    List<String> dump = Lists.newArrayList();
+                    synchronized (tasks) {
+                        for (Task type : Task.values()) {
+                            int count = tasks.get(type).size();
+                            dump.add(String.format("%s (%d)", CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, type.name()), count));
+                        }
+                        Thread[] threads = new Thread[group.activeCount()];
+                        group.enumerate(threads);
+                        for (Thread thread : threads) {
+                            StackTraceElement stack = thread.getStackTrace()[0];
+                            dump.add(String.format("%s - %s", thread.getName(), stack));
+                        }
+                    }
+                    String output = dump.stream()
+                            .map(Explorer.STACK::concat)
+                            .collect(Collectors.joining(Utils.NEWLINE));
+                    controller.timestamp("Thread dump");
+                    System.err.println(output);
+
                     break;
                 case KeyEvent.VK_UP:
                     int increased = clamp(Config.MIN_THREADS, Runtime.getRuntime().availableProcessors()).apply(controller.getThreads() + 1);
