@@ -338,7 +338,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             long n = getTransforms().size();
             long m = getReflections().size() + 1;
             long k = Math.min(1_000_000, 50_000 * (long) Math.pow(2d, n * m));
-            controller.debug("Rendering in editor: k = %d, n = %d, m = %d", k, n, m);
             resetImage();
             viewer.reset();
             viewer.iterate(image, 4, k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d), Render.STANDARD, controller.getMode());
