@@ -13,7 +13,8 @@ REM Setup
 REM
 SET BIN=%~p0%
 SET LIB=%BIN:bin=lib%
-SET JAVA_OPTS="%JAVA_OPTS% -splash:%LIB%\splash.png"
+IF NOT DEFINED JAVA_MEM SET JAVA_MEM="-Xms1g -Xms2g"
+SET JAVA_OPTS="%JAVA_OPTS% %JAVA_MEM% -splash:%LIB%\splash.png"
 
 REM
 REM Exexcute Java
