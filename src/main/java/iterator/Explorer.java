@@ -872,9 +872,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         } else if (e.getKeyCode() == KeyEvent.VK_S) {
             if (viewer.isVisible() || details.isVisible()) {
                 if (e.isShiftDown()) {
-                    seed--;
+                    setSeed(seed - 1);
                 } else {
-                    seed++;
+                    setSeed(seed + 1);
                 }
                 loadColours();
                 bus.post(ifs);
