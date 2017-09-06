@@ -18,12 +18,12 @@ package iterator.view;
 import static iterator.Utils.DASHED_LINE_1;
 import static iterator.Utils.DASHED_LINE_2;
 import static iterator.Utils.DOTTED_LINE_2;
+import static iterator.Utils.NEWLINE;
 import static iterator.Utils.RGB24;
 import static iterator.Utils.SOLID_LINE_2;
 import static iterator.Utils.alpha;
 import static iterator.Utils.calibri;
 import static iterator.Utils.checkbox;
-import static iterator.Utils.clamp;
 import static iterator.Utils.context;
 import static iterator.Utils.menuItem;
 import static iterator.Utils.unity;
@@ -100,13 +100,11 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import iterator.Explorer;
-import iterator.Utils;
 import iterator.dialog.Zoom;
 import iterator.model.Function;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
-import iterator.util.Config;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Dialog;
@@ -703,7 +701,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         if (running.compareAndSet(false, true)) {
             controller.debug("Starting");
             loop = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
-            for (int i = 0; i < controller.getThreads() - (controller.getRender().isDensity() ? 1 : 0); i++) {
+            int iterators = controller.getThreads() - (controller.getRender().isDensity() ? 1 : 0);
+            for (int i = 0; i < iterators; i++) {
                 submit(Task.ITERATE, this);
             }
             if (controller.getRender().isDensity()) {
@@ -741,10 +740,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public boolean isRunning() {
         return running.get();
     }
-
-    /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
-    @Override
-    public void keyTyped(KeyEvent e) { }
 
     /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
     @Override
@@ -800,32 +795,35 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         group.enumerate(threads);
                         for (Thread thread : threads) {
                             StackTraceElement stack = thread.getStackTrace()[0];
+                            if (stack.isNativeMethod() // FIXME OpenJDK only
+                                    && stack.getMethodName().equals("park")
+                                    && stack.getClassName().endsWith("Unsafe")) continue;
                             dump.add(String.format("%s - %s", thread.getName(), stack));
                         }
                     }
                     String output = dump.stream()
                             .map(Explorer.STACK::concat)
-                            .collect(Collectors.joining(Utils.NEWLINE));
+                            .collect(Collectors.joining(NEWLINE));
                     controller.timestamp("Thread dump");
                     System.err.println(output);
 
                     break;
                 case KeyEvent.VK_UP:
-                    int increased = clamp(Config.MIN_THREADS, Runtime.getRuntime().availableProcessors()).apply(controller.getThreads() + 1);
-                    if (increased > controller.getThreads()) {
-                        controller.setThreads(increased);
-                        if (isRunning()) {
-                            submit(Task.ITERATE, this);
+                    synchronized (tasks) {
+                        controller.setThreads(controller.getThreads() + 1);
+                        if (controller.getThreads() > tasks.size()) {
+                            if (isRunning()) {
+                                submit(Task.ITERATE, this);
+                            }
                         }
-                        repaint();
                     }
+                    repaint();
                     break;
                 case KeyEvent.VK_DOWN:
-                    int decreased = clamp(Config.MIN_THREADS, Runtime.getRuntime().availableProcessors()).apply(controller.getThreads() - 1);
-                    if (decreased < controller.getThreads()) {
-                        controller.setThreads(decreased);
-                        if (isRunning()) {
-                            synchronized (tasks) {
+                    synchronized (tasks) {
+                        controller.setThreads(controller.getThreads() - 1);
+                        if (tasks.size() > controller.getThreads()) {
+                            if (isRunning()) {
                                 Optional<Future<?>> cancel = tasks.get(Task.ITERATE)
                                         .stream()
                                         .filter(f -> !f.isDone())
@@ -833,12 +831,20 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                                 cancel.ifPresent(f -> state.get(f).set(true));
                             }
                         }
-                        repaint();
                     }
+                    repaint();
                     break;
             }
         }
     }
+
+    /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
+    @Override
+    public void keyTyped(KeyEvent e) { }
+
+    /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
+    @Override
+    public void keyReleased(KeyEvent e) { }
 
     private void setInfo(boolean state) {
         info = state;
@@ -857,10 +863,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         showGrid.setSelected(state);
         repaint();
     }
-
-    /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
-    @Override
-    public void keyReleased(KeyEvent e) { }
 
     /** @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent) */
     @Override

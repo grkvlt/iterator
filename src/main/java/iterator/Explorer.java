@@ -17,9 +17,11 @@ package iterator;
 
 import static iterator.Utils.NEWLINE;
 import static iterator.Utils.checkbox;
+import static iterator.Utils.clamp;
 import static iterator.Utils.loadImage;
 import static iterator.Utils.menuItem;
 import static iterator.Utils.saveImage;
+import static iterator.Utils.threads;
 import static iterator.util.Config.DEBUG_PROPERTY;
 import static iterator.util.Config.DEFAULT_DEBUG;
 import static iterator.util.Config.DEFAULT_GAMMA;
@@ -299,10 +301,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         config = Config.loadProperties(override);
 
         // Set performance properties
-        threads = config.get(THREADS_PROPERTY, Math.max(Runtime.getRuntime().availableProcessors() / 2, MIN_THREADS));
-        debug = config.get(DEBUG_PROPERTY, DEFAULT_DEBUG);
-        limit = config.get(ITERATIONS_LIMIT_PROPERTY, DEFAULT_ITERATIONS_LIMIT);
-        unlimited = config.get(ITERATIONS_UNLIMITED_PROPERTY, DEFAULT_ITERATIONS_UNLIMITED);
+        setThreads(config.get(THREADS_PROPERTY, Math.max(Runtime.getRuntime().availableProcessors() / 2, MIN_THREADS)));
+        setDebug(config.get(DEBUG_PROPERTY, DEFAULT_DEBUG));
+        setIterationsLimit(config.get(ITERATIONS_LIMIT_PROPERTY, DEFAULT_ITERATIONS_LIMIT));
+        setIterationsUnimited(config.get(ITERATIONS_UNLIMITED_PROPERTY, DEFAULT_ITERATIONS_UNLIMITED));
 
         // Set colour mode and rendering configuration
         setMode(config.get(MODE_PROPERTY, Strings.isNullOrEmpty(paletteFile) ? DEFAULT_MODE : Mode.PALETTE));
@@ -363,7 +365,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void setThreads(int value) {
-        threads = value;
+        threads = threads().apply(value);
         config.set(THREADS_PROPERTY, threads);
     }
 
@@ -383,7 +385,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void setPaletteSize(int value) {
-        paletteSize = Utils.clamp(MIN_PALETTE_SIZE, MAX_PALETTE_SIZE).apply(value);
+        paletteSize = clamp(MIN_PALETTE_SIZE, MAX_PALETTE_SIZE).apply(value);
         config.set(PALETTE_SIZE_PROPERTY, paletteSize);
     }
 
@@ -831,15 +833,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public EventBus getEventBus() { return bus; }
 
-    /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
-    @Override
-    public void keyTyped(KeyEvent e) { }
+    public Messages getMessages() { return messages; }
 
     /**
      * Listener for key-presses across the whole application.
      * <p>
-     * Handles {@link KeyEvent#VK_TAB TAB} for switching between viewer and editor,
-     * and {@literal S} for changing the random seed.
+     * Handles {@link KeyEvent#VK_TAB TAB} for switching between viewer,
+     * editor and details, and {@literal S} for changing the random seed.
      *
      * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
      */
@@ -882,13 +882,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
     }
 
+    /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
+    @Override
+    public void keyTyped(KeyEvent e) { }
+
     /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
     @Override
     public void keyReleased(KeyEvent e) { }
-
-    public Messages getMessages() {
-        return messages;
-    }
 
     public void debug(String format, Object...varargs) {
         output(isDebug() ? System.out : System.err, DEBUG + format, varargs);

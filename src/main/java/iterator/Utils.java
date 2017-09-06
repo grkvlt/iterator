@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -47,6 +48,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
 import iterator.model.Transform;
+import iterator.util.Config;
 
 /**
  * Useful static methods.
@@ -76,6 +78,10 @@ public class Utils {
 
     public static LongFunction<Long> clamp(Long lowerBound, Long upperBound) {
         return v -> Math.min(upperBound, Math.max(lowerBound, v));
+    }
+
+    public static IntFunction<Integer> threads() {
+        return clamp(Config.MIN_THREADS, Runtime.getRuntime().availableProcessors());
     }
 
     /**
@@ -142,6 +148,18 @@ public class Utils {
             Thread.sleep(millis);
         } catch (InterruptedException ie) {
             Thread.interrupted();
+        }
+    }
+
+    /** Critical secion with a {@link Semaphore}. */
+    public static void critical(Semaphore semaphore, Runnable action) {
+        try {
+            semaphore.acquire();
+            action.run();
+        } catch (InterruptedException ie) {
+            Thread.interrupted();
+        } finally {
+            semaphore.release();
         }
     }
 

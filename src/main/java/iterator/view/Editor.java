@@ -902,10 +902,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         }
     }
 
-    /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
-    @Override
-    public void keyTyped(KeyEvent e) { }
-
     /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
     @Override
     public void keyPressed(KeyEvent e) {
@@ -947,6 +943,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             }
         }
     }
+
+    /** @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent) */
+    @Override
+    public void keyTyped(KeyEvent e) { }
 
     /** @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent) */
     @Override
