@@ -72,7 +72,6 @@ import static iterator.util.Messages.MENU_FILE_PRINT;
 import static iterator.util.Messages.MENU_FILE_QUIT;
 import static iterator.util.Messages.MENU_FILE_SAVE;
 import static iterator.util.Messages.MENU_FILE_SAVE_AS;
-import static iterator.util.Messages.TITLE;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -251,8 +250,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
         messages = new Messages(this);
 
-        setTitle(messages.getText(TITLE));
-
         Thread.setDefaultUncaughtExceptionHandler(this);
 
         // Parse arguments
@@ -281,7 +278,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     }
                 } else if (i == argv.length - 1) {
                     // Last argument is a file
-                    final File file = new File(argv[i]);
+                    File file = new File(argv[i]);
                     if (file.canRead()) {
                         // Add a task to load the file
                         postponed = () -> {
@@ -490,9 +487,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         saveAs = menuItem(messages.getText(MENU_FILE_SAVE_AS), e -> {
             File target = new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".xml");
             saveDialog(target, DIALOG_FILES_XML, "xml", f -> {
-                ifs.setName(f.getName().replace(".xml", ""));
+                String name = f.getName().replace(".xml", "");
+                ifs.setName(name);
                 save(f);
-                bus.post(ifs);
+                updateName(name);
             });
         });
         saveAs.setEnabled(false);
@@ -722,21 +720,26 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     @Subscribe
     public void updated(IFS updated) {
         ifs = updated;
+        String name = Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED);
+        updateName(name);
         debug("Updated: %s", ifs);
-        String name = Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED).toLowerCase(Locale.UK);
-        name = Splitter.onPattern("[^a-z0-9]")
-                .omitEmptyStrings()
-                .splitToList(name)
-                .stream()
-                .map(s -> s.substring(0, 1).toUpperCase(Locale.UK) + s.substring(1))
-                .collect(Collectors.joining(" "));
-        setTitle(name);
 
         if (!ifs.isEmpty()) {
             save.setEnabled(true);
             saveAs.setEnabled(true);
         }
 
+        repaint();
+    }
+
+    public void updateName(String updated) {
+        String name = Splitter.onPattern("[^a-z0-9]")
+                .omitEmptyStrings()
+                .splitToList(updated.toLowerCase(Locale.UK))
+                .stream()
+                .map(s -> s.substring(0, 1).toUpperCase(Locale.UK) + s.substring(1))
+                .collect(Collectors.joining(" "));
+        setTitle(name);
         repaint();
     }
 

@@ -60,7 +60,7 @@ import com.google.common.collect.Ordering;
 @XmlRootElement(name = "IFS")
 public class IFS extends ForwardingList<Function> {
 
-    public static final String UNTITLED = "Untitled";
+    public static final String UNTITLED = "untitled";
 
     public static final Comparator<Transform> Z_ORDER = new Comparator<Transform>() {
         @Override
