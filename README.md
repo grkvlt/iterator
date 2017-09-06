@@ -16,41 +16,44 @@ See <http://grkvlt.github.io/iterator/> for further documentation.
   - Update configuration
 - Live reflection editor
 - IFS renderer
-  - Colour and greyscale
-  - IFS, measure set and fractal top modes
+  - Colour and greyscale, with gamma
+  - IFS, Measure Set and Fractal Top modes
   - Density estimation and Fractal Flame
   - Printing and export to PNG
+  - Multi-threaded rendering
 - IFS details view
   - Transform matrix and reflection co-ordinates
-  - HTML rendering
+  - HTML rendering and printing
 - Save and load as XML
 - Animated changes to IFS
 
 ## Program Requirements
 
-- Java 1.8.x Runtime Environment
+- Java 1.8.0+ Runtime Environment
 - Windows, Linux or OSX Operating System
-- Maven and 1.8.x JDK to build
+- Maven and 1.8.0+ JDK to build
 
 ## TODO
 
-- Extract startup and config code to separate class
-- Better Operating-System integration
-  - Native full-screen mode
-  - Support native windowing system features
-- Improved co-ordinate system
+- Help and improved documentation
+- Improved full-screen mode
+- IFS enhancements
   - Allow non-square aspect ratio
   - Use unit vectors as basis
   - Support co-ordinate transforms (polar or log)
-- Extend platform support
+  - More rendering and colour modes
+- Platform support
   - Embedded applet
-  - Android application (?)
+  - Android application
+  - Windows platform integration
 - Animator enhancements
   - Document usage
   - JSON configuration file parser
   - Headless operation
   - Add camera movements (zoom and pan)
   - Graphical sequence editor
+  - Include reflection segments
+  - Scripted MPEG generation
 
 Alongside these enhancements and new features, some of which are
 currently work-in-progress, both performance and UX improvements
