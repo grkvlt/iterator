@@ -16,7 +16,7 @@
 package iterator;
 
 import static iterator.Utils.NEWLINE;
-import static iterator.Utils.checkbox;
+import static iterator.Utils.checkBoxItem;
 import static iterator.Utils.clamp;
 import static iterator.Utils.context;
 import static iterator.Utils.loadImage;
@@ -560,17 +560,17 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
         JMenu system = new JMenu(messages.getText(MENU_DISPLAY));
         ButtonGroup displayGroup = new ButtonGroup();
-        showEditor = checkbox(messages.getText(MENU_DISPLAY_EDITOR), e -> {
+        showEditor = checkBoxItem(messages.getText(MENU_DISPLAY_EDITOR), e -> {
             show(EDITOR);
         });
         system.add(showEditor);
         displayGroup.add(showEditor);
-        showViewer = checkbox(messages.getText(MENU_DISPLAY_VIEWER), e -> {
+        showViewer = checkBoxItem(messages.getText(MENU_DISPLAY_VIEWER), e -> {
             show(VIEWER);
         });
         system.add(showViewer);
         displayGroup.add(showViewer);
-        showDetails = checkbox(messages.getText(MENU_DISPLAY_DETAILS), e -> {
+        showDetails = checkBoxItem(messages.getText(MENU_DISPLAY_DETAILS), e -> {
             show(DETAILS);
         });
         system.add(showDetails);

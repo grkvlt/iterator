@@ -23,7 +23,7 @@ import static iterator.Utils.RGB24;
 import static iterator.Utils.SOLID_LINE_2;
 import static iterator.Utils.alpha;
 import static iterator.Utils.calibri;
-import static iterator.Utils.checkbox;
+import static iterator.Utils.checkBoxItem;
 import static iterator.Utils.context;
 import static iterator.Utils.menuItem;
 import static iterator.Utils.unity;
@@ -197,15 +197,15 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         JMenuItem separator = new JMenuItem("-");
         separator.setEnabled(false);
         viewer.add(separator);
-        showGrid = checkbox(messages.getText(MENU_VIEWER_GRID), e -> {
+        showGrid = checkBoxItem(messages.getText(MENU_VIEWER_GRID), e -> {
             setGrid(!grid);
         });
         viewer.add(showGrid);
-        showOverlay = checkbox(messages.getText(MENU_VIEWER_OVERLAY), e -> {
+        showOverlay = checkBoxItem(messages.getText(MENU_VIEWER_OVERLAY), e -> {
             setOverlay(!overlay);
         });
         viewer.add(showOverlay);
-        showInfo = checkbox(messages.getText(MENU_VIEWER_INFO), e -> {
+        showInfo = checkBoxItem(messages.getText(MENU_VIEWER_INFO), e -> {
             setInfo(!info);
         });
         viewer.add(showInfo);

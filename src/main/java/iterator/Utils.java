@@ -189,7 +189,7 @@ public class Utils {
         return new JMenuItem(action(text, handler));
     }
 
-    public static JCheckBoxMenuItem checkbox(String text, Consumer<ActionEvent> handler) {
+    public static JCheckBoxMenuItem checkBoxItem(String text, Consumer<ActionEvent> handler) {
         return new JCheckBoxMenuItem(action(text, handler));
     }
 
