@@ -18,8 +18,10 @@ package iterator;
 import static iterator.Utils.NEWLINE;
 import static iterator.Utils.checkbox;
 import static iterator.Utils.clamp;
+import static iterator.Utils.context;
 import static iterator.Utils.loadImage;
 import static iterator.Utils.menuItem;
+import static iterator.Utils.printError;
 import static iterator.Utils.saveImage;
 import static iterator.Utils.threads;
 import static iterator.util.Config.DEBUG_PROPERTY;
@@ -79,7 +81,6 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.SplashScreen;
 import java.awt.Toolkit;
@@ -114,6 +115,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -167,7 +169,7 @@ import iterator.view.Viewer;
  *
  * @author andrew.international@gmail.com
  */
-public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHandler, SubscriberExceptionHandler, Subscriber {
+public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHandler, SubscriberExceptionHandler, BiConsumer<Throwable, String>, Subscriber {
 
     public static final List<String> BANNER = Arrays.asList(
             "   ___ _____ ____    _____            _                     ",
@@ -965,6 +967,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         uncaughtException(Thread.currentThread(), exception);
     }
 
+    @Override
+    public void accept(Throwable t, String message) {
+        error(t, message);
+    }
+
     /**
      * Explorer application launch.
      */
@@ -977,18 +984,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         // Print splash screen text
         SplashScreen splash = SplashScreen.getSplashScreen();
         if (splash != null && splash.isVisible()) {
-            Graphics2D g = splash.createGraphics();
-
-            try {
+            context(printError(), splash.createGraphics(), g -> {
                 About.paintSplashText(g, splash.getSize().width, splash.getSize().height);
                 splash.update();
-            } catch (Exception e) {
-                System.err.println("Failure painting splash text");
-                e.printStackTrace(System.err);
-                System.exit(0);
-            } finally {
-                g.dispose();
-            }
+            });
         }
 
         // Start application

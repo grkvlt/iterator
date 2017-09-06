@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.DoubleFunction;
@@ -164,12 +165,12 @@ public class Utils {
     }
 
     /** Perform an {@link Consumer action} with a disposable {@link Graphics2D graphics context}. */
-    public static void context(Explorer controller, Graphics graphics, Consumer<Graphics2D> action) {
+    public static void context(BiConsumer<Throwable, String> exceptionHandler, Graphics graphics, Consumer<Graphics2D> action) {
         Graphics2D g = (Graphics2D) graphics.create();
         try {
             action.accept(g);
         } catch (Throwable t) {
-            controller.error(t,  "Error executing graphics context action");
+            exceptionHandler.accept(t, "Error executing graphics context action");
         } finally {
             g.dispose();
         }
@@ -192,8 +193,16 @@ public class Utils {
         return new JCheckBoxMenuItem(action(text, handler));
     }
 
-    public static Consumer<Exception> printError(Explorer controller, String message) {
-        return e -> { controller.error(e, message); };
+    public static BiConsumer<Throwable, String> logError(Explorer controller) {
+        return (t, m) -> { controller.error(t, m); };
+    }
+
+    public static BiConsumer<Throwable, String> printError() {
+        return (t, m) -> {
+            System.out.println(String.format("%s: %s", m, t.getMessage()));
+            t.printStackTrace(System.err);
+            System.exit(1);
+        };
     }
 
     /**
