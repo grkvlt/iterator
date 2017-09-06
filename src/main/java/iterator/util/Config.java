@@ -20,7 +20,15 @@ import static iterator.Utils.NEWLINE;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.Writer;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -43,9 +51,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ForwardingSortedMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
-import com.google.common.io.CharSink;
-import com.google.common.io.CharSource;
-import com.google.common.io.Files;
 import com.google.common.io.Resources;
 
 import iterator.Explorer;
@@ -194,15 +199,15 @@ public class Config extends ForwardingSortedMap<String, String> {
 
     public static final Predicate<CharSequence> EXPLORER_KEYS = Predicates.containsPattern("^" + EXPLORER_PROPERTY + ".");
 
-    private final File override;
+    private final Optional<Path> override;
     private final SortedMap<String, String> config;
 
-    private Config(File override) {
-        this.override = override;
+    private Config(Path override) {
+        this.override = Optional.fromNullable(override);
         this.config = Maps.newTreeMap();
     }
 
-    public static Config loadProperties(File override) {
+    public static Config loadProperties(Path override) {
         Config instance = new Config(override);
         instance.load();
         return instance;
@@ -216,33 +221,45 @@ public class Config extends ForwardingSortedMap<String, String> {
         clear();
 
         // Defaults from classpath
-        load(Resources.asCharSource(Resources.getResource(PROPERTIES_FILE), Charsets.UTF_8));
+        load(Resources.getResource(PROPERTIES_FILE));
 
         // Configuration from home directory
-        File home = new File(StandardSystemProperty.USER_HOME.value(), "." + PROPERTIES_FILE);
-        if (home.exists()) {
-            load(Files.asCharSource(home, Charsets.UTF_8));
-        }
+        load(Paths.get(StandardSystemProperty.USER_HOME.value(), "." + PROPERTIES_FILE));
 
         // Configuration from current directory
-        File current = new File(PROPERTIES_FILE);
-        if (current.exists()) {
-            load(Files.asCharSource(current, Charsets.UTF_8));
-        }
+        load(Paths.get(PROPERTIES_FILE));
 
         // Override file from command line
-        if (override != null) {
-            load(Files.asCharSource(override, Charsets.UTF_8));
+        if (override.isPresent()) {
+            load(override.get());
         }
 
         // Finally load system properties (JAVA_OPTS)
         load(System.getProperties());
     }
 
-    public void load(CharSource source) {
+    public void load(Path path) {
+        if (Files.isReadable(path)) {
+            try (Reader reader = Files.newBufferedReader(path, Charsets.UTF_8)) {
+                load(reader);
+            } catch (IOException ioe) {
+                throw Throwables.propagate(ioe);
+            }
+        }
+    }
+
+    public void load(URL url) {
+        try (Reader reader = new InputStreamReader(url.openStream())) {
+            load(reader);
+        } catch (IOException ioe) {
+            throw Throwables.propagate(ioe);
+        }
+    }
+
+    public void load(Reader reader) {
         try {
             Properties properties = new Properties();
-            properties.load(source.openStream());
+            properties.load(reader);
             load(properties);
         } catch (IOException ioe) {
             throw Throwables.propagate(ioe);
@@ -257,7 +274,7 @@ public class Config extends ForwardingSortedMap<String, String> {
         putAll(Maps.filterKeys(data, EXPLORER_KEYS));
     }
 
-    public void save(CharSink sink) {
+    public void save(OutputStream stream) {
         String header = Explorer.BANNER.stream()
                 .map("# "::concat)
                 .map(String::trim)
@@ -267,7 +284,7 @@ public class Config extends ForwardingSortedMap<String, String> {
         String timestamp = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now());
         String user = StandardSystemProperty.USER_NAME.value();
 
-        try (Writer writer = sink.openStream()) {
+        try (Writer writer = new OutputStreamWriter(stream, Charsets.UTF_8)) {
             writer.append("##")
                   .append(NEWLINE)
                   .append(String.format(header, version))
@@ -281,8 +298,16 @@ public class Config extends ForwardingSortedMap<String, String> {
     }
 
     public void save(File file) {
-        CharSink sink = Files.asCharSink(file, Charsets.UTF_8);
-        save(sink);
+        Path path = Paths.get(file.getAbsolutePath());
+        if (Files.isWritable(path)) {
+            try {
+                save(Files.newOutputStream(path));
+            } catch (IOException ioe) {
+                throw Throwables.propagate(ioe);
+            }
+        } else {
+            throw new IllegalStateException(String.format("Cannot write file %s", path));
+        }
     }
 
     @SuppressWarnings("unchecked")

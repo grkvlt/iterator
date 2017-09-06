@@ -102,6 +102,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -199,7 +202,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public static final String STACK = "[>] ";
 
     private Config config;
-    private File override;
+    private Path override;
 
     private boolean fullScreen = false;
 
@@ -268,8 +271,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     } else if (argv[i].equalsIgnoreCase(CONFIG_OPTION) ||
                             argv[i].equalsIgnoreCase(CONFIG_OPTION_LONG)) {
                         if (argv.length >= i + 1) {
-                            override = new File(argv[++i]);
-                            if (!override.exists()) {
+                            override = Paths.get(argv[++i]);
+                            if (Files.notExists(override)) {
                                 error("Configuration file does not exist: %s", override);
                             }
                         } else error("Configuration file argument not provided");
@@ -539,7 +542,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             }));
         }
         file.add(menuItem(messages.getText(MENU_FILE_PREFERENCES_SAVE), e -> {
-            File target = Optional.fromNullable(override).or(new File(Config.PROPERTIES_FILE));
+            File target = Optional.fromNullable(override).or(Paths.get(Config.PROPERTIES_FILE)).toFile();
             saveDialog(target, DIALOG_FILES_PROPERTIES, "properties", f -> {
                 config.save(f);
             });
