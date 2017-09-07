@@ -28,6 +28,7 @@
             <outputDirectory>/</outputDirectory>
             <includes>
                 <include>README*</include>
+                <include>RELNOTES*</include>
                 <include>LICENSE*</include>
                 <include>NOTICE*</include>
             </includes>
