@@ -914,17 +914,51 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                         selected = null;
                         bus.post(ifs);
                         break;
-                    case KeyEvent.VK_RIGHT:
-                        if (!selected.isMatrix()) {
-                            selected.r += Math.PI / 2d;
-                            bus.post(ifs);
+                    case KeyEvent.VK_EQUALS:
+                        if (!e.isShiftDown()) break;
+                    case KeyEvent.VK_MINUS:
+                        if (selected.isMatrix()) {
+                            AffineTransform t = selected.getTransform();
+                            t.concatenate(AffineTransform.getQuadrantRotateInstance(e.getKeyCode() == KeyEvent.VK_EQUALS ? 1 : -1));
+                            double matrix[] = new double[6];
+                            t.getMatrix(matrix);
+                            selected.setMatrix(matrix);
+                        } else {
+                            if (e.getKeyCode() == KeyEvent.VK_EQUALS) {
+                                selected.r += Math.PI / 2d;
+                            } else {
+                                selected.r -= Math.PI / 2d;
+                            }
                         }
+                        repaint();
                         break;
                     case KeyEvent.VK_LEFT:
-                        if (!selected.isMatrix()) {
-                            selected.r -= Math.PI / 2d;
-                            bus.post(ifs);
+                    case KeyEvent.VK_RIGHT:
+                    case KeyEvent.VK_UP:
+                    case KeyEvent.VK_DOWN:
+                        int dx = 0, dy = 0;
+                        int delta = e.isShiftDown() ? 1 : controller.getSnapGrid();
+                        switch (e.getKeyCode()) {
+                            case KeyEvent.VK_LEFT:
+                                dx -= delta; break;
+                            case KeyEvent.VK_RIGHT:
+                                dx += delta; break;
+                            case KeyEvent.VK_UP:
+                                dy -= delta; break;
+                            case KeyEvent.VK_DOWN:
+                                dy += delta; break;
                         }
+                        if (selected.isMatrix()) {
+                            AffineTransform t = AffineTransform.getTranslateInstance(dx, dy);
+                            t.concatenate(selected.getTransform());
+                            double matrix[] = new double[6];
+                            t.getMatrix(matrix);
+                            selected.setMatrix(matrix);
+                        } else {
+                            selected.x += dx;
+                            selected.y += dy;
+                        }
+                        repaint();
                         break;
                 }
             } else {
