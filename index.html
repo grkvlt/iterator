@@ -87,9 +87,9 @@
           GitHub</a> as either <code>.tar.gz</code> or <code>.zip</code> archives. Then run the relevant
           script for your operating system.
         </p>
-        <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/explorer.sh [-f] [-c] [-p <i>palette</i>] [<i>ifs.xml</i>]
-<b>$</b> ./bin/explorer.command [-f] [-c] [-p <i>palette</i>] [<i>ifs.xml</i>]
-<b>C&gt;</b> .\bin\explorer.cmd [-f] [-c] [-p <i>palette</i>] [<i>ifs.xml</i>]</code></pre>
+        <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/explorer.sh [-f] [-c <i>config</i>] [-p <i>palette</i>] [<i>ifs.xml</i>]
+<b>$</b> ./bin/explorer.command [-f] [-c <i>config</i>] [-p <i>palette</i>] [<i>ifs.xml</i>]
+<b>C&gt;</b> .\bin\explorer.cmd [-f] [-c <i>config</i>] [-p <i>palette</i>] [<i>ifs.xml</i>]</code></pre>
         <p>
           Alternatively, the <code>iterator-1.3.0-jar-with-dependencies.jar</code> .jar file
           can simply be downloaded and executed directly, with the <code>java -jar</code> command.
@@ -157,7 +157,8 @@
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/explorer.sh --config debug.properties ./data/koch.xml</code></pre>
         <p>
           It is also possible to set individual configuration options as system properties,
-          using the <code>JAVA_OPTS</code> environment variable.
+          using the <code>JAVA_OPTS</code> environment variable. JVM memory options should
+          be configured separately, using the <code>JAVA_MEM</code> variable.
         </p>
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> export JAVA_OPTS="-Dexplorer.palette.seed=1234"
 <b>$</b> ./bin/explorer.sh --palette wave ./data/spikes.xml</code></pre>
