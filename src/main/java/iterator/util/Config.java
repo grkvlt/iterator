@@ -18,6 +18,7 @@ package iterator.util;
 import static iterator.Utils.NEWLINE;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -55,6 +56,10 @@ import com.google.common.io.Resources;
 
 import iterator.Explorer;
 import iterator.dialog.Preferences;
+import iterator.model.Exponential;
+import iterator.model.Function;
+import iterator.model.Identity;
+import iterator.model.Spherical;
 
 /**
  * A global {@link Map} for preferences and configuration.
@@ -89,9 +94,10 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String WINDOW_WIDTH_PROPERTY = WINDOW_PROPERTY + ".width";
     public static final String WINDOW_HEIGHT_PROPERTY = WINDOW_PROPERTY + ".height";
     public static final String DEBUG_PROPERTY = EXPLORER_PROPERTY + ".debug";
-    public static final String MODE_PROPERTY = EXPLORER_PROPERTY + ".mode";
     public static final String THREADS_PROPERTY = EXPLORER_PROPERTY + ".threads";
+    public static final String MODE_PROPERTY = EXPLORER_PROPERTY + ".mode";
     public static final String RENDER_PROPERTY = EXPLORER_PROPERTY + ".render";
+    public static final String FINAL_PROPERTY = EXPLORER_PROPERTY + ".final";
     public static final String ITERATIONS_PROPERTY = EXPLORER_PROPERTY + ".iterations";
     public static final String ITERATIONS_LIMIT_PROPERTY = ITERATIONS_PROPERTY + ".limit";
     public static final String ITERATIONS_UNLIMITED_PROPERTY = ITERATIONS_PROPERTY + ".unlimited";
@@ -192,10 +198,39 @@ public class Config extends ForwardingSortedMap<String, String> {
         public String toString() {
             return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, name());
         }
-
     }
 
     public static final Render DEFAULT_RENDER = Render.STANDARD;
+
+    public static enum Final {
+        IDENTITY {
+            @Override
+            public Function getFunction(Dimension size) {
+                return Identity.create(size);
+            }
+        },
+        SPHERICAL {
+            @Override
+            public Function getFunction(Dimension size) {
+                return Spherical.create(size);
+            }
+        },
+        EXPONENTIAL {
+            @Override
+            public Function getFunction(Dimension size) {
+                return Exponential.create(size);
+            }
+        };
+
+        public abstract Function getFunction(Dimension size);
+
+        @Override
+        public String toString() {
+            return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, name());
+        }
+    }
+
+    public static final Final DEFAULT_FINAL = Final.IDENTITY;
 
     public static final Predicate<CharSequence> EXPLORER_KEYS = Predicates.containsPattern("^" + EXPLORER_PROPERTY + ".");
 

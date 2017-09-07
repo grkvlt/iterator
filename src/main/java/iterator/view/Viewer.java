@@ -105,6 +105,7 @@ import iterator.model.Function;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
+import iterator.util.Config.Final;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Dialog;
@@ -132,7 +133,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private double colour[];
     private long max;
     private Timer timer;
-    private double points[] = new double[4];
+    private Point2D points[] = new Point2D[2];
     private AtomicLong count = new AtomicLong(0l);
     private AtomicInteger task = new AtomicInteger(0);
     private AtomicBoolean running = new AtomicBoolean(false);
@@ -281,12 +282,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             if (info) {
                 FloatFormatter one = Formatter.floats(1);
                 DoubleFormatter four = Formatter.doubles(4);
-                String scaleText = String.format("%sx (%s,%s) %s/%s %s y%s [%s/%d]",
+                String scaleText = String.format("%sx (%s,%s) %s/%s %s %s() y%s [%s/%d]",
                         one.toString(scale),
                         four.toString(centre.getX() / size.getWidth()),
                         four.toString(centre.getY() / size.getHeight()),
                         controller.getMode(), controller.getRender(),
                         controller.hasPalette() ? controller.getPaletteFile() : (controller.isColour() ? "hsb" : "black"),
+                        controller.getFinal().toString(),
                         one.toString(controller.getGamma()),
                         tasks.isEmpty() ? "-" : Integer.toString(tasks.size()), controller.getThreads());
                 String countText = String.format("%,dK", count.get()).replaceAll("[^0-9K+]", " ");
@@ -408,10 +410,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
         image.set(newImage(getSize()));
 
-        points[0] = random.nextInt(size.width);
-        points[1] = random.nextInt(size.height);
-        points[2] = random.nextInt(size.width);
-        points[3] = random.nextInt(size.height);
+        points[0] = new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height));
+        points[1] = new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height));
 
         top = new int[size.width * size.height];
         density = new long[size.width * size.height];
@@ -453,7 +453,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         return PAGE_EXISTS;
     }
 
-    public void iterate(BufferedImage targetImage, int s, long k, float scale, Point2D centre, Render render, Mode mode) {
+    public void iterate(BufferedImage targetImage, int s, long k, float scale, Point2D centre, Render render, Mode mode, Function function) {
         context(controller, targetImage.getGraphics(), g -> {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -489,17 +489,21 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     continue;
                 }
 
-                // Evaluate the function twice, for (x,y) position and for hue/saturation color space
-                Point2D old = new Point2D.Double(points[2], points[3]);
-                f.getTransform().transform(points, 0, points, 0, 2);
+                // Evaluate the function twice, first for (x,y) position and then for hue/saturation color space
+                Point2D old = points[1];
+                points[0] = f.transform(points[0]);
+                points[1] = f.transform(points[1]);
+
+                // Final transform function
+                points[0] = function.transform(points[0]);
 
                 // Discard first 10K points
                 if (count.get() < 10) {
                     continue;
                 }
 
-                int x = (int) ((points[0] - centre.getX()) * scale) + (size.width / 2);
-                int y = (int) ((points[1] - centre.getY()) * scale) + (size.height / 2);
+                int x = (int) ((points[0].getX() - centre.getX()) * scale) + (size.width / 2);
+                int y = (int) ((points[0].getY() - centre.getY()) * scale) + (size.height / 2);
                 if (x >= 0 && y >= 0 && x < size.width && y < size.height) {
                     int p = x + y * size.width;
 
@@ -660,7 +664,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     @Override
     public void run() {
         if (controller.isIterationsUnlimited() || count.get() < controller.getIterationsLimit()) {
-            iterate(getImage(), 1, controller.getIterations(), scale, centre, controller.getRender(), controller.getMode());
+            Function function = controller.getFinal().getFunction(getSize());
+            iterate(getImage(), 1, controller.getIterations(), scale, centre,
+                    controller.getRender(), controller.getMode(), function);
         } else {
             token.incrementAndGet();
         }

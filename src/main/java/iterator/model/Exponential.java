@@ -19,65 +19,30 @@ import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 /**
- * Transform Model.
+ * Exponential Transform Model.
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "Reflection")
-public class Reflection implements Function {
+public class Exponential implements Function {
 
-    @XmlAttribute
     private int id;
-    @XmlAttribute(required = false)
-    public Integer x;
-    @XmlAttribute(required = false)
-    public Integer y;
-    @XmlAttribute(required = false)
-    public Double r;
-    @XmlAttribute
     private int sw;
-    @XmlAttribute
     private int sh;
 
-    private Reflection() {
-        // JAXB
-    }
-
-    private Reflection(Dimension size) {
+    private Exponential(Dimension size) {
         this(-1, size);
     }
 
-    private Reflection(int id, Dimension size) {
+    private Exponential(int id, Dimension size) {
         this.id = id;
         this.sw = size.width;
         this.sh = size.height;
-        this.x = 0;
-        this.y = 0;
-        this.r = 0d;
     }
 
-    public static Reflection create(Dimension size) {
-        return new Reflection(size);
-    }
-
-    public static Reflection copy(Reflection original) {
-        Reflection copy = new Reflection(original.getSize());
-        copy.duplicate(original);
-        return copy;
-    }
-
-    public void duplicate(Reflection original) {
-        this.x = original.x;
-        this.y = original.y;
-        this.r = original.r;
+    public static Exponential create(Dimension size) {
+        return new Exponential(size);
     }
 
     @Override
@@ -97,23 +62,28 @@ public class Reflection implements Function {
 
     @Override
     public void setSize(Dimension size) {
-        Point2D scale = new Point2D.Double(size.getWidth() / sw, size.getHeight() / sh);
         sw = size.width;
         sh = size.height;
-
-        x = (int) (scale.getX() * x);
-        y = (int) (scale.getY() * y);
     }
 
     @Override
     public AffineTransform getTransform() {
-        AffineTransform transform = AffineTransform.getTranslateInstance(x, y);
-        transform.rotate(-r);
-        transform.scale(-1d, 1d);
-        transform.rotate(r);
-        transform.translate(-x, -y);
+        throw new UnsupportedOperationException();
+    }
 
-        return transform;
+    @Override
+    public Point2D transform(Point2D src) {
+        double ox = sw / 2d;
+        double oy = sh / 2d;
+        double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);
+        double x = (src.getX() - ox) / u;
+        double y = (src.getY() - oy) / u;
+        double e = Math.exp(x - 1d);
+
+        double fx = ox + (u * e * Math.cos(y * Math.PI));
+        double fy = oy + (u * e * Math.sin(y * Math.PI));
+
+        return new Point2D.Double(fx, fy);
     }
 
     @Override
@@ -123,8 +93,8 @@ public class Reflection implements Function {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof Reflection)) return false;
-        Reflection that = (Reflection) object;
+        if (!(object instanceof Exponential)) return false;
+        Exponential that = (Exponential) object;
         return Objects.equal(id, that.id);
     }
 
@@ -133,9 +103,6 @@ public class Reflection implements Function {
         return MoreObjects.toStringHelper(this)
                 .omitNullValues()
                 .add("id", id)
-                .add("x", x)
-                .add("y", y)
-                .add("r", r)
                 .toString();
     }
 }

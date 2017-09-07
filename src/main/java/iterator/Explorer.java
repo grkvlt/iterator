@@ -26,6 +26,7 @@ import static iterator.Utils.saveImage;
 import static iterator.Utils.threads;
 import static iterator.util.Config.DEBUG_PROPERTY;
 import static iterator.util.Config.DEFAULT_DEBUG;
+import static iterator.util.Config.DEFAULT_FINAL;
 import static iterator.util.Config.DEFAULT_GAMMA;
 import static iterator.util.Config.DEFAULT_GRID_MAX;
 import static iterator.util.Config.DEFAULT_GRID_MIN;
@@ -39,6 +40,7 @@ import static iterator.util.Config.DEFAULT_PALETTE_SEED;
 import static iterator.util.Config.DEFAULT_PALETTE_SIZE;
 import static iterator.util.Config.DEFAULT_RENDER;
 import static iterator.util.Config.DEFAULT_WINDOW_SIZE;
+import static iterator.util.Config.FINAL_PROPERTY;
 import static iterator.util.Config.GAMMA_PROPERTY;
 import static iterator.util.Config.GRID_MAX_PROPERTY;
 import static iterator.util.Config.GRID_MIN_PROPERTY;
@@ -153,6 +155,7 @@ import iterator.dialog.About;
 import iterator.dialog.Preferences;
 import iterator.model.IFS;
 import iterator.util.Config;
+import iterator.util.Config.Final;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Dialog;
@@ -211,6 +214,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     private Mode mode;
     private Render render;
+    private Final function;
     private int paletteSize;
     private String paletteFile;
     private long seed;
@@ -311,6 +315,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         // Set colour mode and rendering configuration
         setMode(config.get(MODE_PROPERTY, Strings.isNullOrEmpty(paletteFile) ? DEFAULT_MODE : Mode.PALETTE));
         setRender(config.get(RENDER_PROPERTY, DEFAULT_RENDER));
+        setFinal(config.get(FINAL_PROPERTY, DEFAULT_FINAL));
         setSeed(config.get(PALETTE_SEED_PROPERTY, DEFAULT_PALETTE_SEED));
         if (Strings.isNullOrEmpty(paletteFile)) {
             setPaletteFile(config.get(PALETTE_FILE_PROPERTY, DEFAULT_PALETTE_FILE));
@@ -399,6 +404,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public void setMode(Mode value) {
         mode = value;
         config.set(MODE_PROPERTY, mode);
+    }
+
+    public void setFinal(Final value) {
+        function = value;
+        config.set(FINAL_PROPERTY, function);
     }
 
     public void setGamma(float value) {
@@ -778,6 +788,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public Render getRender() { return render; }
 
     public Mode getMode() { return mode; }
+
+    public Final getFinal() { return function; }
 
     public float getGamma() { return gamma; }
 

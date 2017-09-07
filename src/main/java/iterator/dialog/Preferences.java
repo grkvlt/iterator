@@ -18,6 +18,7 @@ package iterator.dialog;
 import static iterator.util.Messages.DIALOG_PREFERENCES_BUTTON_CANCEL;
 import static iterator.util.Messages.DIALOG_PREFERENCES_BUTTON_UPDATE;
 import static iterator.util.Messages.DIALOG_PREFERENCES_DEBUG;
+import static iterator.util.Messages.DIALOG_PREFERENCES_FINAL;
 import static iterator.util.Messages.DIALOG_PREFERENCES_GAMMA;
 import static iterator.util.Messages.DIALOG_PREFERENCES_ITERATIONS_LIMIT;
 import static iterator.util.Messages.DIALOG_PREFERENCES_MODE;
@@ -33,6 +34,7 @@ import com.google.common.base.Optional;
 import iterator.Explorer;
 import iterator.util.AbstractPropertyDialog;
 import iterator.util.Config;
+import iterator.util.Config.Final;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Formatter;
@@ -46,6 +48,7 @@ public class Preferences extends AbstractPropertyDialog {
 
     private final Property<Mode> mode;
     private final Property<Render> render;
+    private final Property<Final> function;
     private final Property<String> paletteFile;
     private final Property<Integer> paletteSize, threads;
     private final Property<Long> seed;
@@ -62,6 +65,7 @@ public class Preferences extends AbstractPropertyDialog {
 
         mode = addDropDown(messages.getText(DIALOG_PREFERENCES_MODE), Mode.values());
         render = addDropDown(messages.getText(DIALOG_PREFERENCES_RENDER), Render.values());
+        function = addDropDown(messages.getText(DIALOG_PREFERENCES_FINAL), Final.values());
         paletteFile = addDropDown(messages.getText(DIALOG_PREFERENCES_PALETTE_FILE), Config.PALETTE_FILES);
         paletteSize = addSpinner(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), Config.MIN_PALETTE_SIZE, Config.MAX_PALETTE_SIZE);
         seed = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SEED), Formatter.longs());
@@ -83,6 +87,7 @@ public class Preferences extends AbstractPropertyDialog {
 
         mode.set(controller.getMode());
         render.set(controller.getRender());
+        function.set(controller.getFinal());
         paletteFile.set(controller.getPaletteFile());
         paletteSize.set(controller.getPaletteSize());
         seed.set(controller.getSeed());
@@ -98,6 +103,7 @@ public class Preferences extends AbstractPropertyDialog {
     public void onSuccess() {
         controller.setMode(mode.get());
         controller.setRender(render.get());
+        controller.setFinal(function.get());
         controller.setPaletteFile(paletteFile.get());
         controller.setPaletteSize(paletteSize.get());
         controller.setSeed(seed.get());

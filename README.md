@@ -15,6 +15,7 @@ See <http://grkvlt.github.io/iterator/> for further documentation.
   - Set affine matrix
   - Update configuration
 - Live reflection editor
+- Final co-ordinate transforms
 - IFS renderer
   - Colour and greyscale, with gamma
   - IFS, Measure Set and Fractal Top modes
@@ -40,8 +41,6 @@ See <http://grkvlt.github.io/iterator/> for further documentation.
 - IFS enhancements
   - Allow non-square aspect ratio
   - Use unit vectors as basis
-  - Support co-ordinate transforms (polar or log)
-  - More rendering and colour modes
 - Platform support
   - Embedded applet
   - Android application

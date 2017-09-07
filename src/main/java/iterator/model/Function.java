@@ -17,6 +17,7 @@ package iterator.model;
 
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 
 /**
  * Function interface for {@link Transform} and {@link Reflection}.
@@ -28,6 +29,10 @@ public interface Function {
     void setSize(Dimension size);
 
     AffineTransform getTransform();
+
+    default Point2D transform(Point2D src) {
+        return getTransform().transform(src, null);
+    }
 
     int getId();
 
