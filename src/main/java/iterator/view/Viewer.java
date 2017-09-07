@@ -105,7 +105,6 @@ import iterator.model.Function;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
-import iterator.util.Config.Final;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Dialog;
@@ -489,21 +488,26 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     continue;
                 }
 
-                // Evaluate the function twice, first for (x,y) position and then for hue/saturation color space
-                Point2D old = points[1];
-                points[0] = f.transform(points[0]);
-                points[1] = f.transform(points[1]);
+                Point2D old, current;
+                synchronized (points) {
+                    old = new Point2D.Double(points[0].getX(), points[0].getY());
 
-                // Final transform function
-                points[0] = function.transform(points[0]);
+                    // Evaluate the function twice, first for (x,y) position and then for hue/saturation color space
+                    points[0] = f.transform(points[0]);
+                    points[1] = f.transform(points[1]);
+
+                    // Final transform function
+                    points[0] = function.transform(points[0]);
+                    current = new Point2D.Double(points[0].getX(), points[0].getY());
+                }
 
                 // Discard first 10K points
                 if (count.get() < 10) {
                     continue;
                 }
 
-                int x = (int) ((points[0].getX() - centre.getX()) * scale) + (size.width / 2);
-                int y = (int) ((points[0].getY() - centre.getY()) * scale) + (size.height / 2);
+                int x = (int) ((current.getX() - centre.getX()) * scale + (size.getWidth() / 2d));
+                int y = (int) ((current.getY() - centre.getY()) * scale + (size.getHeight() / 2d));
                 if (x >= 0 && y >= 0 && x < size.width && y < size.height) {
                     int p = x + y * size.width;
 
