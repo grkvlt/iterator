@@ -86,6 +86,7 @@ import iterator.dialog.Properties;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
+import iterator.util.Config.Final;
 import iterator.util.Config.Render;
 import iterator.util.Dialog;
 import iterator.util.Formatter;
@@ -298,7 +299,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             Viewer viewer = controller.getViewer();
             long n = getTransforms().size();
             long m = getReflections().size() + 1;
-            long k = Math.min(1_000_000, 50_000 * (long) Math.pow(2d, n * m));
+            long k = Math.min(1_000_000, 50_000 * (long) Math.pow(2d, n * m)) * (controller.getFinal() == Final.IDENTITY ? 1 : 2);
             resetImage();
             viewer.reset();
             viewer.iterate(image, 2, k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d),
