@@ -107,7 +107,7 @@ public class Transform implements Function {
 
     public void duplicate(Transform original) {
         if (original.isMatrix()) {
-            this.matrix = Arrays.copyOf(original.matrix, matrix.length);
+            this.matrix = Arrays.copyOf(original.matrix, original.matrix.length);
         } else {
             this.x = original.x;
             this.y = original.y;

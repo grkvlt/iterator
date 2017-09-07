@@ -60,6 +60,7 @@ import java.awt.geom.Arc2D;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
@@ -418,19 +419,20 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
     public void paintTransformNumber(Transform t, boolean highlight, Graphics graphics) {
         context(controller, graphics, g -> {
             // Set the position and angle
-            Point text = new Point();
-            t.getTransform().transform(new Point(0, 0), text);
+            Point2D text = new Point2D.Double(t.getTranslateX(), t.getTranslateY());
             AffineTransform rotation = new AffineTransform();
+            rotation.translate(text.getX(), text.getY());
             if (t.isMatrix()) {
-                rotation = t.getTransform();
-                rotation.scale(1 / t.getScaleX(), 1 / t.getScaleY());
-                rotation.translate(-t.getTranslateX(), -t.getTranslateY());
+                rotation.shear(t.getTransform().getShearX(), t.getTransform().getShearY());
+                Point2D nw = t.getTransform().transform(Corner.NW.getPoint2D(unit()), null);
+                Point2D ne = t.getTransform().transform(Corner.NE.getPoint2D(unit()), null);
+                double r = Math.atan2(ne.getY() - nw.getY(), ne.getX() - nw.getX());
+                rotation.rotate(r);
             } else {
-                rotation.translate(text.x, text.y);
                 rotation.shear(t.shx, t.shy);
                 rotation.rotate(t.r);
-                rotation.translate(-text.x, -text.y);
             }
+            rotation.translate(-text.getX(), -text.getY());
             g.setTransform(rotation);
 
             // Draw the label
@@ -441,7 +443,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     ((highlight && rotate != null) ? String.format("(%s)", one.toString(Math.toDegrees(t.r))) : ""));
             g.setPaint(Color.BLACK);
             g.setFont(calibri(Font.BOLD, 25));
-            g.drawString(id, text.x + 5, text.y + 25);
+            g.drawString(id, (int) text.getX() + 5, (int) text.getY() + 25);
         });
     }
 
@@ -562,6 +564,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
         public Point getPoint(Rectangle rect) {
             return new Point(rect.x + x * rect.width, rect.y + y * rect.height);
+        }
+
+        public Point2D getPoint2D(Rectangle2D rect) {
+            return new Point2D.Double(rect.getX() + x * rect.getWidth(), rect.getY() + y * rect.getHeight());
         }
     }
 
@@ -887,6 +893,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
     public void mouseMoved(MouseEvent e) {
         if (start == null) {
             for (Transform t : ifs.getTransforms()) {
+                if (t.isMatrix()) continue;
                 if (getCorner(t, e.getPoint()) != null) {
                     setCornerCursor(t, e.getPoint());
                     return;
