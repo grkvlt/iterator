@@ -125,6 +125,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
         } else {
             DoubleFormatter four = Formatter.doubles(4);
             DoubleFormatter one = Formatter.doubles(1);
+            DoubleFormatter zero = Formatter.doubles(0);
 
             int columns = controller.getWidth() / 380;
             html.append("<table>")
@@ -167,11 +168,11 @@ public class Details extends JTextPane implements Printable, Subscriber {
                         "</tr>" +
                         "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
                         t.getId(),
-                        four.toString(matrix[0]), four.toString(matrix[2]), one.toString(matrix[4]),
+                        four.toString(matrix[0]), four.toString(matrix[2]), zero.toString(matrix[4]),
                         100d * t.getWeight() / weight(ifs.getTransforms()),
                         controller.isColour() ? "black" : "white",
                         c.getRed(), c.getGreen(), c.getBlue(),
-                        four.toString(matrix[1]), four.toString(matrix[2]), one.toString(matrix[5]));
+                        four.toString(matrix[1]), four.toString(matrix[2]), zero.toString(matrix[5]));
                 html.append(transform)
                     .append("</table>")
                     .append("</td>");
@@ -210,7 +211,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                             r.getId(),
                             controller.isColour() ? "black" : "white",
                             c.getRed(), c.getGreen(), c.getBlue(),
-                            one.toString(r.x), one.toString(r.y), one.toString(Math.toDegrees(r.r)));
+                            Integer.toString(r.x), Integer.toString(r.y), one.toString(Math.toDegrees(r.r)));
                     html.append(reflection)
                         .append("</table>")
                         .append("</td>");

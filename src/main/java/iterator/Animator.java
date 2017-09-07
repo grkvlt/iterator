@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static iterator.Utils.saveImage;
+import static iterator.Utils.sleep;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.SwingUtilities;
 
@@ -279,8 +281,8 @@ public class Animator implements Subscriber {
                     }
                     double delta = (change.end - change.start) * fraction;
                     switch (change.field) {
-                        case "x": transform.x = change.start + delta; break;
-                        case "y": transform.y = change.start + delta; break;
+                        case "x": transform.x = (int) (change.start + delta); break;
+                        case "y": transform.y = (int) (change.start + delta); break;
                         case "w": transform.w = change.start + delta; break;
                         case "h": transform.h = change.start + delta; break;
                         case "r": transform.r = Math.toRadians(change.start + delta); break;
@@ -301,10 +303,10 @@ public class Animator implements Subscriber {
                 viewer.start();
                 if (iterations > 0) {
                     while (viewer.getCount() < iterations) {
-                        Thread.sleep(10l);
+                        sleep(10l, TimeUnit.MILLISECONDS);
                     }
                 } else {
-                    Thread.sleep(delay);
+                    sleep(delay, TimeUnit.MILLISECONDS);
                 }
                 saveImage(viewer.getImage(), new File(output, String.format("%04d.png", frame++)));
             }

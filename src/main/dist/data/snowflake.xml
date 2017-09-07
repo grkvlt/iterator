@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <IFS name="snowflake">
     <Transforms>
-        <Transform id="5" zIndex="4" x="1252.0" y="516.0" w="217.0" h="1342.0" r="1.0619359314494448" shx="0.0" shy="0.0" sw="1200.0" sh="1200.0"/>
+        <Transform id="5" zIndex="4" x="1252" y="516" w="217" h="1342" r="1.0619359314494448" shx="0" shy="0" sw="1200" sh="1200"/>
     </Transforms>
     <Reflections>
-        <Reflection id="1" x="600.0" y="655.0" r="0.0" sw="1200.0" sh="1200.0"/>
-        <Reflection id="2" x="400.0" y="600.0" r="1.5707963267948966" sw="1200.0" sh="1200.0"/>
-        <Reflection id="3" x="895.0" y="300.0" r="-0.7853981633974483" sw="1200.0" sh="1200.0"/>
+        <Reflection id="1" x="600" y="655" r="0" sw="1200" sh="1200"/>
+        <Reflection id="2" x="400" y="600" r="1.5707963267948966" sw="1200" sh="1200"/>
+        <Reflection id="3" x="895" y="300" r="-0.7853981633974483" sw="1200" sh="1200"/>
     </Reflections>
 </IFS>

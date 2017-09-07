@@ -51,7 +51,8 @@ public class Properties extends AbstractPropertyDialog {
     private final Reflection reflection;
     private final IFS ifs;
 
-    private Property<Double> x, y, w, h, r, shx, shy, det;
+    private Property<Integer> x, y;
+    private Property<Double> w, h, r, shx, shy, det;
     private OptionalProperty<Double> weight;
 
     public Properties(Function function, IFS ifs, Explorer controller) {
@@ -70,8 +71,8 @@ public class Properties extends AbstractPropertyDialog {
         setLabel(label);
 
         if (transform != null) {
-            x = addProperty(messages.getText(DIALOG_PROPERTIES_X), Formatter.doubles(1));
-            y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), Formatter.doubles(1));
+            x = addProperty(messages.getText(DIALOG_PROPERTIES_X), Formatter.integers());
+            y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), Formatter.integers());
             r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Formatter.doubles(1));
             w = addProperty(messages.getText(DIALOG_PROPERTIES_W), Formatter.doubles(1));
             h = addProperty(messages.getText(DIALOG_PROPERTIES_H), Formatter.doubles(1));
@@ -81,8 +82,8 @@ public class Properties extends AbstractPropertyDialog {
             weight = addOptionalProperty(messages.getText(DIALOG_PROPERTIES_WEIGHT), Formatter.optionalDoubles(4));
         }
         if (reflection != null) {
-            x = addProperty(messages.getText(DIALOG_PROPERTIES_X), Formatter.doubles(1));
-            y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), Formatter.doubles(1));
+            x = addProperty(messages.getText(DIALOG_PROPERTIES_X), Formatter.integers());
+            y = addProperty(messages.getText(DIALOG_PROPERTIES_Y), Formatter.integers());
             r = addProperty(messages.getText(DIALOG_PROPERTIES_R), Formatter.doubles(1));
         }
 

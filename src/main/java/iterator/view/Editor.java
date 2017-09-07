@@ -194,7 +194,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         editor.add(menuItem(messages.getText(MENU_EDITOR_NEW_TRANSFORM), e -> {
             Transform t = Transform.create(getSize());
             double side = getSize().getWidth() / 4d;
-            double origin = (getSize().getWidth() - side) / 2d;
+            int origin = (getSize().width - (int) side) / 2;
             t.x = origin;
             t.y = origin;
             t.w = side;
@@ -206,7 +206,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         }));
         editor.add(menuItem(messages.getText(MENU_EDITOR_NEW_REFLECTION), e -> {
             Reflection r = Reflection.create(getSize());
-            double origin = getSize().getWidth() / 2d;
+            int origin = getSize().width / 2;
             r.x = origin;
             r.y = origin;
             r.r = 0d;
@@ -230,8 +230,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
     public Transform getAnts() {
         Transform ants = null;
         if (reflection == null && selected == null && start != null && end != null) {
-            double x = Math.min(start.x, end.x);
-            double y = Math.min(start.y, end.y);
+            int x = Math.min(start.x, end.x);
+            int y = Math.min(start.y, end.y);
             double w = Math.max(start.x, end.x) - x;
             double h = Math.max(start.y, end.y) - y;
 
@@ -673,8 +673,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
                     if (e.isControlDown() && reflection == null) {
                         reflection = Reflection.create(getSize());
-                        reflection.x = start.getX();
-                        reflection.y = start.getY();
+                        reflection.x = start.x;
+                        reflection.y = start.y;
                     }
                 }
             }
@@ -704,8 +704,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
     public void mouseReleased(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e)) {
             if (selected == null && start != null && end != null) {
-                double x = Math.min(start.x, end.x);
-                double y = Math.min(start.y, end.y);
+                int x = Math.min(start.x, end.x);
+                int y = Math.min(start.y, end.y);
                 double w = Math.max(start.x, end.x) - x;
                 double h = Math.max(start.y, end.y) - y;
                 int dx = end.x - start.x;
@@ -765,8 +765,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     int dy = end.y - start.y;
                     reflection.r = Math.IEEEremainder(Math.atan2(dx, dy), Math.PI * 2d);
                 } else {
-                    reflection.x = end.getX();
-                    reflection.y = end.getY();
+                    reflection.x = end.x;
+                    reflection.y = end.y;
                 }
             } else {
                 if (selected  == null) {
@@ -799,8 +799,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                         Throwables.propagate(e1);
                     }
 
-                    double x = resize.x;
-                    double y = resize.y;
+                    int x = resize.x;
+                    int y = resize.y;
 
                     switch (corner) {
                         case NW:
@@ -859,8 +859,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                         moved.getMatrix(matrix);
                         selected.setMatrix(matrix);
                     } else {
-                        double x = move.x + dx;
-                        double y = move.y + dy;
+                        int x = move.x + dx;
+                        int y = move.y + dy;
 
                         selected.duplicate(move);
                         selected.x = x;

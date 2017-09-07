@@ -16,6 +16,7 @@
 package iterator.model;
 
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
@@ -40,9 +41,9 @@ public class Transform implements Function {
     @XmlAttribute
     private int zIndex;
     @XmlAttribute(required = false)
-    public Double x;
+    public Integer x;
     @XmlAttribute(required = false)
-    public Double y;
+    public Integer y;
     @XmlAttribute(required = false)
     public Double w;
     @XmlAttribute(required = false)
@@ -75,8 +76,8 @@ public class Transform implements Function {
         this.zIndex = zIndex;
         this.sw = size.width;
         this.sh = size.height;
-        this.x = 0d;
-        this.y = 0d;
+        this.x = 0;
+        this.y = 0;
         this.w = 0d;
         this.h = 0d;
         this.r = 0d;
@@ -182,8 +183,8 @@ public class Transform implements Function {
         } else {
             w *= scale.getX();
             h *= scale.getY();
-            x *= scale.getX();
-            y *= scale.getY();
+            x = (int) (scale.getX() * x);
+            y = (int) (scale.getY() * y);
         }
     }
 

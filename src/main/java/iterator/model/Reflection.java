@@ -37,15 +37,15 @@ public class Reflection implements Function {
     @XmlAttribute
     private int id;
     @XmlAttribute(required = false)
-    public Double x;
+    public Integer x;
     @XmlAttribute(required = false)
-    public Double y;
+    public Integer y;
     @XmlAttribute(required = false)
     public Double r;
     @XmlAttribute
-    private double sw;
+    private int sw;
     @XmlAttribute
-    private double sh;
+    private int sh;
 
     private Reflection() {
         // JAXB
@@ -57,10 +57,10 @@ public class Reflection implements Function {
 
     private Reflection(int id, Dimension size) {
         this.id = id;
-        this.sw = size.getWidth();
-        this.sh = size.getHeight();
-        this.x = 0d;
-        this.y = 0d;
+        this.sw = size.width;
+        this.sh = size.height;
+        this.x = 0;
+        this.y = 0;
         this.r = 0d;
     }
 
@@ -98,11 +98,11 @@ public class Reflection implements Function {
     @Override
     public void setSize(Dimension size) {
         Point2D scale = new Point2D.Double(size.getWidth() / sw, size.getHeight() / sh);
-        sw = size.getWidth();
-        sh = size.getHeight();
+        sw = size.width;
+        sh = size.height;
 
-        x *= scale.getX();
-        y *= scale.getY();
+        x = (int) (scale.getX() * x);
+        y = (int) (scale.getY() * y);
     }
 
     @Override
