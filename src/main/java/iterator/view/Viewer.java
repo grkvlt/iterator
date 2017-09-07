@@ -630,7 +630,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                                 rgb[2] *= gray;
                             }
                             Color.RGBtoHSB(rgb[0], rgb[1], rgb[2], hsb);
-                            g.setPaint(alpha(new Color(Color.HSBtoRGB(hsb[0], hsb[1], gray)), (int) (ratio * 255)));
+                            g.setPaint(alpha(new Color(Color.HSBtoRGB(hsb[0], hsb[1], gray * 0.8f)), (int) (ratio * 255)));
                         } else {
                             g.setPaint(new Color(gray, gray, gray, (float) ratio));
                         }
