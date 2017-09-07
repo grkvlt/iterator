@@ -80,7 +80,7 @@
           <li>Windows, Linux or OSX Operating System</li>
           <li>Maven and 1.8.x JDK for building <em>(Optional)</em></li>
         </ul>
-        <h3>Instructions</h3>
+        <h3 class="break">Instructions</h3>
         <p>
           Either build the program using Maven or extract one of the packaged
           distributions. These can be <a href="https://github.com/grkvlt/iterator/releases/1.3.0">downloaded from
@@ -128,7 +128,7 @@
           or <em>car</em>, or a URI pointing at a local or remote <code>PNG</code> image
           to retrieve colours from.
         </p>
-        <h3>Configuration</h3>
+        <h3 class="break">Configuration</h3>
         <p>
           This list shows some of the available properties along with their default values.
         </p>
@@ -374,7 +374,31 @@
           <strong>Important</strong> <em>Editing and other actions can also be
           accessed using the right-click context menu on most screens.
         </blockquote>
-        <h3>Examples</h3>
+        <h3>Animation</h3>
+        <p>
+          You can animate a sequence of changes to the individual transformations
+          using the animator scripts in the <code>bin</code> directory. These use
+          a configuration file that describes the set of changes, such as the
+          example provided in <code>data/leaf.animation</code>, which is rendered
+          as follows.
+        </p>
+        <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/animator.sh ./data/leaf.animation
+<b>Configured colour: abstract
+File 0000.png: 3 transforms: 1.0x scale at (400.00, 400.00)
+with 1,165K iterations
+File 0001.png: 3 transforms: 1.0x scale at (400.00, 400.00)
+with 1,310K iterations</b></code></pre>
+        <p>
+          Using a utility such as <em>ffmpeg</em>, the generated images
+          can then be combined into an <code>.avi</code> MPEG video file.
+        </p>
+        <iframe id="youtube" style="margin-left: 25px; border: 1px solid black; margin-bottom: 10px;" width="480" height="270" allowfullscreen
+            src="http://www.youtube.com/embed/FJY53HxTe0o?modestbranding=0&theme=dark&autohide=1&fs=1"></iframe>
+        <blockquote>
+          <strong>TODO</strong> <em>Further documentation on the <code>.animation</code>
+          file format and generating video files is required.</em>
+        </blockquote>
+        <h3 class="break">Examples</h3>
         <p>
           A series of example XML data files for IFS transforms are provided
           in the <code>data</code> directory of the distribution. Some of these can be
@@ -404,31 +428,7 @@
           This selection of IFS images is also included in the distribution archive.
           To view it, open the <code>data/gallery/index.html</code> file in a web browser.
         </p>
-        <h3>Animation</h3>
-        <p>
-          You can animate a sequence of changes to the individual transformations
-          using the animator scripts in the <code>bin</code> directory. These use
-          a configuration file that describes the set of changes, such as the
-          example provided in <code>data/leaf.animation</code>, which is rendered
-          as follows.
-        </p>
-        <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/animator.sh ./data/leaf.animation
-<b>Configured colour: abstract
-File 0000.png: 3 transforms: 1.0x scale at (400.00, 400.00)
-with 1,165K iterations
-File 0001.png: 3 transforms: 1.0x scale at (400.00, 400.00)
-with 1,310K iterations</b></code></pre>
-        <p>
-          Using a utility such as <em>ffmpeg</em>, the generated images
-          can then be combined into an <code>.avi</code> MPEG video file.
-        </p>
-        <iframe id="youtube" style="margin-left: 25px; border: 1px solid black; margin-bottom: 10px;" width="480" height="270" allowfullscreen
-            src="http://www.youtube.com/embed/FJY53HxTe0o?modestbranding=0&theme=dark&autohide=1&fs=1"></iframe>
-        <blockquote>
-          <strong>TODO</strong> <em>Further documentation on the <code>.animation</code>
-          file format and generating video files is required.</em>
-        </blockquote>
-        <h3>References</h3>
+        <h3 class="break">References</h3>
         <ol>
           <li><a href="http://en.wikipedia.org/wiki/Iterated_function_system">Iterated Function System</a>; <em>Wikipedia</em></li>
           <li><a href="http://en.wikipedia.org/wiki/Affine_transformation">Affine Transform</a>; <em>Wikipedia</em></li>
