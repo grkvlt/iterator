@@ -189,6 +189,34 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             "    Documentation at https://grkvlt.github.io/iterator/",
             "");
 
+    public static final List<String> HELP = Arrays.asList(
+            "",
+            "    Iterated Function System Explorer Help",
+            "",
+            "    As well as accelerators for menu items, the keyboard",
+            "    can be used to perform the following actions:",
+            "",
+            "      tab/shift-tab: Cycle between screens",
+            "      s/S: Change palette random seed",
+            "",
+            "    Editor",
+            "      up/down/left/right: Move selcted transform",
+            "      +/-: Rotate selected transform 90 degrees",
+            "      delete: Delete selected transform",
+            "",
+            "    Viewer",
+            "      up/down: Change number of threads",
+            "      t: Print current thread state",
+            "      space: Pause and resume iteration",
+            "      +/-: Zoom in or out by a factor of two",
+            "      =: Centre and reset zoom to original",
+            "      i: Toggle information text display",
+            "      o: Toggle transform overlay display",
+            "      g: Toggle grid display",
+            "",
+            "    See https://grkvlt.github.io/iterator/ for more.",
+            "");
+
     public static final String FULLSCREEN_OPTION = "-f";
     public static final String FULLSCREEN_OPTION_LONG = "--fullscreen";
     public static final String PALETTE_OPTION = "-p";
@@ -859,32 +887,33 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
      */
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_TAB) {
-            if (e.isShiftDown()) {
-                if (current.equals(EDITOR)) {
-                    showDetails.setSelected(true);
-                    show(DETAILS);
-                } else if (current.equals(DETAILS)) {
-                    showViewer.setSelected(true);
-                    show(VIEWER);
-                } else if (current.equals(VIEWER)) {
-                    showEditor.setSelected(true);
-                    show(EDITOR);
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_TAB:
+                if (e.isShiftDown()) {
+                    if (current.equals(EDITOR)) {
+                        showDetails.setSelected(true);
+                        show(DETAILS);
+                    } else if (current.equals(DETAILS)) {
+                        showViewer.setSelected(true);
+                        show(VIEWER);
+                    } else if (current.equals(VIEWER)) {
+                        showEditor.setSelected(true);
+                        show(EDITOR);
+                    }
+                } else {
+                    if (current.equals(EDITOR)) {
+                        showViewer.setSelected(true);
+                        show(VIEWER);
+                    } else if (current.equals(VIEWER)) {
+                        showDetails.setSelected(true);
+                        show(DETAILS);
+                    } else if (current.equals(DETAILS)) {
+                        showEditor.setSelected(true);
+                        show(EDITOR);
+                    }
                 }
-            } else {
-                if (current.equals(EDITOR)) {
-                    showViewer.setSelected(true);
-                    show(VIEWER);
-                } else if (current.equals(VIEWER)) {
-                    showDetails.setSelected(true);
-                    show(DETAILS);
-                } else if (current.equals(DETAILS)) {
-                    showEditor.setSelected(true);
-                    show(EDITOR);
-                }
-            }
-        } else if (e.getKeyCode() == KeyEvent.VK_S) {
-            if (viewer.isVisible() || details.isVisible()) {
+                break;
+            case KeyEvent.VK_S:
                 if (e.isShiftDown()) {
                     setSeed(seed - 1);
                 } else {
@@ -892,7 +921,16 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 }
                 loadColours();
                 bus.post(ifs);
-            }
+                break;
+            case KeyEvent.VK_SLASH:
+                if (!e.isShiftDown()) break;
+            case KeyEvent.VK_H:
+                if (e.isControlDown() || e.isAltDown() || e.isMetaDown()) break;
+                String help = HELP.stream()
+                        .map(STACK::concat)
+                        .collect(Collectors.joining(NEWLINE));
+                System.out.println(help);
+                break;
         }
     }
 
