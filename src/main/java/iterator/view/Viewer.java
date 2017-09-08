@@ -25,6 +25,7 @@ import static iterator.Utils.alpha;
 import static iterator.Utils.calibri;
 import static iterator.Utils.checkBoxItem;
 import static iterator.Utils.context;
+import static iterator.Utils.copyPoint;
 import static iterator.Utils.menuItem;
 import static iterator.Utils.unity;
 import static iterator.Utils.weight;
@@ -490,7 +491,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
                 Point2D old, current;
                 synchronized (points) {
-                    old = new Point2D.Double(points[0].getX(), points[0].getY());
+                    old = copyPoint(points[1]);
 
                     // Evaluate the function twice, first for (x,y) position and then for hue/saturation color space
                     points[0] = f.transform(points[0]);
@@ -498,7 +499,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
                     // Final transform function
                     points[0] = function.transform(points[0]);
-                    current = new Point2D.Double(points[0].getX(), points[0].getY());
+                    current = copyPoint(points[0]);
                 }
 
                 // Discard first 10K points

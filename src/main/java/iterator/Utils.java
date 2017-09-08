@@ -22,6 +22,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -203,6 +204,10 @@ public class Utils {
             t.printStackTrace(System.err);
             System.exit(1);
         };
+    }
+
+    public static Point2D copyPoint(Point2D source) {
+        return new Point2D.Double(source.getX(), source.getY());
     }
 
     /**
