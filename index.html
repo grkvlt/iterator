@@ -145,6 +145,7 @@
           <li><code>explorer.debug</code> - Enable debugging mode - <em>false</em></li>
           <li><code>explorer.mode</code> - Colour display mode - <em>palette</em></li>
           <li><code>explorer.render</code> - IFS rendering style - <em>standard</em></li>
+          <li><code>explorer.final</code> - Final co-ordinate transform - <em>identity</em></li>
           <li><code>explorer.threads</code> - Number of threads - <em>2</em></li>
         </ul>
         <p>
@@ -193,8 +194,8 @@
         <h3>Options</h3>
         <p>
           The most interesting configuration properties are the <code>explorer.mode</code>,
-          <code>explorer.render</code> and <code>explorer.palette.*</code> options.
-          These determine the colour and style that will be used to display the
+          <code>explorer.render</code>, <code>explorer.final</code> and <code>explorer.palette.*</code>
+          options. These determine the colour and style that will be used to display the
           IFS on screen.
         </p>
         <blockquote>
@@ -256,6 +257,14 @@
           modes are under active development, and may produce unexpected or
           unpredictable output. This will be addressed in an upcoming release.</em>
         </blockquote>
+        <p>
+          The <code>explorer.final</code> option sets a final co-ordinate
+          transformation function, to be executed after each iteration of
+          the IFS rendering. The default is the <em>identity</em> function,
+          which leaves the co-ordinates unchanged. The value can be set to
+          one of <em>spherical</em>, <em>exponential</em>, <em>cycliner</em>
+          or <em>tangenet</em> to produce an alternative effect.
+        </p>
         <h3>Usage</h3>
         <p>
           Once the program starts, it will diplay an empty grid in the
