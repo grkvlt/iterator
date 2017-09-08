@@ -66,6 +66,7 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -514,8 +515,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
     public Transform getTransformAt(Point point) {
         for (Transform t : Ordering.from(IFS.Z_ORDER).reverse().immutableSortedCopy(ifs.getTransforms())) {
-            Shape box = t.getTransform().createTransformedShape(new Rectangle(0, 0, getWidth(), getHeight()));
-            if (box.contains(point) || isResize(t, point) || isRotate(t, point)) {
+            Shape box = t.getTransform().createTransformedShape(unit());
+            if (box.contains(point)) {
                 return t;
             }
         }
@@ -532,7 +533,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         return null;
     }
 
-    public boolean isRotate(Transform t, Point point) {
+    public boolean isRotateHandle(Transform t, Point point) {
         int rotateX = getWidth() / 2, rotateY = 0;
         Point center = new Point();
         t.getTransform().transform(new Point(rotateX, rotateY), center);
@@ -540,7 +541,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         return handle.contains(point);
     }
 
-    public boolean isResize(Transform t, Point point) {
+    public boolean isResizeHandle(Transform t, Point point) {
         return getCorner(t, point) != null;
     }
 
@@ -639,13 +640,10 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                 setCursor(new Cursor(Cursor.MOVE_CURSOR));
             } else {
                 resize = null;
-                for (Transform t : ifs.getTransforms()) {
-                    if (t.isMatrix()) continue;
-                    if (isResize(t, e.getPoint())) {
-                        resize = t;
-                        break;
-                    }
-                }
+                ifs.getTransforms().stream()
+                        .filter(t -> !t.isMatrix() && isResizeHandle(t, e.getPoint()))
+                        .findFirst()
+                        .ifPresent(t -> { resize = t; });
                 if (resize != null) {
                     corner = getCorner(resize, e.getPoint());
                     if (corner != null) {
@@ -657,7 +655,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     ifs.getTransforms().remove(resize);
                     selected = resize;
                 } else if (clickTransform != null) {
-                    if (!clickTransform.isMatrix() && isRotate(clickTransform, e.getPoint())) {
+                    if (!clickTransform.isMatrix() && isRotateHandle(clickTransform, e.getPoint())) {
                         selected = clickTransform;
                         rotate = selected;
                         ifs.getTransforms().remove(rotate);
@@ -893,14 +891,12 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
     @Override
     public void mouseMoved(MouseEvent e) {
         if (start == null) {
-            for (Transform t : ifs.getTransforms()) {
-                if (t.isMatrix()) continue;
-                if (getCorner(t, e.getPoint()) != null) {
-                    setCornerCursor(t, e.getPoint());
-                    return;
-                }
-            }
-            if (getTransformAt(e.getPoint()) != null) {
+            Optional<Transform> corner = ifs.getTransforms().stream()
+                    .filter(t -> !t.isMatrix() && isResizeHandle(t, e.getPoint()))
+                    .findFirst();
+            if (corner.isPresent()) {
+                setCornerCursor(corner.get(), e.getPoint());
+            } else if (getTransformAt(e.getPoint()) != null) {
                 setCursor(new Cursor(Cursor.HAND_CURSOR));
             } else if (getReflectionAt(e.getPoint()) != null) {
                 setCursor(new Cursor(Cursor.HAND_CURSOR));
