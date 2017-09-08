@@ -287,7 +287,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         four.toString(centre.getY() / size.getHeight()),
                         controller.getMode(), controller.getRender(),
                         controller.hasPalette() ? controller.getPaletteFile() : (controller.isColour() ? "hsb" : "black"),
-                        controller.getFinal().toString(),
+                        controller.getFinal().getShortName(),
                         one.toString(controller.getGamma()),
                         tasks.isEmpty() ? "-" : Integer.toString(tasks.size()), controller.getThreads());
                 String countText = String.format("%,dK", count.get()).replaceAll("[^0-9K+]", " ");

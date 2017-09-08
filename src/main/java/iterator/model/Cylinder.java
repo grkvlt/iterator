@@ -23,26 +23,26 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 /**
- * Identity Co-ordinate Transform.
+ * Cylinder Co-ordinate Transform.
  */
-public class Identity implements Function {
+public class Cylinder implements Function {
 
     private int id;
     private int sw;
     private int sh;
 
-    private Identity(Dimension size) {
+    private Cylinder(Dimension size) {
         this(-1, size);
     }
 
-    private Identity(int id, Dimension size) {
+    private Cylinder(int id, Dimension size) {
         this.id = id;
         this.sw = size.width;
         this.sh = size.height;
     }
 
-    public static Identity create(Dimension size) {
-        return new Identity(size);
+    public static Cylinder create(Dimension size) {
+        return new Cylinder(size);
     }
 
     @Override
@@ -73,7 +73,14 @@ public class Identity implements Function {
 
     @Override
     public Point2D transform(Point2D src) {
-        return src;
+        double ox = sw / 2d;
+        double oy = sh / 2d;
+        double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);
+        double x = (src.getX() - ox) / u;
+
+        double fx = ox + (u * Math.sin(x));
+
+        return new Point2D.Double(fx, src.getY());
     }
 
     @Override
@@ -83,8 +90,8 @@ public class Identity implements Function {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof Identity)) return false;
-        Identity that = (Identity) object;
+        if (!(object instanceof Cylinder)) return false;
+        Cylinder that = (Cylinder) object;
         return Objects.equal(id, that.id);
     }
 

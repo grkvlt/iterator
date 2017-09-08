@@ -56,10 +56,12 @@ import com.google.common.io.Resources;
 
 import iterator.Explorer;
 import iterator.dialog.Preferences;
+import iterator.model.Cylinder;
 import iterator.model.Exponential;
 import iterator.model.Function;
 import iterator.model.Identity;
 import iterator.model.Spherical;
+import iterator.model.Tangent;
 
 /**
  * A global {@link Map} for preferences and configuration.
@@ -203,26 +205,46 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Render DEFAULT_RENDER = Render.STANDARD;
 
     public static enum Final {
-        IDENTITY {
+        IDENTITY("id") {
             @Override
             public Function getFunction(Dimension size) {
                 return Identity.create(size);
             }
         },
-        SPHERICAL {
+        SPHERICAL("sph") {
             @Override
             public Function getFunction(Dimension size) {
                 return Spherical.create(size);
             }
         },
-        EXPONENTIAL {
+        EXPONENTIAL("exp") {
             @Override
             public Function getFunction(Dimension size) {
                 return Exponential.create(size);
             }
+        },
+        CYLINDER("cyl") {
+            @Override
+            public Function getFunction(Dimension size) {
+                return Cylinder.create(size);
+            }
+        },
+        TANGENT("tan") {
+            @Override
+            public Function getFunction(Dimension size) {
+                return Tangent.create(size);
+            }
         };
 
         public abstract Function getFunction(Dimension size);
+
+        private final String name;
+
+        private Final(String name) {
+            this.name = name;
+        }
+
+        public String getShortName() { return name; }
 
         @Override
         public String toString() {

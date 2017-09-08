@@ -23,26 +23,26 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 /**
- * Identity Co-ordinate Transform.
+ * Tangent Co-ordinate Transform.
  */
-public class Identity implements Function {
+public class Tangent implements Function {
 
     private int id;
     private int sw;
     private int sh;
 
-    private Identity(Dimension size) {
+    private Tangent(Dimension size) {
         this(-1, size);
     }
 
-    private Identity(int id, Dimension size) {
+    private Tangent(int id, Dimension size) {
         this.id = id;
         this.sw = size.width;
         this.sh = size.height;
     }
 
-    public static Identity create(Dimension size) {
-        return new Identity(size);
+    public static Tangent create(Dimension size) {
+        return new Tangent(size);
     }
 
     @Override
@@ -73,7 +73,16 @@ public class Identity implements Function {
 
     @Override
     public Point2D transform(Point2D src) {
-        return src;
+        double ox = sw / 2d;
+        double oy = sh / 2d;
+        double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);
+        double x = (src.getX() - ox) / u;
+        double y = (src.getY() - oy) / u;
+
+        double fx = ox + (u * Math.sin(x) / Math.cos(y));
+        double fy = oy + (u * Math.tan(y));
+
+        return new Point2D.Double(fx, fy);
     }
 
     @Override
@@ -83,8 +92,8 @@ public class Identity implements Function {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof Identity)) return false;
-        Identity that = (Identity) object;
+        if (!(object instanceof Tangent)) return false;
+        Tangent that = (Tangent) object;
         return Objects.equal(id, that.id);
     }
 

@@ -23,7 +23,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 /**
- * Spherical Transform Model.
+ * Spherical Co-ordinate Transform.
  */
 public class Spherical implements Function {
 

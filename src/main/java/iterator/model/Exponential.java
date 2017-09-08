@@ -23,7 +23,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 /**
- * Exponential Transform Model.
+ * Exponential Co-ordinate Transform.
  */
 public class Exponential implements Function {
 
