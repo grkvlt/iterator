@@ -67,19 +67,20 @@ public class AppleSupport implements OpenFilesHandler, AboutHandler, Preferences
     /** @see com.apple.eawt.PreferencesHandler#handlePreferences(com.apple.eawt.AppEvent.PreferencesEvent) */
     @Override
     public void handlePreferences(PreferencesEvent e) {
-        Dialog.show(controller::getPreferences);
+        Dialog.show(controller::getPreferences, controller);
     }
 
     /** @see com.apple.eawt.QuitHandler#handleQuitRequestWith(com.apple.eawt.AppEvent.QuitEvent, com.apple.eawt.QuitResponse) */
     @Override
     public void handleQuitRequestWith(QuitEvent e, QuitResponse r) {
         r.performQuit();
+        controller.print("Exiting");
         System.exit(0);
     }
 
     /** @see com.apple.eawt.AboutHandler#handleAbout(com.apple.eawt.AppEvent.AboutEvent) */
     @Override
     public void handleAbout(AboutEvent e) {
-        Dialog.show(controller::getAbout);
+        Dialog.show(controller::getAbout, controller);
     }
 }

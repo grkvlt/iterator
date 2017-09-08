@@ -18,7 +18,7 @@ package iterator.util;
 import static iterator.Utils.calibri;
 
 import java.awt.Font;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import com.google.common.base.Supplier;
 
@@ -35,12 +35,12 @@ public interface Dialog extends AutoCloseable {
     /** Method to display the dialog box. */
     void showDialog();
 
-    static void show(Supplier<Dialog> supplier, Consumer<Exception>...exceptionHandlers) {
+    static void show(Supplier<Dialog> supplier, BiConsumer<Throwable, String>...exceptionHandlers) {
         try (Dialog dialog = supplier.get()) {
             dialog.showDialog();
-        } catch (Exception ex) {
-            for (Consumer<Exception> handler : exceptionHandlers) {
-                handler.accept(ex);
+        } catch (Throwable t) {
+            for (BiConsumer<Throwable, String> handler : exceptionHandlers) {
+                handler.accept(t, "Error displaying dialog");
             }
         }
     }

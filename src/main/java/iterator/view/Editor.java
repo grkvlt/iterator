@@ -128,11 +128,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
         transformMenu = new JPopupMenu();
         properties = menuItem(messages.getText(MENU_TRANSFORM_PROPERTIES), e -> {
-            Dialog.show(() -> new Properties(selected, ifs, controller));
+            Dialog.show(() -> new Properties(selected, ifs, controller), controller);
         });
         transformMenu.add(properties);
         transformMenu.add(menuItem(messages.getText(MENU_TRANSFORM_MATRIX), e -> {
-            Dialog.show(() -> new Matrix(selected, ifs, controller));
+            Dialog.show(() -> new Matrix(selected, ifs, controller), controller);
         }));
         transformMenu.add(menuItem(messages.getText(MENU_TRANSFORM_DELETE), e -> {
             ifs.getTransforms().remove(selected);
@@ -179,7 +179,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
         reflectionMenu = new JPopupMenu();
         reflectionMenu.add(menuItem(messages.getText(MENU_REFLECTION_PROPERTIES), e -> {
-            Dialog.show(() -> new Properties(reflection, ifs, controller));
+            Dialog.show(() -> new Properties(reflection, ifs, controller), controller);
         }));
         reflectionMenu.add(menuItem(messages.getText(MENU_REFLECTION_DELETE), e -> {
             ifs.getReflections().remove(reflection);

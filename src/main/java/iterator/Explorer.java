@@ -491,7 +491,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         JMenu file = new JMenu(messages.getText(MENU_FILE));
         if (platform != Platform.MAC_OS_X) {
             file.add(menuItem(messages.getText(MENU_FILE_ABOUT), e -> {
-                Dialog.show(() -> about);
+                Dialog.show(this::getAbout, this);
             }));
         }
         JMenuItem newIfs = menuItem(messages.getText(MENU_FILE_NEW), e -> {
@@ -581,7 +581,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         file.add(print);
         if (platform != Platform.MAC_OS_X) {
             file.add(menuItem(messages.getText(MENU_FILE_PREFERENCES), e -> {
-                Dialog.show(() -> prefs);
+                Dialog.show(this::getPreferences, this);
             }));
         }
         file.add(menuItem(messages.getText(MENU_FILE_PREFERENCES_SAVE), e -> {
