@@ -18,7 +18,6 @@ package iterator.util;
 import static iterator.Utils.NEWLINE;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -56,12 +55,7 @@ import com.google.common.io.Resources;
 
 import iterator.Explorer;
 import iterator.dialog.Preferences;
-import iterator.model.Cylinder;
-import iterator.model.Exponential;
-import iterator.model.Function;
-import iterator.model.Identity;
-import iterator.model.Spherical;
-import iterator.model.Tangent;
+import iterator.model.functions.CoordinateTransform;
 
 /**
  * A global {@link Map} for preferences and configuration.
@@ -99,7 +93,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String THREADS_PROPERTY = EXPLORER_PROPERTY + ".threads";
     public static final String MODE_PROPERTY = EXPLORER_PROPERTY + ".mode";
     public static final String RENDER_PROPERTY = EXPLORER_PROPERTY + ".render";
-    public static final String FINAL_PROPERTY = EXPLORER_PROPERTY + ".final";
+    public static final String TRANSFORM_PROPERTY = EXPLORER_PROPERTY + ".transform";
     public static final String ITERATIONS_PROPERTY = EXPLORER_PROPERTY + ".iterations";
     public static final String ITERATIONS_LIMIT_PROPERTY = ITERATIONS_PROPERTY + ".limit";
     public static final String ITERATIONS_UNLIMITED_PROPERTY = ITERATIONS_PROPERTY + ".unlimited";
@@ -121,6 +115,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Integer MIN_THREADS = 2;
     public static final Boolean DEFAULT_DEBUG = false;
     public static final Boolean DEFAULT_ITERATIONS_UNLIMITED = true;
+    public static final CoordinateTransform DEFAULT_TRANSFORM = CoordinateTransform.IDENTITY;
 
     public static final List<String> FOOTER = Arrays.asList(
             "#",
@@ -203,56 +198,6 @@ public class Config extends ForwardingSortedMap<String, String> {
     }
 
     public static final Render DEFAULT_RENDER = Render.STANDARD;
-
-    public static enum Final {
-        IDENTITY("id") {
-            @Override
-            public Function getFunction(Dimension size) {
-                return Identity.create(size);
-            }
-        },
-        SPHERICAL("sph") {
-            @Override
-            public Function getFunction(Dimension size) {
-                return Spherical.create(size);
-            }
-        },
-        EXPONENTIAL("exp") {
-            @Override
-            public Function getFunction(Dimension size) {
-                return Exponential.create(size);
-            }
-        },
-        CYLINDER("cyl") {
-            @Override
-            public Function getFunction(Dimension size) {
-                return Cylinder.create(size);
-            }
-        },
-        TANGENT("tan") {
-            @Override
-            public Function getFunction(Dimension size) {
-                return Tangent.create(size);
-            }
-        };
-
-        public abstract Function getFunction(Dimension size);
-
-        private final String name;
-
-        private Final(String name) {
-            this.name = name;
-        }
-
-        public String getShortName() { return name; }
-
-        @Override
-        public String toString() {
-            return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, name());
-        }
-    }
-
-    public static final Final DEFAULT_FINAL = Final.IDENTITY;
 
     public static final Predicate<CharSequence> EXPLORER_KEYS = Predicates.containsPattern("^" + EXPLORER_PROPERTY + ".");
 

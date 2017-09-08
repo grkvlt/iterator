@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package iterator.model;
+package iterator.model.functions;
 
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
@@ -22,27 +22,29 @@ import java.awt.geom.Point2D;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
+import iterator.model.Function;
+
 /**
- * Tangent Co-ordinate Transform.
+ * Cylinder Co-ordinate Transform.
  */
-public class Tangent implements Function {
+public class Cylinder implements Function {
 
     private int id;
     private int sw;
     private int sh;
 
-    private Tangent(Dimension size) {
+    private Cylinder(Dimension size) {
         this(-1, size);
     }
 
-    private Tangent(int id, Dimension size) {
+    private Cylinder(int id, Dimension size) {
         this.id = id;
         this.sw = size.width;
         this.sh = size.height;
     }
 
-    public static Tangent create(Dimension size) {
-        return new Tangent(size);
+    public static Cylinder create(Dimension size) {
+        return new Cylinder(size);
     }
 
     @Override
@@ -77,12 +79,10 @@ public class Tangent implements Function {
         double oy = sh / 2d;
         double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);
         double x = (src.getX() - ox) / u;
-        double y = (src.getY() - oy) / u;
 
-        double fx = ox + (u * Math.sin(x) / Math.cos(y));
-        double fy = oy + (u * Math.tan(y));
+        double fx = ox + (u * Math.sin(x));
 
-        return new Point2D.Double(fx, fy);
+        return new Point2D.Double(fx, src.getY());
     }
 
     @Override
@@ -92,8 +92,8 @@ public class Tangent implements Function {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof Tangent)) return false;
-        Tangent that = (Tangent) object;
+        if (!(object instanceof Cylinder)) return false;
+        Cylinder that = (Cylinder) object;
         return Objects.equal(id, that.id);
     }
 
