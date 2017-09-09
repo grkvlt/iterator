@@ -26,7 +26,6 @@ import static iterator.Utils.saveImage;
 import static iterator.Utils.threads;
 import static iterator.util.Config.DEBUG_PROPERTY;
 import static iterator.util.Config.DEFAULT_DEBUG;
-import static iterator.util.Config.DEFAULT_TRANSFORM;
 import static iterator.util.Config.DEFAULT_GAMMA;
 import static iterator.util.Config.DEFAULT_GRID_MAX;
 import static iterator.util.Config.DEFAULT_GRID_MIN;
@@ -39,8 +38,8 @@ import static iterator.util.Config.DEFAULT_PALETTE_FILE;
 import static iterator.util.Config.DEFAULT_PALETTE_SEED;
 import static iterator.util.Config.DEFAULT_PALETTE_SIZE;
 import static iterator.util.Config.DEFAULT_RENDER;
+import static iterator.util.Config.DEFAULT_TRANSFORM;
 import static iterator.util.Config.DEFAULT_WINDOW_SIZE;
-import static iterator.util.Config.TRANSFORM_PROPERTY;
 import static iterator.util.Config.GAMMA_PROPERTY;
 import static iterator.util.Config.GRID_MAX_PROPERTY;
 import static iterator.util.Config.GRID_MIN_PROPERTY;
@@ -58,6 +57,7 @@ import static iterator.util.Config.PALETTE_SEED_PROPERTY;
 import static iterator.util.Config.PALETTE_SIZE_PROPERTY;
 import static iterator.util.Config.RENDER_PROPERTY;
 import static iterator.util.Config.THREADS_PROPERTY;
+import static iterator.util.Config.TRANSFORM_PROPERTY;
 import static iterator.util.Config.WINDOW_HEIGHT_PROPERTY;
 import static iterator.util.Config.WINDOW_WIDTH_PROPERTY;
 import static iterator.util.Messages.DIALOG_FILES_PNG;
@@ -153,7 +153,6 @@ import com.google.common.io.Resources;
 
 import iterator.dialog.About;
 import iterator.dialog.Preferences;
-import iterator.model.Function;
 import iterator.model.IFS;
 import iterator.model.functions.CoordinateTransform;
 import iterator.util.Config;
@@ -243,8 +242,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     private Mode mode;
     private Render render;
-    private CoordinateTransform transform;
-    private Function function;
+    private CoordinateTransform.Type transform;
+    private CoordinateTransform function;
     private int paletteSize;
     private String paletteFile;
     private long seed;
@@ -345,7 +344,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         // Set colour mode and rendering configuration
         setMode(config.get(MODE_PROPERTY, Strings.isNullOrEmpty(paletteFile) ? DEFAULT_MODE : Mode.PALETTE));
         setRender(config.get(RENDER_PROPERTY, DEFAULT_RENDER));
-        setCoordinateTransform(config.get(TRANSFORM_PROPERTY, DEFAULT_TRANSFORM));
+        setCoordinateTransformType(config.get(TRANSFORM_PROPERTY, DEFAULT_TRANSFORM));
         setSeed(config.get(PALETTE_SEED_PROPERTY, DEFAULT_PALETTE_SEED));
         if (Strings.isNullOrEmpty(paletteFile)) {
             setPaletteFile(config.get(PALETTE_FILE_PROPERTY, DEFAULT_PALETTE_FILE));
@@ -436,7 +435,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         config.set(MODE_PROPERTY, mode);
     }
 
-    public void setCoordinateTransform(CoordinateTransform value) {
+    public void setCoordinateTransformType(CoordinateTransform.Type value) {
         transform = value;
         function = value.getFunction();
         config.set(TRANSFORM_PROPERTY, transform);
@@ -820,9 +819,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public Mode getMode() { return mode; }
 
-    public Function getCoordinateTransformFunction() { return function; }
+    public CoordinateTransform getCoordinateTransform() { return function; }
 
-    public CoordinateTransform getCoordinateTransform() { return transform; }
+    public CoordinateTransform.Type getCoordinateTransformType() { return transform; }
 
     public float getGamma() { return gamma; }
 

@@ -15,62 +15,21 @@
  */
 package iterator.model.functions;
 
-import java.awt.Dimension;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-
-import iterator.model.Function;
 
 /**
  * Tangent Co-ordinate Transform.
  * <p>
  * Variation 42.
  */
-public class Tangent implements Function {
-
-    private int id;
-    private int sw;
-    private int sh;
+public class Tangent extends CoordinateTransform {
 
     private Tangent() {
-        this(-1);
-    }
-
-    private Tangent(int id) {
-        this.id = id;
+        this.id = 42;
     }
 
     public static Tangent create() {
         return new Tangent();
-    }
-
-    @Override
-    public Dimension getSize() {
-        return new Dimension(sw, sh);
-    }
-
-    @Override
-    public int getId() {
-        return this.id;
-    }
-
-    @Override
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    @Override
-    public void setSize(Dimension size) {
-        sw = size.width;
-        sh = size.height;
-    }
-
-    @Override
-    public AffineTransform getTransform() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -86,25 +45,5 @@ public class Tangent implements Function {
         double fy = oy + (uy * Math.tan(y * 2d * Math.PI));
 
         return new Point2D.Double(fx, fy);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof Tangent)) return false;
-        Tangent that = (Tangent) object;
-        return Objects.equal(id, that.id);
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .omitNullValues()
-                .add("id", id)
-                .toString();
     }
 }

@@ -15,62 +15,21 @@
  */
 package iterator.model.functions;
 
-import java.awt.Dimension;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-
-import iterator.model.Function;
 
 /**
  * Bubble Co-ordinate Transform.
  * <p>
  * Variation 28.
  */
-public class Bubble implements Function {
-
-    private int id;
-    private int sw;
-    private int sh;
+public class Bubble extends CoordinateTransform {
 
     private Bubble() {
-        this(-1);
-    }
-
-    private Bubble(int id) {
-        this.id = id;
+        this.id = 28;
     }
 
     public static Bubble create() {
         return new Bubble();
-    }
-
-    @Override
-    public Dimension getSize() {
-        return new Dimension(sw, sh);
-    }
-
-    @Override
-    public int getId() {
-        return this.id;
-    }
-
-    @Override
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    @Override
-    public void setSize(Dimension size) {
-        sw = size.width;
-        sh = size.height;
-    }
-
-    @Override
-    public AffineTransform getTransform() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -80,31 +39,12 @@ public class Bubble implements Function {
         double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);
         double r = Point2D.distance(ox, oy, src.getX(), src.getY()) / u;
         double scale = 4d / ((r * r) + 4d);
+        double x = (src.getX() - ox) / u;
+        double y = (src.getY() - oy) / u;
 
-        AffineTransform transform = AffineTransform.getTranslateInstance(ox, oy);
-        transform.scale(scale, scale);
-        transform.translate(-ox, -oy);
+        double fx = ox + (u * scale * x);
+        double fy = oy + (u * scale * y);
 
-        return transform.transform(src, null);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof Bubble)) return false;
-        Bubble that = (Bubble) object;
-        return Objects.equal(id, that.id);
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .omitNullValues()
-                .add("id", id)
-                .toString();
+        return new Point2D.Double(fx, fy);
     }
 }

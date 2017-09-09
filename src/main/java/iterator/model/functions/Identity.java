@@ -15,30 +15,15 @@
  */
 package iterator.model.functions;
 
-import java.awt.Dimension;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-
-import iterator.model.Function;
 
 /**
  * Identity Co-ordinate Transform.
  */
-public class Identity implements Function {
-
-    private int id;
-    private int sw;
-    private int sh;
+public class Identity extends CoordinateTransform {
 
     private Identity() {
-        this(-1);
-    }
-
-    private Identity(int id) {
-        this.id = id;
+        this.id = 0;
     }
 
     public static Identity create() {
@@ -46,53 +31,7 @@ public class Identity implements Function {
     }
 
     @Override
-    public Dimension getSize() {
-        return new Dimension(sw, sh);
-    }
-
-    @Override
-    public int getId() {
-        return this.id;
-    }
-
-    @Override
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    @Override
-    public void setSize(Dimension size) {
-        sw = size.width;
-        sh = size.height;
-    }
-
-    @Override
-    public AffineTransform getTransform() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Point2D apply(Point2D src) {
         return src;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof Identity)) return false;
-        Identity that = (Identity) object;
-        return Objects.equal(id, that.id);
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .omitNullValues()
-                .add("id", id)
-                .toString();
     }
 }

@@ -15,62 +15,21 @@
  */
 package iterator.model.functions;
 
-import java.awt.Dimension;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-
-import iterator.model.Function;
 
 /**
  * Bent Co-ordinate Transform.
  * <p>
  * Variation 14.
  */
-public class Bent implements Function {
-
-    private int id;
-    private int sw;
-    private int sh;
+public class Bent extends CoordinateTransform {
 
     private Bent() {
-        this(-1);
-    }
-
-    private Bent(int id) {
-        this.id = id;
+        this.id = 14;
     }
 
     public static Bent create() {
         return new Bent();
-    }
-
-    @Override
-    public Dimension getSize() {
-        return new Dimension(sw, sh);
-    }
-
-    @Override
-    public int getId() {
-        return this.id;
-    }
-
-    @Override
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    @Override
-    public void setSize(Dimension size) {
-        sw = size.width;
-        sh = size.height;
-    }
-
-    @Override
-    public AffineTransform getTransform() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -80,39 +39,15 @@ public class Bent implements Function {
         double x = (src.getX() - ox) / ox;
         double y = (src.getY() - oy) / oy;
 
-        Point2D bent = null;
-        if (x >= 0 && y >= 0) {
-            bent = new Point2D.Double(src.getX(), src.getY());
+        double fx = ox + (ox * x);
+        double fy = oy + (ox * y);
+        if (x < 0) {
+            fx = ox + (ox * 2d * x);
         }
-        if (x < 0 && y >= 0) {
-            bent = new Point2D.Double(2d * src.getX(), src.getY());
+        if (y < 0) {
+            fy = oy + (oy * y / 2d);
         }
-        if (x >= 0 && y < 0) {
-            bent = new Point2D.Double(src.getX(), src.getY() / 2d);
-        }
-        if (x < 0 && y < 0) {
-            bent = new Point2D.Double(2d * src.getX(), src.getY() / 2d);
-        }
-        return bent;
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof Bent)) return false;
-        Bent that = (Bent) object;
-        return Objects.equal(id, that.id);
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .omitNullValues()
-                .add("id", id)
-                .toString();
+        return new Point2D.Double(fx, fy);
     }
 }

@@ -287,7 +287,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                         four.toString(centre.getY() / size.getHeight()),
                         controller.getMode(), controller.getRender(),
                         controller.hasPalette() ? controller.getPaletteFile() : (controller.isColour() ? "hsb" : "black"),
-                        controller.getCoordinateTransform().getShortName(),
+                        controller.getCoordinateTransformType().getShortName(),
                         one.toString(controller.getGamma()),
                         tasks.isEmpty() ? "-" : Integer.toString(tasks.size()), controller.getThreads());
                 String countText = String.format("%,dK", count.get()).replaceAll("[^0-9K+]", " ");
@@ -678,7 +678,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public void run() {
         if (controller.isIterationsUnlimited() || count.get() < controller.getIterationsLimit()) {
             iterate(getImage(), 1, controller.getIterations(), scale, centre,
-                    controller.getRender(), controller.getMode(), controller.getCoordinateTransformFunction());
+                    controller.getRender(), controller.getMode(), controller.getCoordinateTransform());
         } else {
             token.incrementAndGet();
         }

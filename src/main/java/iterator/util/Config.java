@@ -114,7 +114,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Integer MIN_THREADS = 2;
     public static final Boolean DEFAULT_DEBUG = false;
     public static final Boolean DEFAULT_ITERATIONS_UNLIMITED = true;
-    public static final CoordinateTransform DEFAULT_TRANSFORM = CoordinateTransform.IDENTITY;
+    public static final CoordinateTransform.Type DEFAULT_TRANSFORM = CoordinateTransform.Type.IDENTITY;
 
     public static final List<String> FOOTER = Arrays.asList(
             "#",

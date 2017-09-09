@@ -15,62 +15,21 @@
  */
 package iterator.model.functions;
 
-import java.awt.Dimension;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-
-import iterator.model.Function;
 
 /**
  * Cylinder Co-ordinate Transform.
  * <p>
  * Variation 29.
  */
-public class Cylinder implements Function {
-
-    private int id;
-    private int sw;
-    private int sh;
+public class Cylinder extends CoordinateTransform {
 
     private Cylinder() {
-        this(-1);
-    }
-
-    private Cylinder(int id) {
-        this.id = id;
+        this.id = 29;
     }
 
     public static Cylinder create() {
         return new Cylinder();
-    }
-
-    @Override
-    public Dimension getSize() {
-        return new Dimension(sw, sh);
-    }
-
-    @Override
-    public int getId() {
-        return this.id;
-    }
-
-    @Override
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    @Override
-    public void setSize(Dimension size) {
-        sw = size.width;
-        sh = size.height;
-    }
-
-    @Override
-    public AffineTransform getTransform() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -81,25 +40,5 @@ public class Cylinder implements Function {
         double fx = ox + (ox * Math.sin(x * 2d * Math.PI));
 
         return new Point2D.Double(fx, src.getY());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof Cylinder)) return false;
-        Cylinder that = (Cylinder) object;
-        return Objects.equal(id, that.id);
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .omitNullValues()
-                .add("id", id)
-                .toString();
     }
 }

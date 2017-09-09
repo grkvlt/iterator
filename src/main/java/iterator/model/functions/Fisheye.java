@@ -15,62 +15,21 @@
  */
 package iterator.model.functions;
 
-import java.awt.Dimension;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-
-import iterator.model.Function;
 
 /**
  * Fisheye Co-ordinate Transform.
  * <p>
  * Variation 16.
  */
-public class Fisheye implements Function {
-
-    private int id;
-    private int sw;
-    private int sh;
+public class Fisheye extends CoordinateTransform {
 
     private Fisheye() {
-        this(-1);
-    }
-
-    private Fisheye(int id) {
-        this.id = id;
+        this.id = 16;
     }
 
     public static Fisheye create() {
         return new Fisheye();
-    }
-
-    @Override
-    public Dimension getSize() {
-        return new Dimension(sw, sh);
-    }
-
-    @Override
-    public int getId() {
-        return this.id;
-    }
-
-    @Override
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    @Override
-    public void setSize(Dimension size) {
-        sw = size.width;
-        sh = size.height;
-    }
-
-    @Override
-    public AffineTransform getTransform() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -80,32 +39,12 @@ public class Fisheye implements Function {
         double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);
         double r = Point2D.distance(ox, oy, src.getX(), src.getY()) / u;
         double scale = 2d / (r + 1d);
+        double x = (src.getX() - ox) / u;
+        double y = (src.getY() - oy) / u;
 
-        AffineTransform transform = AffineTransform.getTranslateInstance(ox, oy);
-        transform.scale(scale, scale);
-        transform.translate(-ox, -oy);
+        double fx = ox + (u * scale * y);
+        double fy = oy + (u * scale * x);
 
-        Point2D scaled = transform.transform(src, null);
-        return new Point2D.Double(scaled.getY(), scaled.getX());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof Fisheye)) return false;
-        Fisheye that = (Fisheye) object;
-        return Objects.equal(id, that.id);
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .omitNullValues()
-                .add("id", id)
-                .toString();
+        return new Point2D.Double(fx, fy);
     }
 }
