@@ -26,6 +26,8 @@ import iterator.model.Function;
 
 /**
  * Tangent Co-ordinate Transform.
+ * <p>
+ * Variation 42.
  */
 public class Tangent implements Function {
 

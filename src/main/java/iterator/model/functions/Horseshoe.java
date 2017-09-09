@@ -25,26 +25,26 @@ import com.google.common.base.Objects;
 import iterator.model.Function;
 
 /**
- * Exponential Co-ordinate Transform.
+ * Horseshoe Co-ordinate Transform.
  * <p>
- * Variation 18.
+ * Variation 4.
  */
-public class Exponential implements Function {
+public class Horseshoe implements Function {
 
     private int id;
     private int sw;
     private int sh;
 
-    private Exponential() {
+    private Horseshoe() {
         this(-1);
     }
 
-    private Exponential(int id) {
+    private Horseshoe(int id) {
         this.id = id;
     }
 
-    public static Exponential create() {
-        return new Exponential();
+    public static Horseshoe create() {
+        return new Horseshoe();
     }
 
     @Override
@@ -77,14 +77,16 @@ public class Exponential implements Function {
     public Point2D apply(Point2D src) {
         double ox = sw / 2d;
         double oy = sh / 2d;
-        double x = (src.getX() - ox) / ox;
-        double y = (src.getY() - oy) / oy;
-        double e = Math.exp(x - 1d);
+        double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);
+        double r = Point2D.distance(ox, oy, src.getX(), src.getY()) / u;
+        double scale = 1d / r;
 
-        double fx = ox + (ox * e * Math.cos(y * 2d * Math.PI));
-        double fy = oy + (oy * e * Math.sin(y * 2d * Math.PI));
+        AffineTransform transform = AffineTransform.getTranslateInstance(ox, oy);
+        transform.scale(scale, scale);
+        transform.translate(-ox, -oy);
 
-        return new Point2D.Double(fx, fy);
+        Point2D point = new Point2D.Double((src.getX() - src.getY()) * (src.getX() + src.getY()), 2d * src.getX() * src.getY());
+        return transform.transform(point, null);
     }
 
     @Override
@@ -94,8 +96,8 @@ public class Exponential implements Function {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof Exponential)) return false;
-        Exponential that = (Exponential) object;
+        if (!(object instanceof Horseshoe)) return false;
+        Horseshoe that = (Horseshoe) object;
         return Objects.equal(id, that.id);
     }
 

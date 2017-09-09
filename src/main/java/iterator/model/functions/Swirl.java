@@ -25,26 +25,26 @@ import com.google.common.base.Objects;
 import iterator.model.Function;
 
 /**
- * Exponential Co-ordinate Transform.
+ * Swirl Co-ordinate Transform.
  * <p>
- * Variation 18.
+ * Variation 3.
  */
-public class Exponential implements Function {
+public class Swirl implements Function {
 
     private int id;
     private int sw;
     private int sh;
 
-    private Exponential() {
+    private Swirl() {
         this(-1);
     }
 
-    private Exponential(int id) {
+    private Swirl(int id) {
         this.id = id;
     }
 
-    public static Exponential create() {
-        return new Exponential();
+    public static Swirl create() {
+        return new Swirl();
     }
 
     @Override
@@ -77,12 +77,13 @@ public class Exponential implements Function {
     public Point2D apply(Point2D src) {
         double ox = sw / 2d;
         double oy = sh / 2d;
-        double x = (src.getX() - ox) / ox;
-        double y = (src.getY() - oy) / oy;
-        double e = Math.exp(x - 1d);
+        double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);
+        double r = Point2D.distance(ox, oy, src.getX(), src.getY()) / u;
+        double x = (src.getX() - ox) / u;
+        double y = (src.getY() - oy) / u;
 
-        double fx = ox + (ox * e * Math.cos(y * 2d * Math.PI));
-        double fy = oy + (oy * e * Math.sin(y * 2d * Math.PI));
+        double fx = ox + (u * (x * Math.sin(r * r) - y * Math.cos(r * r)));
+        double fy = oy + (u * (x * Math.cos(r * r) + y * Math.sin(r * r)));
 
         return new Point2D.Double(fx, fy);
     }
@@ -94,8 +95,8 @@ public class Exponential implements Function {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof Exponential)) return false;
-        Exponential that = (Exponential) object;
+        if (!(object instanceof Swirl)) return false;
+        Swirl that = (Swirl) object;
         return Objects.equal(id, that.id);
     }
 

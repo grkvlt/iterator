@@ -25,26 +25,26 @@ import com.google.common.base.Objects;
 import iterator.model.Function;
 
 /**
- * Exponential Co-ordinate Transform.
+ * Bent Co-ordinate Transform.
  * <p>
- * Variation 18.
+ * Variation 14.
  */
-public class Exponential implements Function {
+public class Bent implements Function {
 
     private int id;
     private int sw;
     private int sh;
 
-    private Exponential() {
+    private Bent() {
         this(-1);
     }
 
-    private Exponential(int id) {
+    private Bent(int id) {
         this.id = id;
     }
 
-    public static Exponential create() {
-        return new Exponential();
+    public static Bent create() {
+        return new Bent();
     }
 
     @Override
@@ -79,12 +79,21 @@ public class Exponential implements Function {
         double oy = sh / 2d;
         double x = (src.getX() - ox) / ox;
         double y = (src.getY() - oy) / oy;
-        double e = Math.exp(x - 1d);
 
-        double fx = ox + (ox * e * Math.cos(y * 2d * Math.PI));
-        double fy = oy + (oy * e * Math.sin(y * 2d * Math.PI));
-
-        return new Point2D.Double(fx, fy);
+        Point2D bent = null;
+        if (x >= 0 && y >= 0) {
+            bent = new Point2D.Double(src.getX(), src.getY());
+        }
+        if (x < 0 && y >= 0) {
+            bent = new Point2D.Double(2d * src.getX(), src.getY());
+        }
+        if (x >= 0 && y < 0) {
+            bent = new Point2D.Double(src.getX(), src.getY() / 2d);
+        }
+        if (x < 0 && y < 0) {
+            bent = new Point2D.Double(2d * src.getX(), src.getY() / 2d);
+        }
+        return bent;
     }
 
     @Override
@@ -94,8 +103,8 @@ public class Exponential implements Function {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof Exponential)) return false;
-        Exponential that = (Exponential) object;
+        if (!(object instanceof Bent)) return false;
+        Bent that = (Bent) object;
         return Objects.equal(id, that.id);
     }
 

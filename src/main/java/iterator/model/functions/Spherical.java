@@ -26,6 +26,8 @@ import iterator.model.Function;
 
 /**
  * Spherical Co-ordinate Transform.
+ * <p>
+ * Variation 2.
  */
 public class Spherical implements Function {
 

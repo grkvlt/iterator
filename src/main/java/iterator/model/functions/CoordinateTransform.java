@@ -9,7 +9,12 @@ import iterator.model.Function;
 public enum CoordinateTransform {
     IDENTITY("id", Identity.create()),
     SPHERICAL("sph", Spherical.create()),
+    SWIRL("sw", Swirl.create()),
+    HORSESHOE("hrs", Horseshoe.create()),
+    BENT("bent", Bent.create()),
+    FISHEYE("fish", Fisheye.create()),
     EXPONENTIAL("exp", Exponential.create()),
+    BUBBLE("bbl", Bubble.create()),
     CYLINDER("cyl", Cylinder.create()),
     TANGENT("tan", Tangent.create());
 

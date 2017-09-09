@@ -25,26 +25,26 @@ import com.google.common.base.Objects;
 import iterator.model.Function;
 
 /**
- * Exponential Co-ordinate Transform.
+ * Bubble Co-ordinate Transform.
  * <p>
- * Variation 18.
+ * Variation 28.
  */
-public class Exponential implements Function {
+public class Bubble implements Function {
 
     private int id;
     private int sw;
     private int sh;
 
-    private Exponential() {
+    private Bubble() {
         this(-1);
     }
 
-    private Exponential(int id) {
+    private Bubble(int id) {
         this.id = id;
     }
 
-    public static Exponential create() {
-        return new Exponential();
+    public static Bubble create() {
+        return new Bubble();
     }
 
     @Override
@@ -77,14 +77,15 @@ public class Exponential implements Function {
     public Point2D apply(Point2D src) {
         double ox = sw / 2d;
         double oy = sh / 2d;
-        double x = (src.getX() - ox) / ox;
-        double y = (src.getY() - oy) / oy;
-        double e = Math.exp(x - 1d);
+        double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);
+        double r = Point2D.distance(ox, oy, src.getX(), src.getY()) / u;
+        double scale = 4d / ((r * r) + 4d);
 
-        double fx = ox + (ox * e * Math.cos(y * 2d * Math.PI));
-        double fy = oy + (oy * e * Math.sin(y * 2d * Math.PI));
+        AffineTransform transform = AffineTransform.getTranslateInstance(ox, oy);
+        transform.scale(scale, scale);
+        transform.translate(-ox, -oy);
 
-        return new Point2D.Double(fx, fy);
+        return transform.transform(src, null);
     }
 
     @Override
@@ -94,8 +95,8 @@ public class Exponential implements Function {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof Exponential)) return false;
-        Exponential that = (Exponential) object;
+        if (!(object instanceof Bubble)) return false;
+        Bubble that = (Bubble) object;
         return Objects.equal(id, that.id);
     }
 
