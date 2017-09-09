@@ -45,9 +45,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.SecondaryLoop;
 import java.awt.Shape;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -152,7 +150,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private Zoom properties;
     private JCheckBoxMenuItem showGrid, showOverlay, showInfo;
     private JMenuItem pause, resume;
-    private SecondaryLoop loop;
 
     // Listener task to clean up task state collections
     private Runnable cleaner = () -> {
@@ -710,7 +707,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public void start() {
         if (running.compareAndSet(false, true)) {
             controller.debug("Starting");
-            loop = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
             int iterators = controller.getThreads() - (controller.getRender().isDensity() ? 1 : 0);
             for (int i = 0; i < iterators; i++) {
                 submit(Task.ITERATE, this);
@@ -726,7 +722,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             pause.setEnabled(true);
             resume.setEnabled(false);
             timer.start();
-            loop.enter();
         }
     }
 
@@ -741,7 +736,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             timer.stop();
             pause.setEnabled(false);
             resume.setEnabled(true);
-            loop.exit();
             repaint();
         }
         return stopped;
