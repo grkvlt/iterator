@@ -41,7 +41,6 @@ import java.util.stream.Collectors;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Charsets;
-import com.google.common.base.Enums;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -350,12 +349,7 @@ public class Config extends ForwardingSortedMap<String, String> {
         } else if (String.class == type) {
             return (T) value;
         } else if (Enum.class.isAssignableFrom(type)) {
-            Optional<?> e = Enums.getIfPresent((Class<Enum>) type, CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_UNDERSCORE, value));
-            if (e.isPresent()) {
-                return (T) e.get();
-            } else {
-                throw new IllegalArgumentException(String.format("Cannot find %s in %s enum", value, type.getName()));
-            }
+            return (T) Enum.valueOf((Class<Enum>) type, CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_UNDERSCORE, value));
         } else {
             throw new IllegalArgumentException(String.format("Cannot cast %s to %s", value, type.getName()));
         }

@@ -33,18 +33,16 @@ public class Identity implements Function {
     private int sw;
     private int sh;
 
-    private Identity(Dimension size) {
-        this(-1, size);
+    private Identity() {
+        this(-1);
     }
 
-    private Identity(int id, Dimension size) {
+    private Identity(int id) {
         this.id = id;
-        this.sw = size.width;
-        this.sh = size.height;
     }
 
-    public static Identity create(Dimension size) {
-        return new Identity(size);
+    public static Identity create() {
+        return new Identity();
     }
 
     @Override
@@ -74,7 +72,7 @@ public class Identity implements Function {
     }
 
     @Override
-    public Point2D transform(Point2D src) {
+    public Point2D apply(Point2D src) {
         return src;
     }
 

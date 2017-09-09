@@ -18,11 +18,12 @@ package iterator.model;
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.util.function.UnaryOperator;
 
 /**
  * Function interface for {@link Transform} and {@link Reflection}.
  */
-public interface Function {
+public interface Function extends UnaryOperator<Point2D> {
 
     Dimension getSize();
 
@@ -30,7 +31,7 @@ public interface Function {
 
     AffineTransform getTransform();
 
-    default Point2D transform(Point2D src) {
+    default Point2D apply(Point2D src) {
         return getTransform().transform(src, null);
     }
 

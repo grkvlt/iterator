@@ -33,18 +33,16 @@ public class Exponential implements Function {
     private int sw;
     private int sh;
 
-    private Exponential(Dimension size) {
-        this(-1, size);
+    private Exponential() {
+        this(-1);
     }
 
-    private Exponential(int id, Dimension size) {
+    private Exponential(int id) {
         this.id = id;
-        this.sw = size.width;
-        this.sh = size.height;
     }
 
-    public static Exponential create(Dimension size) {
-        return new Exponential(size);
+    public static Exponential create() {
+        return new Exponential();
     }
 
     @Override
@@ -74,7 +72,7 @@ public class Exponential implements Function {
     }
 
     @Override
-    public Point2D transform(Point2D src) {
+    public Point2D apply(Point2D src) {
         double ox = sw / 2d;
         double oy = sh / 2d;
         double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);

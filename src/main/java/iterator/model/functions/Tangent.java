@@ -33,18 +33,16 @@ public class Tangent implements Function {
     private int sw;
     private int sh;
 
-    private Tangent(Dimension size) {
-        this(-1, size);
+    private Tangent() {
+        this(-1);
     }
 
-    private Tangent(int id, Dimension size) {
+    private Tangent(int id) {
         this.id = id;
-        this.sw = size.width;
-        this.sh = size.height;
     }
 
-    public static Tangent create(Dimension size) {
-        return new Tangent(size);
+    public static Tangent create() {
+        return new Tangent();
     }
 
     @Override
@@ -74,7 +72,7 @@ public class Tangent implements Function {
     }
 
     @Override
-    public Point2D transform(Point2D src) {
+    public Point2D apply(Point2D src) {
         double ox = sw / 2d;
         double oy = sh / 2d;
         double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);

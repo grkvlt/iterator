@@ -33,18 +33,16 @@ public class Spherical implements Function {
     private int sw;
     private int sh;
 
-    private Spherical(Dimension size) {
-        this(-1, size);
+    private Spherical() {
+        this(-1);
     }
 
-    private Spherical(int id, Dimension size) {
+    private Spherical(int id) {
         this.id = id;
-        this.sw = size.width;
-        this.sh = size.height;
     }
 
-    public static Spherical create(Dimension size) {
-        return new Spherical(size);
+    public static Spherical create() {
+        return new Spherical();
     }
 
     @Override
@@ -74,7 +72,7 @@ public class Spherical implements Function {
     }
 
     @Override
-    public Point2D transform(Point2D src) {
+    public Point2D apply(Point2D src) {
         double ox = sw / 2d;
         double oy = sh / 2d;
         double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);

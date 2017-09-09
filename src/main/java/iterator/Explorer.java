@@ -438,7 +438,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public void setCoordinateTransform(CoordinateTransform value) {
         transform = value;
-        function = value.getFunction(getSize());
+        function = value.getFunction();
         config.set(TRANSFORM_PROPERTY, transform);
     }
 

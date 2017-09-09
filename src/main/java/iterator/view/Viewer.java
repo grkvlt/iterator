@@ -133,7 +133,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private double colour[];
     private long max;
     private Timer timer;
-    private Point2D points[] = new Point2D[2];
+    private Point2D points[];
     private AtomicLong count = new AtomicLong(0l);
     private AtomicInteger task = new AtomicInteger(0);
     private AtomicBoolean running = new AtomicBoolean(false);
@@ -411,8 +411,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
         image.set(newImage(getSize()));
 
-        points[0] = new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height));
-        points[1] = new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height));
+        points = new Point2D[] {
+            new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)),
+            new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height))
+        };
 
         top = new int[size.width * size.height];
         density = new long[size.width * size.height];
@@ -478,6 +480,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             float hsb[] = new float[3];
             Rectangle rect = new Rectangle(0, 0, s, s);
             function.setSize(size);
+            Point2D old, current;
 
             for (long i = 0l; i < k; i++) {
                 if (i % 1000l == 0l) {
@@ -491,18 +494,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     continue;
                 }
 
-                Point2D old, current;
+                // Evaluate the function twice, first for (x,y) position and then for hue/saturation color space
+                old = copyPoint(points[1]);
                 synchronized (points) {
-                    old = copyPoint(points[1]);
-
-                    // Evaluate the function twice, first for (x,y) position and then for hue/saturation color space
-                    points[0] = f.transform(points[0]);
-                    points[1] = f.transform(points[1]);
-
-                    // Final transform function
-                    points[0] = function.transform(points[0]);
-                    current = copyPoint(points[0]);
+                    points[0] = function.apply(f.apply(points[0]));
+                    points[1] = f.apply(points[1]);
                 }
+                current = copyPoint(points[0]);
 
                 // Discard first 10K points
                 if (count.get() < 10) {

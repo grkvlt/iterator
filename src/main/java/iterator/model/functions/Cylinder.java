@@ -33,18 +33,16 @@ public class Cylinder implements Function {
     private int sw;
     private int sh;
 
-    private Cylinder(Dimension size) {
-        this(-1, size);
+    private Cylinder() {
+        this(-1);
     }
 
-    private Cylinder(int id, Dimension size) {
+    private Cylinder(int id) {
         this.id = id;
-        this.sw = size.width;
-        this.sh = size.height;
     }
 
-    public static Cylinder create(Dimension size) {
-        return new Cylinder(size);
+    public static Cylinder create() {
+        return new Cylinder();
     }
 
     @Override
@@ -74,7 +72,7 @@ public class Cylinder implements Function {
     }
 
     @Override
-    public Point2D transform(Point2D src) {
+    public Point2D apply(Point2D src) {
         double ox = sw / 2d;
         double oy = sh / 2d;
         double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);
