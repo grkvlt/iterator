@@ -75,13 +75,12 @@ public class Exponential implements Function {
     public Point2D apply(Point2D src) {
         double ox = sw / 2d;
         double oy = sh / 2d;
-        double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);
-        double x = (src.getX() - ox) / u;
-        double y = (src.getY() - oy) / u;
+        double x = (src.getX() - ox) / ox;
+        double y = (src.getY() - oy) / oy;
         double e = Math.exp(x - 1d);
 
-        double fx = ox + (u * e * Math.cos(y * Math.PI));
-        double fy = oy + (u * e * Math.sin(y * Math.PI));
+        double fx = ox + (ox * e * Math.cos(y * 2d * Math.PI));
+        double fy = oy + (oy * e * Math.sin(y * 2d * Math.PI));
 
         return new Point2D.Double(fx, fy);
     }

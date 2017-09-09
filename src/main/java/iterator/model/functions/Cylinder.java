@@ -74,11 +74,9 @@ public class Cylinder implements Function {
     @Override
     public Point2D apply(Point2D src) {
         double ox = sw / 2d;
-        double oy = sh / 2d;
-        double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);
-        double x = (src.getX() - ox) / u;
+        double x = (src.getX() - ox) / ox;
 
-        double fx = ox + (u * Math.sin(x));
+        double fx = ox + (ox * Math.sin(x * 2d * Math.PI));
 
         return new Point2D.Double(fx, src.getY());
     }

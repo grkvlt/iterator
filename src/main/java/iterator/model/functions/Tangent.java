@@ -75,12 +75,13 @@ public class Tangent implements Function {
     public Point2D apply(Point2D src) {
         double ox = sw / 2d;
         double oy = sh / 2d;
-        double u = Point2D.distance(0d, 0d, ox / 2d, oy / 2d);
-        double x = (src.getX() - ox) / u;
-        double y = (src.getY() - oy) / u;
+        double ux = ox / 4d;
+        double uy = oy / 4d;
+        double x = (src.getX() - ox) / ux;
+        double y = (src.getY() - oy) / uy;
 
-        double fx = ox + (u * Math.sin(x) / Math.cos(y));
-        double fy = oy + (u * Math.tan(y));
+        double fx = ox + (ux * Math.sin(x * 2d * Math.PI) / Math.cos(y * 2d * Math.PI));
+        double fy = oy + (uy * Math.tan(y * 2d * Math.PI));
 
         return new Point2D.Double(fx, fy);
     }
