@@ -334,6 +334,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
         // Load configuration
         config = Config.loadProperties(override);
+        if (override != null) {
+            print("Loaded %s", override.getFileName());
+        }
 
         // Set performance properties
         setThreads(config.get(THREADS_PROPERTY, Math.max(Runtime.getRuntime().availableProcessors() / 2, MIN_THREADS)));
