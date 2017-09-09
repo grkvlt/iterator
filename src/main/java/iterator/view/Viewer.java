@@ -92,6 +92,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import com.google.common.math.DoubleMath;
 import com.google.common.math.LongMath;
 import com.google.common.util.concurrent.Atomics;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -355,18 +356,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
     public void paintGrid(Graphics2D graphics) {
         context(controller, graphics, g -> {
-            // Set colour and width
-            Color c = alpha(controller.getRender().getForeground(), 64);
-            g.setPaint(c);
-            g.setStroke(DASHED_LINE_1);
-
             // Transform unit square to view space
             double x0 = centre.getX() - (size.getWidth() / 2d / scale);
             double y0 = centre.getY() - (size.getHeight() / 2d / scale);
             AffineTransform view = AffineTransform.getScaleInstance(scale, scale);
             view.translate(-x0, -y0);
 
-            // Draw grid lines
+            // Calculate grid position
             Rectangle unit = new Rectangle(getSize());
             double spacing = controller.getMaxGrid() / scale;
             double mx = centre.getX() - (size.getWidth() / 2d / scale) - (size.getWidth() / 2d);
@@ -378,7 +374,14 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             double sx = mx - rx + (size.getWidth() / 2d);
             double sy = my - ry + (size.getHeight() / 2d);
 
+            // Draw grid lines
+            g.setStroke(DASHED_LINE_1);
             for (double x = sx; x < nx; x += spacing) {
+                if (DoubleMath.fuzzyEquals(x, size.getWidth() / 2d, 0.001d)) {
+                    g.setPaint(alpha(controller.getRender().getForeground(), 128));
+                } else {
+                    g.setPaint(alpha(controller.getRender().getForeground(), 64));
+                }
                 Line2D line = new Line2D.Double(x, my, x, ny);
                 Shape s = view.createTransformedShape(line);
                 if (s.intersects(unit)) {
@@ -386,6 +389,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 }
             }
             for (double y = sy; y < ny; y += spacing) {
+                if (DoubleMath.fuzzyEquals(y, size.getHeight() / 2d, 0.001d)) {
+                    g.setPaint(alpha(controller.getRender().getForeground(), 128));
+                } else {
+                    g.setPaint(alpha(controller.getRender().getForeground(), 64));
+                }
                 Line2D line = new Line2D.Double(mx, y, nx, y);
                 Shape s = view.createTransformedShape(line);
                 if (s.intersects(unit)) {
