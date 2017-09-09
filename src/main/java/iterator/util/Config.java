@@ -300,14 +300,13 @@ public class Config extends ForwardingSortedMap<String, String> {
 
     public void save(File file) {
         Path path = Paths.get(file.getAbsolutePath());
-        if (Files.isWritable(path)) {
-            try {
-                save(Files.newOutputStream(path));
-            } catch (IOException ioe) {
-                throw Throwables.propagate(ioe);
-            }
-        } else {
+        if (Files.exists(path) && !Files.isWritable(path)) {
             throw new IllegalStateException(String.format("Cannot write file %s", path));
+        }
+        try {
+            save(Files.newOutputStream(path));
+        } catch (IOException ioe) {
+            throw Throwables.propagate(ioe);
         }
     }
 
