@@ -221,6 +221,12 @@ public class Utils {
         return new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
     }
 
+    /** @see alpha(Color, int) */
+    public static Color alpha(int rgb, int alpha) {
+        int rgba = (rgb & RGB24) | ((alpha & 0xff) << 24);
+        return new Color(rgba, true);
+    }
+
     /**
      * Loads an image from a {@link URL} into a {@link BufferedImage}.
      *

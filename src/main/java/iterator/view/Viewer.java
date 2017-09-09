@@ -130,7 +130,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private int top[];
     private long density[];
     private double colour[];
-    private float vibrancy = 0.8f;
+    private float vibrancy = 0.9f;
     private long max;
     private Timer timer;
     private Point2D points[];
@@ -588,10 +588,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                             if (top[p] != 0) {
                                 color = new Color(top[p]);
                                 Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
-                                if (hsb[2] < 0.6f) {
+                                if (hsb[2] < 0.5f) {
                                     color = color.brighter();
-                                } else if (hsb[2] > vibrancy) {
-                                    color = color.darker();
                                 }
                             }
                             top[p] = color.getRGB();
@@ -603,7 +601,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     if (!render.isDensity()) {
                         // Apply controller gamma correction
                         Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
-                        g.setPaint(alpha(new Color(Color.HSBtoRGB(hsb[0], hsb[1] * vibrancy, (float) Math.pow(hsb[2], controller.getGamma()))), color.getAlpha()));
+                        g.setPaint(alpha(Color.HSBtoRGB(hsb[0], hsb[1] * vibrancy, (float) Math.pow(hsb[2], controller.getGamma())), color.getAlpha()));
                         rect.setLocation(x, y);
                         g.fill(rect);
                     }
@@ -643,11 +641,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                                 rgb[2] *= gray;
                             }
                             Color.RGBtoHSB(rgb[0], rgb[1], rgb[2], hsb);
-                            g.setPaint(alpha(new Color(Color.HSBtoRGB(hsb[0], hsb[1] * vibrancy, gray)), (int) (ratio * 255)));
+                            g.setPaint(alpha(Color.HSBtoRGB(hsb[0], hsb[1], gray * vibrancy), (int) (ratio * 255 * vibrancy)));
                         } else {
                             g.setPaint(new Color(gray, gray, gray, (float) ratio));
                         }
-                        int s = (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) ? (int) ((invert ? 1d - ratio : ratio) * r * 4f) : r;
+                        int s = (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) ? 1 + (int) (gray * r * 3f) : r;
                         rect.setLocation(x, y);
                         rect.setSize(s, s);
                         g.fill(rect);
