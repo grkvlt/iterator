@@ -363,22 +363,23 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             g.setStroke(DASHED_LINE_1);
 
             // Transform unit square to view space
-            double x0 = (size.getWidth() / 2d) - (centre.getX() * scale);
-            double y0 = (size.getHeight() / 2d) - (centre.getY() * scale);
-            AffineTransform view = AffineTransform.getTranslateInstance(x0, y0);
-            view.scale(scale, scale);
+            double x0 = centre.getX() - (size.getWidth() / 2d / scale);
+            double y0 = centre.getY() - (size.getHeight() / 2d / scale);
+            AffineTransform view = AffineTransform.getScaleInstance(scale, scale);
+            view.translate(-x0, -y0);
 
             // Draw grid lines
             Rectangle unit = new Rectangle(getSize());
             double spacing = controller.getMaxGrid() / scale;
-            double mx = centre.getX() - (size.getWidth() / 2d / scale);
-            double my = centre.getY() - (size.getHeight() / 2d / scale);
+            double mx = centre.getX() - (size.getWidth() / 2d / scale) - (size.getWidth() / 2d);
+            double my = centre.getY() - (size.getHeight() / 2d / scale) - (size.getHeight() / 2d);
             double nx = centre.getX() + (size.getWidth() / 2d / scale);
             double ny = centre.getY() + (size.getHeight() / 2d / scale);
             double rx = Math.IEEEremainder(mx, spacing);
             double ry = Math.IEEEremainder(my, spacing);
-            double sx = mx < 0 ? mx - (spacing - rx) : mx - rx;
-            double sy = my < 0 ? my - (spacing - ry) : my - ry;
+            double sx = mx - rx + (size.getWidth() / 2d);
+            double sy = my - ry + (size.getHeight() / 2d);
+
             for (double x = sx; x < nx; x += spacing) {
                 Line2D line = new Line2D.Double(x, my, x, ny);
                 Shape s = view.createTransformedShape(line);
