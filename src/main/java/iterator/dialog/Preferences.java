@@ -32,6 +32,7 @@ import static iterator.util.Messages.DIALOG_PREFERENCES_TRANSFORM;
 import static iterator.util.Messages.DIALOG_PREFERENCES_VIBRANCY;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Range;
 
 import iterator.Explorer;
 import iterator.model.functions.CoordinateTransform;
@@ -71,10 +72,10 @@ public class Preferences extends AbstractPropertyDialog {
         paletteFile = addDropDown(messages.getText(DIALOG_PREFERENCES_PALETTE_FILE), Config.PALETTE_FILES);
         paletteSize = addSpinner(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), Config.MIN_PALETTE_SIZE, Config.MAX_PALETTE_SIZE);
         seed = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SEED), Formatter.longs());
-        gamma = addProperty(messages.getText(DIALOG_PREFERENCES_GAMMA), Formatter.floats(1));
-        vibrancy = addProperty(messages.getText(DIALOG_PREFERENCES_VIBRANCY), Formatter.floats(1));
+        gamma = addProperty(messages.getText(DIALOG_PREFERENCES_GAMMA), Formatter.range(Range.open(0f, 5f), Formatter.floats(1)));
+        vibrancy = addProperty(messages.getText(DIALOG_PREFERENCES_VIBRANCY), Formatter.range(Range.open(0f, 1f), Formatter.floats(1)));
         blurKernel = addProperty(messages.getText(DIALOG_PREFERENCES_BLUR), Formatter.integers(1, 256));
-        limit = addOptionalProperty(messages.getText(DIALOG_PREFERENCES_ITERATIONS_LIMIT), Formatter.optionalLongs());
+        limit = addOptionalProperty(messages.getText(DIALOG_PREFERENCES_ITERATIONS_LIMIT), Formatter.optional(Formatter.longs()));
         threads = addSpinner(messages.getText(DIALOG_PREFERENCES_THREADS), Config.MIN_THREADS, Runtime.getRuntime().availableProcessors());
         debug = addCheckBox(messages.getText(DIALOG_PREFERENCES_DEBUG));
 

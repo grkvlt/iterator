@@ -22,6 +22,7 @@ import javax.swing.JFormattedTextField.AbstractFormatter;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
+import com.google.common.collect.Range;
 
 /**
  * Implementations of {@link AbstractFormatter} for dialog boxes.
@@ -34,14 +35,6 @@ public class Formatter {
 
     public static DoubleFormatter doubles(int digits)  {
         return new DoubleFormatter(digits);
-    }
-
-    public static OptionalDoubleFormatter optionalDoubles()  {
-        return new OptionalDoubleFormatter();
-    }
-
-    public static OptionalDoubleFormatter optionalDoubles(int digits)  {
-        return new OptionalDoubleFormatter(digits);
     }
 
     public static FloatFormatter floats()  {
@@ -68,16 +61,16 @@ public class Formatter {
         return new LongFormatter(min, max);
     }
 
-    public static OptionalLongFormatter optionalLongs()  {
-        return new OptionalLongFormatter();
-    }
-
-    public static OptionalLongFormatter optionalLongs(long min, long max)  {
-        return new OptionalLongFormatter();
-    }
-
     public static StringFormatter strings()  {
         return new StringFormatter();
+    }
+
+    public static <T> OptionalFormatter<T> optional(BaseFormatter<T> formatter)  {
+        return new OptionalFormatter(formatter);
+    }
+
+    public static <T extends Number & Comparable<T>> BaseFormatter<T> range(Range<T> range, BaseFormatter<T> formatter)  {
+        return new RangeFormatter<T>(range, formatter);
     }
 
     public static abstract class BaseFormatter<T> extends AbstractFormatter {
@@ -112,9 +105,13 @@ public class Formatter {
 
     }
 
-    public static abstract class BaseOptionalFormatter<T> extends BaseFormatter<Optional<T>> {
+    public static class OptionalFormatter<T> extends BaseFormatter<Optional<T>> {
 
         protected BaseFormatter<T> formatter;
+
+        public OptionalFormatter(BaseFormatter<T> formatter) {
+            this.formatter = formatter;
+        }
 
         @Override
         public Optional<T> tryParse(String text) {
@@ -132,6 +129,38 @@ public class Formatter {
 
         @Override
         public Optional<T> getDefault() { return Optional.absent(); }
+
+    }
+
+    public static class RangeFormatter<T extends Number & Comparable<T>> extends BaseFormatter<T> {
+
+        protected BaseFormatter<T> formatter;
+        protected Range<T> range;
+
+        RangeFormatter(Range<T> range, BaseFormatter<T> formatter) {
+            this.formatter = formatter;
+            this.range = range;
+        }
+
+        @Override
+        public T tryParse(String text) {
+            T value = formatter.tryParse(text);
+            if (range.contains(value)) {
+                return value;
+            } else if (value.compareTo(range.upperEndpoint()) > 0) {
+                return range.upperEndpoint();
+            } else {
+                return range.lowerEndpoint();
+            }
+        }
+
+        @Override
+        public String toString(T value) {
+            return formatter.toString(value);
+        }
+
+        @Override
+        public T getDefault() { return formatter.getDefault(); }
 
     }
 
@@ -166,21 +195,6 @@ public class Formatter {
 
         @Override
         public Double getDefault() { return 0d; }
-
-    }
-
-    /**
-     * Formatter for {@link Optional<Double>} values in {@link JFormattedTextField}s.
-     */
-    public static class OptionalDoubleFormatter extends BaseOptionalFormatter<Double> {
-
-        OptionalDoubleFormatter() {
-            this(3);
-        }
-
-        OptionalDoubleFormatter(int digits) {
-            this.formatter = new DoubleFormatter(digits);
-        }
 
     }
 
@@ -275,21 +289,6 @@ public class Formatter {
 
         @Override
         public Long getDefault() { return 0l; }
-
-    }
-
-    /**
-     * Formatter for {@link Optional<Double>} values in {@link JFormattedTextField}s.
-     */
-    public static class OptionalLongFormatter extends BaseOptionalFormatter<Long> {
-
-        OptionalLongFormatter() {
-            this(Long.MIN_VALUE, Long.MAX_VALUE);
-        }
-
-        OptionalLongFormatter(long min, long max) {
-            this.formatter = new LongFormatter(min, max);
-        }
 
     }
 

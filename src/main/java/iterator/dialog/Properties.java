@@ -79,7 +79,7 @@ public class Properties extends AbstractPropertyDialog {
             shx = addProperty(messages.getText(DIALOG_PROPERTIES_SHX), Formatter.doubles(4));
             shy = addProperty(messages.getText(DIALOG_PROPERTIES_SHY), Formatter.doubles(4));
             det = addReadOnlyProperty(messages.getText(DIALOG_PROPERTIES_DETERMINANT), Formatter.doubles(4));
-            weight = addOptionalProperty(messages.getText(DIALOG_PROPERTIES_WEIGHT), Formatter.optionalDoubles(4));
+            weight = addOptionalProperty(messages.getText(DIALOG_PROPERTIES_WEIGHT), Formatter.optional(Formatter.doubles(4)));
         }
         if (reflection != null) {
             x = addProperty(messages.getText(DIALOG_PROPERTIES_X), Formatter.integers());
