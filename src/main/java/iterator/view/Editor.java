@@ -895,8 +895,13 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             Optional<Transform> corner = ifs.getTransforms().stream()
                     .filter(t -> !t.isMatrix() && isResizeHandle(t, e.getPoint()))
                     .findFirst();
+            Optional<Transform> rotate = ifs.getTransforms().stream()
+                    .filter(t -> !t.isMatrix() && isRotateHandle(t, e.getPoint()))
+                    .findFirst();
             if (corner.isPresent()) {
                 setCornerCursor(corner.get(), e.getPoint());
+            } else if (rotate.isPresent()) {
+                setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
             } else if (getTransformAt(e.getPoint()) != null) {
                 setCursor(new Cursor(Cursor.HAND_CURSOR));
             } else if (getReflectionAt(e.getPoint()) != null) {
