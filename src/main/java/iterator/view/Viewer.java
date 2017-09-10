@@ -120,6 +120,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
     private static enum Task { ITERATE, PLOT_DENSITY }
 
+    /** Scaling factor for brightness and saturation. */
+    private static final float VIBRANCY = 0.9f;
+
+    /** Size of blur kernel. */
+    private static final int KERNEL = 3;
+
     private final Explorer controller;
     private final EventBus bus;
     private final Messages messages;
@@ -130,7 +136,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private long density[];
     private long blur[];
     private double colour[];
-    private float vibrancy = 0.9f;
     private long max;
     private Timer timer;
     private AtomicReference<Point2D> p1 = Atomics.newReference(), p2 = Atomics.newReference();
@@ -422,7 +427,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
         top = new int[size.width * size.height];
         density = new long[size.width * size.height];
-        blur = new long[size.width * size.height / 16];
+        blur = new long[(size.width + 1) * (size.height + 1) / (KERNEL * KERNEL)];
         colour = new double[size.width * size.height];
         max = 1;
 
@@ -468,7 +473,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
             g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
             g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, vibrancy));
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, VIBRANCY));
 
             List<Transform> transforms = controller.getEditor().getTransforms();
             List<Reflection> reflections = controller.getEditor().getReflections();
@@ -481,7 +486,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             double weight = weight(transforms);
             int n = transforms.size();
             int m = reflections.size();
-            int l = size.width * size.height;
             float hsb[] = new float[3];
             Rectangle rect = new Rectangle(0, 0, s, s);
             function.setSize(size);
@@ -524,8 +528,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                             switch (render) {
                                 case LOG_DENSITY_BLUR:
                                 case LOG_DENSITY_BLUR_INVERSE:
-                                    int q = (x / 4) + (y / 4) * (size.width / 4);
-                                    blur[q] = LongMath.checkedAdd(blur[q], 1l);
+                                    density[p] = LongMath.checkedAdd(density[p], KERNEL - 1);
+                                    int q = (x / KERNEL) + (y / KERNEL) * (size.width / KERNEL);
+                                    blur[q] = LongMath.checkedAdd(blur[q], 1);
                                     break;
                                 case LOG_DENSITY_POWER:
                                 case DENSITY_POWER:
@@ -543,7 +548,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     Color color = Color.BLACK;
                     if (mode.isColour()) {
                         if (mode.isIFSColour()) {
-                            color = Color.getHSBColor((float) (old.getX() / size.getWidth()), (float) (old.getY() / size.getHeight()), vibrancy);
+                            color = Color.getHSBColor((float) (old.getX() / size.getWidth()), (float) (old.getY() / size.getHeight()), VIBRANCY);
                         } else if (mode.isPalette()) {
                             if (mode.isStealing()) {
                                 color = controller.getSourcePixel(old.getX(), old.getY());
@@ -556,9 +561,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                             }
                         } else {
                             if (render == Render.TOP) {
-                                color = Color.getHSBColor((float) top[p] / (float) ifs.size(), vibrancy, vibrancy);
+                                color = Color.getHSBColor((float) top[p] / (float) ifs.size(), VIBRANCY, VIBRANCY);
                             } else {
-                                color = Color.getHSBColor((float) j / (float) ifs.size(), vibrancy, vibrancy);
+                                color = Color.getHSBColor((float) j / (float) ifs.size(), VIBRANCY, VIBRANCY);
                             }
                         }
                         if (render.isDensity()) {
@@ -591,7 +596,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     if (!render.isDensity()) {
                         // Apply controller gamma correction
                         Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
-                        g.setPaint(alpha(Color.HSBtoRGB(hsb[0], hsb[1] * vibrancy, (float) Math.pow(hsb[2], controller.getGamma())), color.getAlpha()));
+                        g.setPaint(alpha(Color.HSBtoRGB(hsb[0], hsb[1] * VIBRANCY, (float) Math.pow(hsb[2], controller.getGamma())), color.getAlpha()));
                         rect.setLocation(x, y);
                         g.fill(rect);
                     }
@@ -611,9 +616,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             for (int x = 0; x < size.width; x++) {
                 for (int y = 0; y < size.height; y++) {
                     int p = x + y * size.width;
-                    int q = (x / 4) + (y / 4) * (size.width / 4);
                     double ratio = unity().apply(log ? Math.log(density[p]) / Math.log(max) : (double) density[p] / (double) max);
                     if (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) {
+                        int q = (x / KERNEL) + (y / KERNEL) * (size.width / KERNEL);
                         double blurred = unity().apply(Math.log(blur[q]) / Math.log(max));
                         ratio = (blurred + ratio) / 2d;
                     }
@@ -636,13 +641,15 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                                 rgb[2] *= gray;
                             }
                             Color.RGBtoHSB(rgb[0], rgb[1], rgb[2], hsb);
-                            g.setPaint(alpha(Color.HSBtoRGB(hsb[0], hsb[1], gray * vibrancy), (int) (ratio * 255 * vibrancy)));
+                            g.setPaint(alpha(Color.HSBtoRGB(hsb[0], hsb[1], gray * VIBRANCY), (int) (ratio * 255 * VIBRANCY)));
                         } else {
                             g.setPaint(new Color(gray, gray, gray, (float) ratio));
                         }
-                        int s = (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) ? 1 + (int) (gray * r * 3f) : r;
+                        if (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) {
+                            int s = 1 + (int) (gray * r * KERNEL);
+                            rect.setSize(s, s);
+                        }
                         rect.setLocation(x, y);
-                        rect.setSize(s, s);
                         g.fill(rect);
                     }
                 }
