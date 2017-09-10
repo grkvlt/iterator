@@ -24,7 +24,9 @@ import static iterator.Utils.menuItem;
 import static iterator.Utils.printError;
 import static iterator.Utils.saveImage;
 import static iterator.Utils.threads;
+import static iterator.util.Config.BLUR_KERNEL_PROPERTY;
 import static iterator.util.Config.DEBUG_PROPERTY;
+import static iterator.util.Config.DEFAULT_BLUR_KERNEL;
 import static iterator.util.Config.DEFAULT_DEBUG;
 import static iterator.util.Config.DEFAULT_GAMMA;
 import static iterator.util.Config.DEFAULT_GRID_MAX;
@@ -39,6 +41,7 @@ import static iterator.util.Config.DEFAULT_PALETTE_SEED;
 import static iterator.util.Config.DEFAULT_PALETTE_SIZE;
 import static iterator.util.Config.DEFAULT_RENDER;
 import static iterator.util.Config.DEFAULT_TRANSFORM;
+import static iterator.util.Config.DEFAULT_VIBRANCY;
 import static iterator.util.Config.DEFAULT_WINDOW_SIZE;
 import static iterator.util.Config.GAMMA_PROPERTY;
 import static iterator.util.Config.GRID_MAX_PROPERTY;
@@ -58,6 +61,7 @@ import static iterator.util.Config.PALETTE_SIZE_PROPERTY;
 import static iterator.util.Config.RENDER_PROPERTY;
 import static iterator.util.Config.THREADS_PROPERTY;
 import static iterator.util.Config.TRANSFORM_PROPERTY;
+import static iterator.util.Config.VIBRANCY_PROPERTY;
 import static iterator.util.Config.WINDOW_HEIGHT_PROPERTY;
 import static iterator.util.Config.WINDOW_WIDTH_PROPERTY;
 import static iterator.util.Messages.DIALOG_FILES_PNG;
@@ -248,6 +252,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private String paletteFile;
     private long seed;
     private float gamma;
+    private float vibrancy;
+    private int kernel;
     private int threads;
     private boolean debug;
     private long limit;
@@ -354,6 +360,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
         setPaletteSize(config.get(PALETTE_SIZE_PROPERTY, DEFAULT_PALETTE_SIZE));
         setGamma(config.get(GAMMA_PROPERTY, DEFAULT_GAMMA));
+        setVibrancy(config.get(VIBRANCY_PROPERTY, DEFAULT_VIBRANCY));
+        setBlurKernel(config.get(BLUR_KERNEL_PROPERTY, DEFAULT_BLUR_KERNEL));
         debug("Configured rendering as %s/%s %s", render, mode, mode.isPalette() ? paletteFile : mode.isColour() ? "hsb" : "black");
 
         // Load colour palette if required
@@ -447,6 +455,16 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public void setGamma(float value) {
         gamma = value;
         config.set(GAMMA_PROPERTY, gamma);
+    }
+
+    public void setVibrancy(float value) {
+        vibrancy = value;
+        config.set(VIBRANCY_PROPERTY, vibrancy);
+    }
+
+    public void setBlurKernel(int value) {
+        kernel = value;
+        config.set(BLUR_KERNEL_PROPERTY, kernel);
     }
 
     public void setIterationsLimit(long value) {
@@ -827,6 +845,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public CoordinateTransform.Type getCoordinateTransformType() { return transform; }
 
     public float getGamma() { return gamma; }
+
+    public float getVibrancy() { return vibrancy; }
+
+    public int getBlurKernel() { return kernel; }
 
     public long getSeed() { return seed; }
 

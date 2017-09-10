@@ -81,6 +81,8 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String PALETTE_FILE_PROPERTY = PALETTE_PROPERTY + ".file";
     public static final String PALETTE_SIZE_PROPERTY = PALETTE_PROPERTY + ".size";
     public static final String GAMMA_PROPERTY = EXPLORER_PROPERTY + ".gamma";
+    public static final String VIBRANCY_PROPERTY = EXPLORER_PROPERTY + ".vibrancy";
+    public static final String BLUR_KERNEL_PROPERTY = EXPLORER_PROPERTY + ".blur";
     public static final String GRID_PROPERTY =  EXPLORER_PROPERTY + ".grid";
     public static final String GRID_MIN_PROPERTY = GRID_PROPERTY + ".min";
     public static final String GRID_MAX_PROPERTY = GRID_PROPERTY + ".max";
@@ -115,6 +117,8 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Boolean DEFAULT_DEBUG = false;
     public static final Boolean DEFAULT_ITERATIONS_UNLIMITED = true;
     public static final CoordinateTransform.Type DEFAULT_TRANSFORM = CoordinateTransform.Type.IDENTITY;
+    public static final Float DEFAULT_VIBRANCY = 0.9f;
+    public static final Integer DEFAULT_BLUR_KERNEL = 3;
 
     public static final List<String> FOOTER = Arrays.asList(
             "#",
