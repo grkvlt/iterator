@@ -128,6 +128,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private AtomicReference<BufferedImage> image = Atomics.newReference();
     private int top[];
     private long density[];
+    private long blur[];
     private double colour[];
     private float vibrancy = 0.9f;
     private long max;
@@ -421,6 +422,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
         top = new int[size.width * size.height];
         density = new long[size.width * size.height];
+        blur = new long[size.width * size.height / 16];
         colour = new double[size.width * size.height];
         max = 1;
 
@@ -518,22 +520,17 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     // Density estimation histogram
                     if (render.isDensity()) {
                         try {
-                            int q = p;
-                            density[q] = LongMath.checkedAdd(density[q], 1l);
+                            density[p] = LongMath.checkedAdd(density[p], 1l);
                             switch (render) {
                                 case LOG_DENSITY_BLUR:
                                 case LOG_DENSITY_BLUR_INVERSE:
-                                    q += 1;
-                                    if (q < l && q % size.width != 0) density[q] = LongMath.checkedAdd(density[q], 1l);
-                                    q += size.width;
-                                    if (q < l && q % size.width != 0) density[q] = LongMath.checkedAdd(density[q], 1l);
-                                    q -= 1;
-                                    if (q < l && q % size.width != 0) density[q] = LongMath.checkedAdd(density[q], 1l);
+                                    int q = (x / 4) + (y / 4) * (size.width / 4);
+                                    blur[q] = LongMath.checkedAdd(blur[q], 1l);
                                     break;
                                 case LOG_DENSITY_POWER:
                                 case DENSITY_POWER:
                                 case LOG_DENSITY_POWER_INVERSE:
-                                    density[q] = (long) Math.min(((double) density[q]) * 1.01d, Long.MAX_VALUE);
+                                    density[p] = (long) Math.min(((double) density[p]) * 1.01d, Long.MAX_VALUE);
                                     break;
                                 default:
                                     break;
@@ -614,7 +611,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             for (int x = 0; x < size.width; x++) {
                 for (int y = 0; y < size.height; y++) {
                     int p = x + y * size.width;
+                    int q = (x / 4) + (y / 4) * (size.width / 4);
                     double ratio = unity().apply(log ? Math.log(density[p]) / Math.log(max) : (double) density[p] / (double) max);
+                    if (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) {
+                        double blurred = unity().apply(Math.log(blur[q]) / Math.log(max));
+                        ratio = (blurred + ratio) / 2d;
+                    }
                     float gray = (float) Math.pow(invert ? ratio : 1d - ratio, gamma);
                     if (ratio > 0.05d) {
                         if (mode.isColour()) {
