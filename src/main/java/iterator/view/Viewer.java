@@ -25,7 +25,6 @@ import static iterator.Utils.alpha;
 import static iterator.Utils.calibri;
 import static iterator.Utils.checkBoxItem;
 import static iterator.Utils.context;
-import static iterator.Utils.copyPoint;
 import static iterator.Utils.menuItem;
 import static iterator.Utils.unity;
 import static iterator.Utils.weight;
@@ -133,7 +132,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private float vibrancy = 0.9f;
     private long max;
     private Timer timer;
-    private Point2D points[];
+    private AtomicReference<Point2D> p1 = Atomics.newReference(), p2 = Atomics.newReference();
     private AtomicLong count = new AtomicLong(0l);
     private AtomicInteger task = new AtomicInteger(0);
     private AtomicBoolean running = new AtomicBoolean(false);
@@ -417,10 +416,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
         image.set(newImage(getSize()));
 
-        points = new Point2D[] {
-            new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)),
-            new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height))
-        };
+        p1.set(new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
+        p2.set(new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
 
         top = new int[size.width * size.height];
         density = new long[size.width * size.height];
@@ -501,12 +498,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 }
 
                 // Evaluate the function twice, first for (x,y) position and then for hue/saturation color space
-                old = copyPoint(points[1]);
-                synchronized (points) {
-                    points[0] = function.apply(f.apply(points[0]));
-                    points[1] = f.apply(points[1]);
-                }
-                current = copyPoint(points[0]);
+                current = p1.updateAndGet(p -> function.apply(f.apply(p)));
+                old = p2.getAndUpdate(f);
 
                 // Discard first 10K points
                 if (count.get() < 10) {
