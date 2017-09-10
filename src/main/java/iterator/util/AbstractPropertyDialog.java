@@ -26,7 +26,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -44,6 +43,7 @@ import com.google.common.base.Optional;
 import com.google.common.eventbus.EventBus;
 
 import iterator.Explorer;
+import iterator.Utils;
 import iterator.util.Formatter.BaseFormatter;
 import iterator.util.Property.OptionalProperty;
 
@@ -107,13 +107,10 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     }
 
     protected void setCancel(String text) {
-        Action failure = new AbstractAction(text) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-                onCancel();
-            }
-        };
+        Action failure = Utils.action(text, e -> {
+            setVisible(false);
+            onCancel();
+        });
 
         JButton cancel = new JButton(failure);
         cancel.setFont(CALIBRI_PLAIN_14);
@@ -141,7 +138,7 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     protected <T, P extends Property<T>> P addFormattedTextField(String string, BaseFormatter<T> formatter, boolean editable, boolean optional) {
         addLabel(string, editable ? CALIBRI_PLAIN_14 : CALIBRI_ITALIC_14);
 
-        final JFormattedTextField field = new JFormattedTextField(formatter);
+        JFormattedTextField field = new JFormattedTextField(formatter);
         field.setHorizontalAlignment(JTextField.LEFT);
         field.setBorder(editable ? BorderFactory.createLoweredSoftBevelBorder() : BorderFactory.createEmptyBorder(3, 3, 3, 3));
         field.setMargin(new Insets(2, 2, 2, 2));
@@ -162,7 +159,7 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     protected <T> Property<T> addDropDown(String string, T...items) {
         addLabel(string);
 
-        final JComboBox<T> field = new JComboBox<T>(items);
+        JComboBox<T> field = new JComboBox<T>(items);
         field.setBorder(BorderFactory.createEmptyBorder());
         field.setEditable(false);
         field.setFont(CALIBRI_ITALIC_14);
@@ -178,7 +175,7 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         addLabel(string);
 
         SpinnerNumberModel model = new SpinnerNumberModel(min, min, max, 1);
-        final JSpinner field = new JSpinner(model);
+        JSpinner field = new JSpinner(model);
         field.setBorder(BorderFactory.createEmptyBorder());
         field.addKeyListener(this);
         field.setFont(CALIBRI_ITALIC_14);
@@ -192,7 +189,7 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     protected Property<Boolean> addCheckBox(String string) {
         addLabel(string);
 
-        final JCheckBox field = new JCheckBox();
+        JCheckBox field = new JCheckBox();
         field.setBorder(BorderFactory.createEmptyBorder());
         field.addKeyListener(this);
         field.setFont(CALIBRI_ITALIC_14);
@@ -210,6 +207,7 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     private void addLabel(String string, Font font) {
         JLabel label = new JLabel(string, JLabel.RIGHT);
         label.setFont(font);
+        label.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 2));
 
         constraints.gridx = 0;
         constraints.gridwidth = GridBagConstraints.RELATIVE;
