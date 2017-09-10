@@ -425,7 +425,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         kernel = controller.getBlurKernel();
         top = new int[size.width * size.height];
         density = new long[size.width * size.height];
-        blur = new long[(size.width + 1) * (size.height + 1) / (kernel * kernel)];
+        blur = new long[(size.width / kernel + 1) * (size.height / kernel + 1)];
         colour = new double[size.width * size.height];
         max = 1;
 
@@ -526,7 +526,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                             switch (render) {
                                 case LOG_DENSITY_BLUR:
                                 case LOG_DENSITY_BLUR_INVERSE:
-                                    density[p] = LongMath.checkedAdd(density[p], kernel * kernel);
+                                    density[p] = LongMath.checkedAdd(density[p], kernel - 1);
                                     int q = (x / kernel) + (y / kernel) * (size.width / kernel);
                                     blur[q] = LongMath.checkedAdd(blur[q], 1);
                                     break;
@@ -617,11 +617,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     double ratio = unity().apply(log ? Math.log(density[p]) / Math.log(max) : (double) density[p] / (double) max);
                     if (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) {
                         int q = (x / kernel) + (y / kernel) * (size.width / kernel);
-                        double blurred = unity().apply(Math.log(blur[q]) / Math.log(max)) / (kernel * kernel);
+                        double blurred = unity().apply(Math.log(blur[q]) / Math.log(max)) / kernel;
                         ratio = (blurred + ratio) / 2d;
                     }
                     float gray = (float) Math.pow(invert ? ratio : 1d - ratio, gamma);
-                    if (ratio > 0.05d) {
+                    if (ratio > 0.001d) {
                         if (mode.isColour()) {
                             int color = (int) (colour[p] * RGB24);
                             rgb[0] = (color >> 16) & 0xff;
