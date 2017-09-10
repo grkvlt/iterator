@@ -32,14 +32,18 @@ import iterator.util.Property;
 /**
  * Zoom properties dialog.
  */
-public class Zoom extends AbstractPropertyDialog {
+public class Zoom extends AbstractPropertyDialog<Zoom> {
 
     private final Property<Double> x, y;
     private final Property<Float> scale;
 
     private boolean running = false;
 
-    public Zoom(Explorer controller) {
+    public static Zoom dialog(Explorer controller) {
+        return new Zoom(controller);
+    }
+
+    private Zoom(Explorer controller) {
         super(controller);
 
         setLabel(messages.getText(DIALOG_ZOOM_TITLE));

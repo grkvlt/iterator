@@ -47,7 +47,7 @@ import iterator.util.Property.OptionalProperty;
 /**
  * Preferences dialog.
  */
-public class Preferences extends AbstractPropertyDialog {
+public class Preferences extends AbstractPropertyDialog<Preferences> {
 
     private final Property<Mode> mode;
     private final Property<Render> render;
@@ -61,7 +61,11 @@ public class Preferences extends AbstractPropertyDialog {
 
     private boolean running = false;
 
-    public Preferences(Explorer controller) {
+    public static Preferences dialog(Explorer controller) {
+        return new Preferences(controller);
+    }
+
+    private Preferences(Explorer controller) {
         super(controller);
 
         setLabel(messages.getText(DIALOG_PREFERENCES_TITLE));

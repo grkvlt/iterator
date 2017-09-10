@@ -386,8 +386,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
 
         // Load dialogs
-        prefs = new Preferences(this);
-        about = new About(this);
+        prefs = Preferences.dialog(this);
+        about = About.dialog(this);
 
         // Setup platform specifics
         // TODO Windows specific UI configuration

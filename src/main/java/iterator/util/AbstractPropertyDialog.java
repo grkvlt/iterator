@@ -38,6 +38,7 @@ import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.border.Border;
 
 import com.google.common.base.Optional;
 import com.google.common.eventbus.EventBus;
@@ -50,7 +51,7 @@ import iterator.util.Property.OptionalProperty;
 /**
  * Abstract dialog box for setting properties.
  */
-public abstract class AbstractPropertyDialog extends JDialog implements Dialog, KeyListener, ActionListener {
+public abstract class AbstractPropertyDialog<T extends AbstractPropertyDialog<T>> extends JDialog implements Dialog<T>, KeyListener, ActionListener {
 
     protected final Messages messages;
     protected final Explorer controller;
@@ -66,7 +67,7 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         this.messages = controller.getMessages();
 
         addKeyListener(this);
-        Dimension size = new Dimension(200, 200);
+        Dimension size = new Dimension(200, 100);
         setMinimumSize(size);
         setResizable(false);
         setUndecorated(true);
@@ -91,19 +92,19 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     }
 
     protected void setSuccess(String text) {
-        JButton select = new JButton(text);
-        select.addActionListener(this);
-        select.setFont(CALIBRI_PLAIN_14);
-        select.addKeyListener(this);
+        JButton success = new JButton(text);
+        success.setFont(CALIBRI_BOLD_14);
+        success.addActionListener(this);
+        success.addKeyListener(this);
 
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.EAST;
         constraints.gridx = 0;
         constraints.gridwidth = 1;
         constraints.weighty = 1.0;
-        gridbag.setConstraints(select, constraints);
+        gridbag.setConstraints(success, constraints);
 
-        add(select);
+        add(success);
     }
 
     protected void setCancel(String text) {
@@ -113,41 +114,41 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         });
 
         JButton cancel = new JButton(failure);
-        cancel.setFont(CALIBRI_PLAIN_14);
+        cancel.setFont(CALIBRI_BOLD_ITALIC_14);
         cancel.addKeyListener(this);
 
         constraints.gridx = 1;
-        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.gridwidth = 1;
+        constraints.anchor = GridBagConstraints.WEST;
         gridbag.setConstraints(cancel, constraints);
 
-        add(cancel);
+        addComponent(cancel);
     }
 
-    protected <T, P extends Property<T>> P addProperty(String string,  BaseFormatter<T> formatter) {
+    protected <V, P extends Property<V>> P addProperty(String string,  BaseFormatter<V> formatter) {
         return addFormattedTextField(string, formatter, true, false);
     }
 
-    protected <T, P extends Property<T>> P addReadOnlyProperty(String string, BaseFormatter<T> formatter) {
+    protected <V, P extends Property<V>> P addReadOnlyProperty(String string, BaseFormatter<V> formatter) {
         return addFormattedTextField(string, formatter, false, false);
     }
 
-    protected <T> OptionalProperty<T> addOptionalProperty(String string, BaseFormatter<Optional<T>> formatter) {
+    protected <V> OptionalProperty<V> addOptionalProperty(String string, BaseFormatter<Optional<V>> formatter) {
         return addFormattedTextField(string, formatter, true, true);
     }
 
-    protected <T, P extends Property<T>> P addFormattedTextField(String string, BaseFormatter<T> formatter, boolean editable, boolean optional) {
+    protected <V, P extends Property<V>> P addFormattedTextField(String string, BaseFormatter<V> formatter, boolean editable, boolean optional) {
         addLabel(string, editable ? CALIBRI_PLAIN_14 : CALIBRI_ITALIC_14);
 
         JFormattedTextField field = new JFormattedTextField(formatter);
         field.setHorizontalAlignment(JTextField.LEFT);
-        field.setBorder(editable ? BorderFactory.createLoweredSoftBevelBorder() : BorderFactory.createEmptyBorder(3, 3, 3, 3));
-        field.setMargin(new Insets(2, 2, 2, 2));
+        Border border = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5), BorderFactory.createLoweredSoftBevelBorder());
+        field.setBorder(editable ? border : BorderFactory.createEmptyBorder(5, 5, 5, 5));
         field.setFont(CALIBRI_ITALIC_14);
         field.addKeyListener(this);
         field.setEditable(editable);
 
-        setConstraints(field);
-        add(field);
+        addComponent(field);
 
         if (optional) {
             return (P) OptionalProperty.attach(field);
@@ -156,16 +157,16 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         }
     }
 
-    protected <T> Property<T> addDropDown(String string, T...items) {
+    protected <V> Property<V> addDropDown(String string, V...items) {
         addLabel(string);
 
-        JComboBox<T> field = new JComboBox<T>(items);
+        JComboBox<V> field = new JComboBox<V>(items);
         field.setBorder(BorderFactory.createEmptyBorder());
         field.setEditable(false);
         field.setFont(CALIBRI_ITALIC_14);
         field.addKeyListener(this);
 
-        setConstraints(field);
+        setConstraints(field, 1, GridBagConstraints.REMAINDER);
         add(field);
 
         return Property.attach(field);
@@ -180,8 +181,7 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         field.addKeyListener(this);
         field.setFont(CALIBRI_ITALIC_14);
 
-        setConstraints(field);
-        add(field);
+        addComponent(field);
 
         return Property.attach(field);
     }
@@ -194,10 +194,17 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         field.addKeyListener(this);
         field.setFont(CALIBRI_ITALIC_14);
 
-        setConstraints(field);
-        add(field);
+        addComponent(field);
 
         return Property.attach(field);
+    }
+
+    private void addComponent(JComponent field) {
+        setConstraints(field, 1, GridBagConstraints.RELATIVE);
+        add(field);
+        JLabel spacer = new JLabel(" ");
+        setConstraints(spacer, 2, GridBagConstraints.REMAINDER);
+        add(spacer);
     }
 
     private void addLabel(String string) {
@@ -207,10 +214,10 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
     private void addLabel(String string, Font font) {
         JLabel label = new JLabel(string, JLabel.RIGHT);
         label.setFont(font);
-        label.setBorder(BorderFactory.createEmptyBorder(2, 7, 2, 2));
+        label.setBorder(BorderFactory.createEmptyBorder(2, 22, 2, 2));
 
         constraints.gridx = 0;
-        constraints.gridwidth = GridBagConstraints.RELATIVE;
+        constraints.gridwidth = 1;
         constraints.weightx = 2.0;
         constraints.weighty = 2.0;
         gridbag.setConstraints(label, constraints);
@@ -218,9 +225,9 @@ public abstract class AbstractPropertyDialog extends JDialog implements Dialog, 
         add(label);
     }
 
-    private void setConstraints(JComponent component) {
-        constraints.gridx = 2;
-        constraints.gridwidth = GridBagConstraints.REMAINDER;
+    private void setConstraints(JComponent component, int x, int width) {
+        constraints.gridx = x;
+        constraints.gridwidth = width;
         constraints.weightx = 1.0;
         constraints.weighty = 2.0;
         gridbag.setConstraints(component, constraints);

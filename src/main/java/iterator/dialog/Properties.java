@@ -45,7 +45,7 @@ import iterator.util.Property.OptionalProperty;
 /**
  * Properties dialog.
  */
-public class Properties extends AbstractPropertyDialog {
+public class Properties extends AbstractPropertyDialog<Properties> {
 
     private final Transform transform;
     private final Reflection reflection;
@@ -55,7 +55,11 @@ public class Properties extends AbstractPropertyDialog {
     private Property<Double> w, h, r, shx, shy, det;
     private OptionalProperty<Double> weight;
 
-    public Properties(Function function, IFS ifs, Explorer controller) {
+    public static Properties dialog(Explorer controller, Function function, IFS ifs) {
+        return new Properties(controller, function, ifs);
+    }
+
+    private Properties(Explorer controller, Function function, IFS ifs) {
         super(controller);
 
         if (function instanceof Transform) {

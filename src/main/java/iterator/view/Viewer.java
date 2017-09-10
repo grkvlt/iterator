@@ -182,10 +182,10 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
         size = getSize();
 
-        properties = new Zoom(controller);
+        properties = Zoom.dialog(controller);
         viewer = new JPopupMenu();
         viewer.add(menuItem(messages.getText(MENU_VIEWER_ZOOM), e -> {
-            Dialog.show(() -> properties, controller);
+            Dialog.show(properties, controller);
         }));
         pause = menuItem(messages.getText(MENU_VIEWER_PAUSE), e -> {
             stop();

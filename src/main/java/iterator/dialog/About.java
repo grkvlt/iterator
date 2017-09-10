@@ -44,14 +44,18 @@ import iterator.util.Version;
 /**
  * About dialog.
  */
-public class About extends JPanel implements Dialog, MouseListener {
+public class About extends JPanel implements Dialog<About>, MouseListener {
 
     private final Explorer controller;
 
     private JDialog about;
     private BufferedImage image;
 
-    public About(Explorer controller) {
+    public static About dialog(Explorer controller) {
+        return new About(controller);
+    }
+
+    private About(Explorer controller) {
         super();
 
         this.controller = controller;

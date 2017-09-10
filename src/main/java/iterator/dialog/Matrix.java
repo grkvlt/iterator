@@ -23,11 +23,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -43,6 +43,7 @@ import javax.swing.text.html.StyleSheet;
 import com.google.common.eventbus.EventBus;
 
 import iterator.Explorer;
+import iterator.Utils;
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Dialog;
@@ -54,25 +55,30 @@ import iterator.view.Details;
 /**
  * Matrix dialog.
  */
-public class Matrix extends JDialog implements Dialog, KeyListener {
+public class Matrix extends JDialog implements Dialog<Matrix>, KeyListener, ComponentListener {
 
     private final Property<Double> c0, c1, c2, c3, c4, c5;
     private final Messages messages;
     private final Transform transform;
-    private final IFS ifs;
     private final EventBus bus;
 
-    private Action success, failure;
+    private JPanel matrix;
+    private JButton update, cancel;
 
-    public Matrix(Transform transform, IFS ifs, Explorer controller) {
+    public static Matrix dialog(Explorer controller, Transform transform, IFS ifs) {
+        return new Matrix(controller, transform, ifs);
+    }
+
+    private Matrix(Explorer controller, Transform transform, IFS ifs) {
         super(controller, null, ModalityType.APPLICATION_MODAL);
 
         this.transform = transform;
-        this.ifs = ifs;
         this.messages = controller.getMessages();
         this.bus = controller.getEventBus();
 
         addKeyListener(this);
+        addComponentListener(this);
+
         setUndecorated(true);
         setResizable(false);
         setLayout(new BorderLayout());
@@ -101,7 +107,7 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         left.setText("<div class=\"bracketl\" height=\"60px\" width=\"10px\">&nbsp;</div>");
         panel.add(left, BorderLayout.WEST);
 
-        JPanel matrix = new JPanel();
+        matrix = new JPanel();
         matrix.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         GridLayout grid = new GridLayout(0, 3);
         grid.setHgap(10);
@@ -135,33 +141,25 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         buttons.setBackground(Color.WHITE);
         add(buttons, BorderLayout.SOUTH);
 
-        success = new AbstractAction(messages.getText(DIALOG_MATRIX_BUTTON_UPDATE)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                double matrix[] = new double[6];
-                matrix[0] = c0.get();
-                matrix[2] = c1.get();
-                matrix[4] = c2.get();
-                matrix[1] = c3.get();
-                matrix[3] = c4.get();
-                matrix[5] = c5.get();
-                transform.setMatrix(matrix);
-                bus.post(Matrix.this.ifs);
-                setVisible(false);
-            }
-        };
-        JButton update = new JButton(success);
+        Action success = Utils.action(messages.getText(DIALOG_MATRIX_BUTTON_UPDATE), e -> {
+            double m[] = new double[6];
+
+            m[0] = c0.get(); m[2] = c1.get(); m[4] = c2.get();
+            m[1] = c3.get(); m[3] = c4.get(); m[5] = c5.get();
+
+            transform.setMatrix(m);
+            bus.post(ifs);
+            setVisible(false);
+        });
+        update = new JButton(success);
         update.setFont(CALIBRI_PLAIN_14);
         update.addKeyListener(this);
         buttons.add(update);
 
-        failure = new AbstractAction(messages.getText(DIALOG_MATRIX_BUTTON_CANCEL)) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-            }
-        };
-        JButton cancel = new JButton(failure);
+        Action failure = Utils.action(messages.getText(DIALOG_MATRIX_BUTTON_CANCEL), e -> {
+            setVisible(false);
+        });
+        cancel = new JButton(failure);
         cancel.setFont(CALIBRI_PLAIN_14);
         cancel.addKeyListener(this);
         buttons.add(cancel);
@@ -192,15 +190,11 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
     /** @see iterator.util.Dialog#showDialog() */
     @Override
     public void showDialog() {
-        double matrix[] = new double[6];
-        transform.getTransform().getMatrix(matrix);;
+        double m[] = new double[6];
+        transform.getTransform().getMatrix(m);;
 
-        c0.set(matrix[0]);
-        c1.set(matrix[2]);
-        c2.set(matrix[4]);
-        c3.set(matrix[1]);
-        c4.set(matrix[3]);
-        c5.set(matrix[5]);
+        c0.set(m[0]); c1.set(m[2]); c2.set(m[4]);
+        c3.set(m[1]); c4.set(m[3]); c5.set(m[5]);
 
         pack();
         setLocationRelativeTo(getParent());
@@ -217,11 +211,11 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_ENTER:
                 if (e.isMetaDown()) {
-                    success.actionPerformed(new ActionEvent(e.getSource(), e.getID(), null));
+                    update.doClick();
                 }
                 break;
             case KeyEvent.VK_ESCAPE:
-                failure.actionPerformed(new ActionEvent(e.getSource(), e.getID(), null));
+                cancel.doClick();
                 break;
         }
     }
@@ -235,5 +229,19 @@ public class Matrix extends JDialog implements Dialog, KeyListener {
     public void close() throws Exception {
         dispose();
     }
+
+    @Override
+    public void componentResized(ComponentEvent e) { }
+
+    @Override
+    public void componentMoved(ComponentEvent e) { }
+
+    @Override
+    public void componentShown(ComponentEvent e) {
+        matrix.getComponent(0).requestFocusInWindow();
+    }
+
+    @Override
+    public void componentHidden(ComponentEvent e) { }
 
 }
