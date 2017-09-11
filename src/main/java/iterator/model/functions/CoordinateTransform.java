@@ -17,10 +17,13 @@ public abstract class CoordinateTransform implements Function {
         SPHERICAL("sph", Spherical.create()),
         SWIRL("sw", Swirl.create()),
         HORSESHOE("hrs", Horseshoe.create()),
+        POLAR("pol", Polar.create()),
+        HYPERBOLIC("hyp", Hyperbolic.create()),
         BENT("bent", Bent.create()),
         FISHEYE("fish", Fisheye.create()),
         EXPONENTIAL("exp", Exponential.create()),
         BUBBLE("bbl", Bubble.create()),
+        EYEFISH("eye", Eyefish.create()),
         CYLINDER("cyl", Cylinder.create()),
         TANGENT("tan", Tangent.create());
 
@@ -71,7 +74,6 @@ public abstract class CoordinateTransform implements Function {
     public AffineTransform getTransform() {
         throw new UnsupportedOperationException();
     }
-
 
     @Override
     public int hashCode() {
