@@ -503,7 +503,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
                 // Evaluate the function twice, first for (x,y) position and then for hue/saturation color space
                 current = p1.updateAndGet(p -> function.apply(f.apply(p)));
-                old = p2.getAndUpdate(f);
+                old = p2.getAndUpdate(p -> function.apply(f.apply(p)));
 
                 // Discard first 10K points
                 if (count.get() < 10) {
