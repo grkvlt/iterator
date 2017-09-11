@@ -674,7 +674,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
      */
     @Override
     public void run() {
-        if (controller.isIterationsUnlimited() || count.get() < controller.getIterationsLimit()) {
+        if (controller.isIterationsUnlimited() || (count.get() * 1000l) < controller.getIterationsLimit()) {
             iterate(getImage(), 1, controller.getIterations(), scale, centre,
                     controller.getRender(), controller.getMode(), controller.getCoordinateTransform());
         } else {
