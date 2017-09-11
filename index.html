@@ -118,8 +118,9 @@
         </p>
         <p>
           The default rendering mode is grayscale. To show a coloured image, choose one of the
-          other rendering modes either by using the preferences dialog, by editing the configuration
-          properties or by setting the <em>explorer.mode</em> system property.
+          other rendering modes either by using the <strong>Preferences</strong> dialog, by
+          editing the configuration properties or by setting the <em>explorer.mode</em> system
+          property.
         </p>
         <p>
           To use a colour palette taken from a sample image, specify <code>-p</code> or
@@ -134,19 +135,19 @@
           This list shows some of the available properties along with their default values.
         </p>
         <ul>
-          <li><code>explorer.grid.min</code> - Minimum grid spacing - <em>10</em></li>
-          <li><code>explorer.grid.max</code> - Maximum grid spacing - <em>50</em></li>
-          <li><code>explorer.grid.snap</code> - Snap-to-grid spacing- <em>5</em></li>
+          <li><code>explorer.mode</code> - Display mode - <em>palette</em></li>
+          <li><code>explorer.render</code> - Rendering style and algorithm - <em>standard</em></li>
+          <li><code>explorer.transform</code> - Co-ordinate transform function - <em>identity</em></li>
           <li><code>explorer.palette.file</code> - Colour palette image source - <em>abstract</em></li>
           <li><code>explorer.palette.size</code> - Number of colours in palette - <em>64</em></li>
           <li><code>explorer.palette.seed</code> - Random seed used for choosing colours - <em>0</em></li>
           <li><code>explorer.window.width</code> - Width of main window - <em>600</em></li>
           <li><code>explorer.window.height</code> - Height of main window - <em>600</em></li>
-          <li><code>explorer.debug</code> - Enable debugging mode - <em>false</em></li>
-          <li><code>explorer.mode</code> - Colour display mode - <em>palette</em></li>
-          <li><code>explorer.render</code> - IFS rendering style - <em>standard</em></li>
-          <li><code>explorer.transform</code> - Co-ordinate transform - <em>identity</em></li>
+          <li><code>explorer.grid.min</code> - Minimum grid spacing - <em>10</em></li>
+          <li><code>explorer.grid.max</code> - Maximum grid spacing - <em>50</em></li>
+          <li><code>explorer.grid.snap</code> - Snap-to-grid spacing- <em>5</em></li>
           <li><code>explorer.threads</code> - Number of threads - <em>2</em></li>
+          <li><code>explorer.debug</code> - Debugging mode - <em>false</em></li>
         </ul>
         <p>
           The configuration options above can be set in a property file, which can then
@@ -184,7 +185,7 @@
           Settings changed using the <strong>Preferences</strong> dialog are applied to the current view,
           and can be saves as a <em>properties</em> file using the <em>Save Preferences...</em> menu. This
           will write out all configuration options that have been explicitly set, either from the
-          initial configuration file or by changes made using the <em>Preferences</em> dialog.
+          initial configuration file or by changes made using the <strong>Preferences</strong> dialog.
         </p>
         <blockquote>
           <strong>Note</strong> <em>The saved <strong>properties</strong> file will have the same name
@@ -261,9 +262,11 @@
           The <code>explorer.transform</code> option sets a final co-ordinate
           transformation function, to be executed after each iteration of
           the IFS rendering. The default is the <em>identity</em> function,
-          which leaves the co-ordinates unchanged. The value can be set to
-          one of <em>spherical</em>, <em>exponential</em>, <em>cycliner</em>
-          or <em>tangenet</em> to produce an alternative effect.
+          which leaves the co-ordinates unchanged. The functions available are
+          taken from the <em>Fractal Flame</em> paper listed in the references
+          and include <em>spherical</em>, <em>exponential</em>, <em>fisheye</em>
+          and <em>tangenet</em>. These transform fucntions cab be set from the
+          <strong>Preferences</strong> dialog and the results viewed immediately.
         </p>
         <h3>Usage</h3>
         <p>
@@ -300,14 +303,15 @@
         </p>
         <p>
           The context menu displayed by right-clicking on a transform allows
-          the <em>z-index</em> to be raised or lowered, and the selected transform
-          can be moved to the front or back to allow selecting overlapping
-          transforms. A transform can be removed using the <em>Delete</em>
-          menu item, or its properties can be altered by chooing the
-          <em>Properties</em> option. This will display a dialog allowing the
-          position, size, rotation  or shear values to be editied. The
-          <em>Matrix</em> menu item allows the six affine transform matrix
-          coefficients to be altered directly.
+          the <em>z-index</em> to be raised or lowered, and the selected
+          transform can be moved to the front or back to allow selecting
+          overlapping transforms. A transform can be removed using the
+          <em>Delete</em> menu item, or its properties can be altered by
+          chooing the <em>Properties...</em> option. This will display the
+          <strong>Transform Properties</strong> dialog, allowing the
+          position, size, rotation, shear and weight values to be editied.
+          The <em>Matrix...</em> menu item allows the six affine transform
+          matrix coefficients to be altered directly.
         </p>
         <div style="page-break-inside: avoid;">
           <div style="margin-left: 25px;">
@@ -334,12 +338,12 @@
           affine transform and a planar reflection.
         </p>
         <p>
-          Reflections can also be created by <em>Ctrl</em>
-          clicking on the background or by holding down <em>Alt</em> and
-          clocking and dragging an exsting reflection. Reflections can be
-          modified by dragging them by the square handle or by editing them
-          directly via the <em>Properties</em> dialog available on their
-          context menu.
+          Reflections can also be created by <em>Ctrl</em>&ndash;clicking on
+          the background or duplicated by holding down <em>Alt</em> and clicking and
+          dragging an exsting reflection. Reflections can be modified by dragging
+          them by their square handle or by editing their position and rotation
+          values directly using the <strong>Reflection Properties</strong> dialog,
+          available via their context menu.
         </p>
         <div style="page-break-inside: avoid;">
           <div style="margin-left: 25px;">
