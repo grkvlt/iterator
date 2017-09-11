@@ -50,8 +50,8 @@
           allows you to explore a vast world of complex and beautiful fractal
           images produced by simple mathematical rules, through a process of
           trial and error, experimentation and exploration. See the
-          <em>References</em> section below for more details on the mathematics
-          and concepts behind these systems.
+          <a href="#references"><em>References</em></a> section for links to books and papers
+          describing the concepts with more detailed mathematics.
         </p>
         <div style="margin-left: 25px; margin-bottom: 20px;">
           <img src="images/export1.png" alt="Export" title="Export 1" border="1" width="240" height="240">
@@ -75,13 +75,17 @@
             <em>Screenshots for the <strong>Viewer</strong>  and <strong>Details</strong> modes.</em>
           </p>
         </div>
+        <a name="program-requirements">
         <h3>Program requirements</h3>
+        </a>
         <ul>
           <li>Java 1.8.x Runtime Environment</li>
           <li>Windows, Linux or OSX Operating System</li>
           <li>Maven and 1.8.x JDK for building <em>(Optional)</em></li>
         </ul>
+        <a name="instructions">
         <h3 class="break">Instructions</h3>
+        </a>
         <p>
           Either build the program using Maven or extract one of the packaged
           distributions. These can be <a href="https://github.com/grkvlt/iterator/releases/1.4.0">downloaded from
@@ -111,7 +115,8 @@
 
 [-] Starting Explorer UI</b></code></pre>
         <p>
-          The program can be controlled by setting properties (see the <em>Configuration</em> section)
+          The program can be controlled by setting properties (see the
+          <a href="#configuration"><em>Configuration</em></a> section)
           or by specifying flags as command-line arguments. To place the application
           into full-screen mode add the <code>-f</code> or <code>--fullscreen</code> flag
           to the command-line.
@@ -130,7 +135,9 @@
           or <em>car</em>, or a URI pointing at a local or remote <code>PNG</code> image
           to retrieve colours from.
         </p>
+        <a name="configuration">
         <h3 class="break">Configuration</h3>
+        </a>
         <p>
           This list shows some of the available properties along with their default values.
         </p>
@@ -173,8 +180,8 @@
           available options. In particular there are drop-down menus to select the IFS
           display mode, such as <em>ifs-colour</em> or <em>gray</em>, and the rendering
           style, from <em>standard</em> to the range of density estimation based options
-          such as <em>log-density-flame-inverse</em>. See the next section for more
-          details on these options.
+          such as <em>log-density-flame-inverse</em>.
+          See the <a href="#options"><em>Options</em></a> section for more details on these.
         </p>
         <div style="page-break-inside: avoid;">
           <div style="margin-left: 25px;">
@@ -186,7 +193,7 @@
         </div>
         <p>
           Settings changed using the <strong>Preferences</strong> dialog are applied to the current view,
-          and can be saves as a <em>.properties</em> file using the <em>Save Preferences...</em> menu. This
+          and can be saved as a <em>.properties</em> file using the <em>Save Preferences...</em> menu. This
           will write out all configuration options that have been explicitly set, either from the
           initial configuration file or by changes made using the <strong>Preferences</strong> dialog.
         </p>
@@ -195,7 +202,9 @@
           as the configuration file specified on the command line. If the name is not changed then the
           contents will be overwritten and any comments or formatting will be lost.</em>
         </blockquote>
+        <a name="options">
         <h3>Options</h3>
+        </a>
         <p>
           The most interesting configuration properties are the <code>explorer.mode</code>,
           <code>explorer.render</code> and <code>explorer.transform</code> which together
@@ -269,12 +278,15 @@
           transformation function, to be executed after each iteration of
           the IFS rendering. The default is the <em>identity</em> function,
           which leaves the co-ordinates unchanged. The functions available are
-          taken from the <em>Fractal Flame</em> paper listed in the references
-          and include <em>spherical</em>, <em>exponential</em>, <em>fisheye</em>
-          and <em>tangenet</em>. These transform fucntions cab be set from the
-          <strong>Preferences</strong> dialog and the results viewed immediately.
+          taken from the <strong>Fractal Flame</strong> paper listed in the
+          <a href="#references"><em>References</em></a> and include <em>spherical</em>,
+          <em>exponential</em>, <em>fisheye</em> and <em>tangenet</em>. These
+          transform functions can be set from the <strong>Preferences</strong>
+          dialog and the results viewed immediately.
         </p>
+        <a name="usage">
         <h3>Usage</h3>
+        </a>
         <p>
           Once the program starts, it will diplay an empty grid in the
           <strong>Editor</strong> mode. The menus provide access to standard
@@ -394,7 +406,9 @@
           <strong>Important</strong> <em>Editing and other actions can also be
           accessed using the right-click context menu on most screens.
         </blockquote>
+        <a name="animation">
         <h3>Animation</h3>
+        </a>
         <p>
           You can animate a sequence of changes to the individual transformations
           using the animator scripts in the <code>bin</code> directory. These use
@@ -418,16 +432,18 @@ with 1,310K iterations</b></code></pre>
           <strong>TODO</strong> <em>Further documentation on the <code>.animation</code>
           file format and generating video files is required.</em>
         </blockquote>
+        <a name="examples">
         <h3 class="break">Examples</h3>
+        </a>
         <p>
           A series of example XML data files for IFS transforms are provided
           in the <code>data</code> directory of the distribution. Some of these can be
           found in the books <strong>The Computational Beauty of Nature</strong>
-          and <strong>Superfractals</strong>, details of which are given in the
-          <em>References</em> section. The <strong>Fractal Flame</strong> paper
-          listed gives more details on the density estimation methods used,
-          and illustrates more possible rendering modes and options for future
-          investigation and implementation.
+          and <strong>Superfractals</strong>. The <strong>Fractal Flame</strong> paper
+          gives more details on the density estimation methods used,
+          and illustrates the co-ordinate transformation functions used here, as well
+          as showing options for future investigation and implementation.
+          See the <a href="#references"><em>References</em></a> for more details.
         </p>
         <p>
           To load the examples, specify the path to the file as the last argument
@@ -448,7 +464,9 @@ with 1,310K iterations</b></code></pre>
           This selection of IFS images is also included in the distribution archive.
           To view it, open the <code>data/gallery/index.html</code> file in a web browser.
         </p>
+        <a name="references">
         <h3 class="break">References</h3>
+        </a>
         <ol>
           <li><a href="http://en.wikipedia.org/wiki/Iterated_function_system">Iterated Function System</a>; <em>Wikipedia</em></li>
           <li><a href="http://en.wikipedia.org/wiki/Affine_transformation">Affine Transform</a>; <em>Wikipedia</em></li>
