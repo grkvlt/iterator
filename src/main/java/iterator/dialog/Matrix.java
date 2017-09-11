@@ -152,7 +152,7 @@ public class Matrix extends JDialog implements Dialog<Matrix>, KeyListener, Comp
             setVisible(false);
         });
         update = new JButton(success);
-        update.setFont(CALIBRI_PLAIN_14);
+        update.setFont(CALIBRI_BOLD_14);
         update.addKeyListener(this);
         buttons.add(update);
 
@@ -160,7 +160,7 @@ public class Matrix extends JDialog implements Dialog<Matrix>, KeyListener, Comp
             setVisible(false);
         });
         cancel = new JButton(failure);
-        cancel.setFont(CALIBRI_PLAIN_14);
+        cancel.setFont(CALIBRI_BOLD_ITALIC_14);
         cancel.addKeyListener(this);
         buttons.add(cancel);
     }
