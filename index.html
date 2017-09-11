@@ -56,25 +56,20 @@
         <div style="margin-left: 25px; margin-bottom: 20px;">
           <img src="images/export1.png" alt="Export" title="Export 1" border="1" width="240" height="240">
           <img src="images/export2.png" alt="Export" title="Export 2" border="1" width="240" height="240">
+          <img src="images/export3.png" alt="Export" title="Export 3" border="1" width="240" height="240">
+          <img src="images/export4.png" alt="Export" title="Export 3" border="1" width="240" height="240">
         </div>
         <p>
           <strong>IFS Explorer</strong> provides an interactive UI to create
           and manipulate a set of affine transforms, which are then iterated
           randomly to produce an image. The Java
           <a href="http://docs.oracle.com/javase/8/docs/api/java/awt/geom/AffineTransform.html"><code>AffineTransform</code></a>
-          class is used to represent and plot the transforms. The systems can
-          be saved and loaded as <em><code>.xml</code></em> files, and rendered images can be exported
-          as <em><code>.png</code></em> graphics files or printed.
+          class is used to represent and plot the transforms.
         </p>
-        <div style="page-break-inside: avoid;">
-          <div style="margin-left: 25px;">
-            <img src="images/viewer.png" alt="Viewer" title="Viewer" border="1" width="240" height="240">
-            <img src="images/details.png" alt="Details" title="Details" border="1" width="240" height="240">
-          </div>
-          <p style="margin-left: 25px;">
-            <em>Screenshots for the <strong>Viewer</strong>  and <strong>Details</strong> modes.</em>
-          </p>
-        </div>
+        <p>
+          The systems can be saved and loaded as <em><code>.xml</code></em> files, and
+          rendered images can be exported as <em><code>.png</code></em> files or printed.
+        </p>
         <a name="program-requirements">
         <h3>Program requirements</h3>
         </a>
@@ -308,6 +303,21 @@
           keyboard actions.
         </p>
         <p>
+          The other modes are the <strong>Viewer</strong> which renders the IFS
+          with increasing detail as it executes multiple iterator thread, and
+          <strong>Details</strong> which shows the transformcl matrices and
+          reflection parameters that make up the IFS.
+        </p>
+        <div style="page-break-inside: avoid;">
+          <div style="margin-left: 25px;">
+            <img src="images/viewer.png" alt="Viewer" title="Viewer" border="1" width="240" height="240">
+            <img src="images/details.png" alt="Details" title="Details" border="1" width="240" height="240">
+          </div>
+          <p style="margin-left: 25px;">
+            <em>Screenshots for the <strong>Viewer</strong>  and <strong>Details</strong> modes.</em>
+          </p>
+        </div>
+        <p>
           A live view of the generated IFS is displayed at low resolution to
           give an idea of the eventual rendered image of the fractal. <strong>This
           capability is what makes the application so useful.</strong> It allows
@@ -335,6 +345,17 @@
           in the appropriate direction by the minimum grid-snap increment,
           or by a single pixel if <em>Shift</em> is held down.
         </p>
+        <div style="page-break-inside: avoid;">
+          <div style="margin-left: 25px;">
+            <img src="images/transform-properties.png" alt="Transform" title="Transform Properties Dialog" border="1" width="160" height="160">
+            <img src="images/transform-matrix.png" alt="Matrix" title="Transform Matrix Dialog" border="1" width="160" height="160">
+            <img src="images/reflection-properties.png" alt="Reflection" title="Reflection Properties Dialog" border="1" width="160" height="160">
+          </div>
+          <p style="margin-left: 25px;">
+            <em>The <strong>Transform Properties</strong>, <strong>Transform Matrix</strong>
+            and <strong>Reflection Properties</strong> dialogs.</em>
+          </p>
+        </div>
         <p>
           The context menu displayed by right-clicking on a transform allows
           the <em>z-index</em> to be raised or lowered, and the selected
@@ -347,17 +368,6 @@
           The <em>Matrix...</em> menu item allows the six affine transform
           matrix coefficients to be altered directly.
         </p>
-        <div style="page-break-inside: avoid;">
-          <div style="margin-left: 25px;">
-            <img src="images/transform-properties.png" alt="Transform" title="Transform Properties Dialog" border="1" width="160" height="160">
-            <img src="images/transform-matrix.png" alt="Matrix" title="Transform Matrix Dialog" border="1" width="160" height="160">
-            <img src="images/reflection-properties.png" alt="Reflection" title="Reflection Properties Dialog" border="1" width="160" height="160">
-          </div>
-          <p style="margin-left: 25px;">
-            <em>The <strong>Transform Properties</strong>, <strong>Transform Matrix</strong>
-            and <strong>Reflection Properties</strong> dialogs.</em>
-          </p>
-        </div>
         <blockquote>
           <strong>Note</strong> <em>Once the affine transform matrix has been
           edited directly, it will no longer be possible to edit the transform
