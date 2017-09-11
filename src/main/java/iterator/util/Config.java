@@ -76,13 +76,16 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String PROPERTIES_FILE = "explorer.properties";
 
     public static final String EXPLORER_PROPERTY = "explorer";
+    public static final String MODE_PROPERTY = EXPLORER_PROPERTY + ".mode";
+    public static final String RENDER_PROPERTY = EXPLORER_PROPERTY + ".render";
+    public static final String TRANSFORM_PROPERTY = EXPLORER_PROPERTY + ".transform";
+    public static final String GAMMA_PROPERTY = EXPLORER_PROPERTY + ".gamma";
+    public static final String VIBRANCY_PROPERTY = EXPLORER_PROPERTY + ".vibrancy";
+    public static final String BLUR_KERNEL_PROPERTY = EXPLORER_PROPERTY + ".blur";
     public static final String PALETTE_PROPERTY = EXPLORER_PROPERTY + ".palette";
     public static final String PALETTE_SEED_PROPERTY = PALETTE_PROPERTY + ".seed";
     public static final String PALETTE_FILE_PROPERTY = PALETTE_PROPERTY + ".file";
     public static final String PALETTE_SIZE_PROPERTY = PALETTE_PROPERTY + ".size";
-    public static final String GAMMA_PROPERTY = EXPLORER_PROPERTY + ".gamma";
-    public static final String VIBRANCY_PROPERTY = EXPLORER_PROPERTY + ".vibrancy";
-    public static final String BLUR_KERNEL_PROPERTY = EXPLORER_PROPERTY + ".blur";
     public static final String GRID_PROPERTY =  EXPLORER_PROPERTY + ".grid";
     public static final String GRID_MIN_PROPERTY = GRID_PROPERTY + ".min";
     public static final String GRID_MAX_PROPERTY = GRID_PROPERTY + ".max";
@@ -92,20 +95,22 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String WINDOW_HEIGHT_PROPERTY = WINDOW_PROPERTY + ".height";
     public static final String DEBUG_PROPERTY = EXPLORER_PROPERTY + ".debug";
     public static final String THREADS_PROPERTY = EXPLORER_PROPERTY + ".threads";
-    public static final String MODE_PROPERTY = EXPLORER_PROPERTY + ".mode";
-    public static final String RENDER_PROPERTY = EXPLORER_PROPERTY + ".render";
-    public static final String TRANSFORM_PROPERTY = EXPLORER_PROPERTY + ".transform";
     public static final String ITERATIONS_PROPERTY = EXPLORER_PROPERTY + ".iterations";
     public static final String ITERATIONS_LIMIT_PROPERTY = ITERATIONS_PROPERTY + ".limit";
     public static final String ITERATIONS_UNLIMITED_PROPERTY = ITERATIONS_PROPERTY + ".unlimited";
 
+    public static final Mode DEFAULT_MODE = Mode.GRAY;
+    public static final Render DEFAULT_RENDER = Render.STANDARD;
+    public static final CoordinateTransform.Type DEFAULT_TRANSFORM = CoordinateTransform.Type.IDENTITY;
+    public static final Float DEFAULT_GAMMA = 1.8f;
+    public static final Float DEFAULT_VIBRANCY = 0.9f;
+    public static final Integer DEFAULT_BLUR_KERNEL = 4;
     public static final String[] PALETTE_FILES = { "abstract", "autumn", "car", "car2", "forest", "lego", "night", "trees", "wave" };
     public static final String DEFAULT_PALETTE_FILE = "abstract";
     public static final Integer DEFAULT_PALETTE_SIZE = 64;
     public static final Integer MIN_PALETTE_SIZE = 16;
     public static final Integer MAX_PALETTE_SIZE = 255;
     public static final Long DEFAULT_PALETTE_SEED = 0l;
-    public static final Float DEFAULT_GAMMA = 1f;
     public static final Integer DEFAULT_GRID_MIN = 10;
     public static final Integer DEFAULT_GRID_MAX = 50;
     public static final Integer DEFAULT_GRID_SNAP = 5;
@@ -116,9 +121,6 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Integer MIN_THREADS = 2;
     public static final Boolean DEFAULT_DEBUG = false;
     public static final Boolean DEFAULT_ITERATIONS_UNLIMITED = true;
-    public static final CoordinateTransform.Type DEFAULT_TRANSFORM = CoordinateTransform.Type.IDENTITY;
-    public static final Float DEFAULT_VIBRANCY = 0.9f;
-    public static final Integer DEFAULT_BLUR_KERNEL = 3;
 
     public static final List<String> FOOTER = Arrays.asList(
             "#",
@@ -155,8 +157,6 @@ public class Config extends ForwardingSortedMap<String, String> {
             return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, name());
         }
     }
-
-    public static final Mode DEFAULT_MODE = Mode.GRAY;
 
     public static enum Render {
         STANDARD(false, false, false),
@@ -199,8 +199,6 @@ public class Config extends ForwardingSortedMap<String, String> {
             return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, name());
         }
     }
-
-    public static final Render DEFAULT_RENDER = Render.STANDARD;
 
     public static final Predicate<CharSequence> EXPLORER_KEYS = Predicates.containsPattern("^" + EXPLORER_PROPERTY + ".");
 
