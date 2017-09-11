@@ -63,8 +63,8 @@
           randomly to produce an image. The Java
           <a href="http://docs.oracle.com/javase/8/docs/api/java/awt/geom/AffineTransform.html"><code>AffineTransform</code></a>
           class is used to represent and plot the transforms. The systems can
-          be saved and loaded as XML files, and rendered images can be exported
-          as PNG graphics files or printed.
+          be saved and loaded as <em><code>.xml</code></em> files, and rendered images can be exported
+          as <em><code>.png</code></em> graphics files or printed.
         </p>
         <div style="page-break-inside: avoid;">
           <div style="margin-left: 25px;">
@@ -132,7 +132,7 @@
           <code>--palette</code> on the command line, which will set the rendering mode to <em>palette</em>.
           The image used can also be set with the <code>explorer.palette.file</code> system property and
           can be one of several included named palettes, such as <em>abstract</em>, <em>wave</em>
-          or <em>car</em>, or a URI pointing at a local or remote <code>PNG</code> image
+          or <em>car</em>, or a URI pointing at a local or remote <em><code>.png</code></em> image
           to retrieve colours from.
         </p>
         <a name="configuration">
@@ -160,20 +160,21 @@
           <li><code>explorer.debug</code> - Debugging mode - <em>false</em></li>
         </ul>
         <p>
-          The configuration options above can be set in a <em>.properties</em> file, which can then
+          The configuration options above can be set in a <em><code>.properties</code></em> file, which can then
           be loaded by the application. The locations searched for configuration files are
-          the users <code>HOME</code> directory, for a file named <code>.explorer.properties</code>,
-          the current directory for a file named <code>explorer.properties</code> and finally
+          the users <strong><code>HOME</code></strong> directory, for a file named <em><code>.explorer.properties</code></em>,
+          the current directory for a file named <em><code>explorer.properties</code></em> and finally
           the file specified on the command line using the <code>--config <em>config.properties</em></code>
           option.
         </p>
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/explorer.sh --config debug.properties ./data/koch.xml</code></pre>
         <p>
           It is also possible to set individual configuration options as system properties,
-          using the <code>JAVA_OPTS</code> environment variable. JVM memory options should
-          be configured separately, using the <code>JAVA_MEM</code> variable.
+          using the <strong><code>JAVA_OPTS</code></strong> environment variable. JVM memory options should
+          be configured separately, using the <strong><code>JAVA_MEM</code></strong> variable.
         </p>
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> export JAVA_OPTS="-Dexplorer.palette.seed=1234"
+<b>$</b> export JAVA_MEM="-Xms1g -Xmx2g"
 <b>$</b> ./bin/explorer.sh --palette wave ./data/spikes.xml</code></pre>
         <p>
           The <em>Preferences...</em> menu option displays a dialog with some of the
@@ -193,14 +194,15 @@
         </div>
         <p>
           Settings changed using the <strong>Preferences</strong> dialog are applied to the current view,
-          and can be saved as a <em>.properties</em> file using the <em>Save Preferences...</em> menu. This
+          and can be saved as a <em><code>.properties</code></em> file using the <em>Save Preferences...</em> menu. This
           will write out all configuration options that have been explicitly set, either from the
           initial configuration file or by changes made using the <strong>Preferences</strong> dialog.
         </p>
         <blockquote>
-          <strong>Note</strong> <em>The saved <strong>.properties</strong> file will have the same name
-          as the configuration file specified on the command line. If the name is not changed then the
-          contents will be overwritten and any comments or formatting will be lost.</em>
+          <strong>Note</strong> <em>The save dialog for the <strong><code>.properties</code></strong>
+          file defaults to using the same name as the configuration file specified on the command line.
+          If the name is not changed then its contents will be overwritten and any comments or formatting
+          will be lost.</em>
         </blockquote>
         <a name="options">
         <h3>Options</h3>
@@ -389,7 +391,7 @@
           co-ordinates; the display and rendering modes and the active co-ordinate
           transform function name; the gamma factor; current and maximum thread
           counts; and the number of iterations. This information will be included
-          in a printout of the view, but not in an exported <code>PNG</code> image.
+          in a printout of the view, but not in an exported <em><code>.png</code></em> image.
           The thread count can be adjusted using the <em>Up</em> and <em>Down</em>
           arrow keys, as well as through the <strong>Preferences</strong> dialog,
           and pressing <code>t</code> will print out a list of the active threads
@@ -449,7 +451,7 @@ with 1,310K iterations</b></code></pre>
         <h3 class="break">Examples</h3>
         </a>
         <p>
-          A series of example XML data files for IFS transforms are provided
+          A series of example <em><code>.xml</code></em> data files for IFS transforms are provided
           in the <code>data</code> directory of the distribution. Some of these can be
           found in the books <strong>The Computational Beauty of Nature</strong>
           and <strong>Superfractals</strong>. The <strong>Fractal Flame</strong> paper
@@ -461,7 +463,7 @@ with 1,310K iterations</b></code></pre>
         <p>
           To load the examples, specify the path to the file as the last argument
           on the command-line. Sample images for these transforms have also been provided,
-          so be sure to use the <code>.xml</code> file, not the <code>.png</code>.
+          so be sure to use the <em><code>.xml</code></em> file, not the <em><code>.png</code></em>.
         </p>
         <div style="page-break-inside: avoid;">
           <div style="margin-left: 25px;">
