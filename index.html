@@ -426,7 +426,7 @@
         </p>
         <blockquote>
           <strong>Important</strong> <em>Editing and other actions can also be
-          accessed using the right-click context menu on most screens.
+          accessed using the right-click context menu on most screens.</em>
         </blockquote>
         <a name="animation">
         <h3>Animation</h3>
@@ -446,7 +446,7 @@ File 0001.png: 3 transforms: 1.0x scale at (400.00, 400.00)
 with 1,310K iterations</b></code></pre>
         <p>
           Using a utility such as <em>ffmpeg</em>, the generated images
-          can then be combined into an <code>.avi</code> MPEG video file.
+          can then be combined into an <em><code>.avi</code></em> MPEG video file.
         </p>
         <iframe id="youtube" style="margin-left: 25px; border: 1px solid black; margin-bottom: 10px;" width="480" height="270" allowfullscreen
             src="http://www.youtube.com/embed/FJY53HxTe0o?modestbranding=0&theme=dark&autohide=1&fs=1"></iframe>
@@ -458,19 +458,13 @@ with 1,310K iterations</b></code></pre>
         <h3 class="break">Examples</h3>
         </a>
         <p>
-          A series of example <em><code>.xml</code></em> data files for IFS transforms are provided
-          in the <code>data</code> directory of the distribution. Some of these can be
-          found in the books <strong>The Computational Beauty of Nature</strong>
-          and <strong>Superfractals</strong>. The <strong>Fractal Flame</strong> paper
-          gives more details on the density estimation methods used,
-          and illustrates the co-ordinate transformation functions used here, as well
-          as showing options for future investigation and implementation.
-          See the <a href="#references"><em>References</em></a> for more details.
-        </p>
-        <p>
-          To load the examples, specify the path to the file as the last argument
-          on the command-line. Sample images for these transforms have also been provided,
-          so be sure to use the <em><code>.xml</code></em> file, not the <em><code>.png</code></em>.
+          Some example <em><code>.xml</code></em> data files are provided with
+          the distribution. Some of these are taken from the books <strong>The
+          Computational Beauty of Nature</strong> and <strong>Superfractals</strong>.
+          The <strong>Fractal Flame</strong> paper describes the density
+          estimation methods used, and illustrates the various co-ordinate
+          transformation functions available. See the <a href="#references"><em>References</em></a>
+          for more details.
         </p>
         <div style="page-break-inside: avoid;">
           <div style="margin-left: 25px;">
@@ -479,13 +473,33 @@ with 1,310K iterations</b></code></pre>
             </a>
           </div>
           <p style="margin-left: 25px;">
-            <em>Gallery of example fractal images.</em>
+            <em>Gallery of IFS fractal images.</em>
           </p>
         </div>
         <p>
-          This selection of IFS images is also included in the distribution archive.
+          This selection of images is included in the distribution archive.
           To view it, open the <code>data/gallery/index.html</code> file in a web browser.
+          Images of the example <em><code>.xml</code></em> files are also available as
+          <em><code>.png</code></em> files in the same directory.
         </p>
+        <div style="page-break-inside: avoid;">
+          <pre style="margin-left: 25px; width: 455px; margin-bottom: 10px;">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot;?&gt;
+&lt;<b>IFS</b> name=&quot;example&quot;&gt;
+    &lt;<b>Transforms</b>&gt;
+        &lt;<b>Transform</b> id=&quot;1&quot; zIndex=&quot;0&quot; x=&quot;100&quot; y=&quot;100&quot;
+                w=&quot;500.0&quot; h=&quot;500.0&quot;
+                r=&quot;1.5707963267948966&quot; shx=&quot;0.0&quot; shy=&quot;0.0&quot;
+                sw=&quot;1000&quot; sh=&quot;1000&quot;/&gt;
+    &lt;<b>/Transforms</b>&gt;
+    &lt;<b>Reflections</b>&gt;
+        &lt;<b>Reflection</b> id=&quot;1&quot; x=&quot;500&quot; y=&quot;600&quot;
+                r=&quot;2.3781689744890073&quot; sw=&quot;1000&quot; sh=&quot;1000&quot;/&gt;
+    &lt;/<b>Reflections</b>&gt;
+&lt;/<b>IFS</b>&gt;</code></pre>
+          <p style="margin-left: 25px;">
+            <em>Example saved <strong><code>.xml</code></strong> file contents.</em>
+          </p>
+        </div>
         <a name="references">
         <h3 class="break">References</h3>
         </a>
