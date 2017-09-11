@@ -295,9 +295,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
                 g.setPaint(controller.getRender().getForeground());
                 FontRenderContext frc = g.getFontRenderContext();
-                TextLayout scaleLayout = new TextLayout(scaleText, calibri(Font.BOLD, 20), frc);
+                TextLayout scaleLayout = new TextLayout(scaleText, calibri(Font.BOLD, 16), frc);
                 scaleLayout.draw(g, 10f, size.height - 10f);
-                TextLayout countLayout = new TextLayout(countText, calibri(Font.BOLD | (isRunning() ? Font.PLAIN : Font.ITALIC), 20), frc);
+                TextLayout countLayout = new TextLayout(countText, calibri(Font.BOLD | (isRunning() ? Font.PLAIN : Font.ITALIC), 16), frc);
                 countLayout.draw(g, size.width - 10f - (float) countLayout.getBounds().getWidth(), size.height - 10f);
             }
 
