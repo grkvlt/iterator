@@ -316,8 +316,10 @@
           the aspect ratio will be maintained. If <em>Alt</em> is held while
           clicking and dragging a transform, it will be duplicated. When a
           transform is selected, the <em>Delete</em> or <em>Backspace</em>
-          key will delete it and the <em>Left</em> or <em>Right</em> arrow
-          keys will rotate it by ninety degrees.
+          key will delete it and the <em>+</em> or <em>-</em> keys will
+          rotate it by ninety degrees. The arrow keys will move the transform
+          in the appropriate direction by the minimum grid-snap increment,
+          or by a single pixel if <em>Shift</em> is held down.
         </p>
         <p>
           The context menu displayed by right-clicking on a transform allows
@@ -379,8 +381,19 @@
           of the image by a factor of two. The <em>=</em> key will reset the
           view to the original unmagnified and centered settings. To display
           the outline of the transforms being rendered, use the <em>o</em> key,
-          and the <em>i</em> key will toggle display of the current scale and
-          viewpoint co-ordinates.
+          and the <em>i</em> key will toggle display of information about the
+          current view.
+        </p>
+        <p>
+          The view information includes: the scale factor and viewpoint center
+          co-ordinates; the display and rendering modes and the active co-ordinate
+          transform function name; the gamma factor; current and maximum thread
+          counts; and the number of iterations. This information will be included
+          in a printout of the view, but not in an exported <code>PNG</code> image.
+          The thread count can be adjusted using the <em>Up</em> and <em>Down</em>
+          arrow keys, as well as through the <strong>Preferences</strong> dialog,
+          and pressing <code>t</code> will print out a list of the active threads
+          and their current state.
         </p>
         <div style="page-break-inside: avoid;">
           <div style="margin-left: 25px;">
