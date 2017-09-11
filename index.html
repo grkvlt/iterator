@@ -138,6 +138,9 @@
           <li><code>explorer.mode</code> - Display mode - <em>palette</em></li>
           <li><code>explorer.render</code> - Rendering style and algorithm - <em>standard</em></li>
           <li><code>explorer.transform</code> - Co-ordinate transform function - <em>identity</em></li>
+          <li><code>explorer.gamma</code> - Display gamma factor - <em>1.8</em></li>
+          <li><code>explorer.vibrancy</code> - Colour vibrancy coefficient - <em>0.9</em></li>
+          <li><code>explorer.blur</code> - Kernel size for blur density estimation- <em>4</em></li>
           <li><code>explorer.palette.file</code> - Colour palette image source - <em>abstract</em></li>
           <li><code>explorer.palette.size</code> - Number of colours in palette - <em>64</em></li>
           <li><code>explorer.palette.seed</code> - Random seed used for choosing colours - <em>0</em></li>
@@ -150,7 +153,7 @@
           <li><code>explorer.debug</code> - Debugging mode - <em>false</em></li>
         </ul>
         <p>
-          The configuration options above can be set in a property file, which can then
+          The configuration options above can be set in a <em>.properties</em> file, which can then
           be loaded by the application. The locations searched for configuration files are
           the users <code>HOME</code> directory, for a file named <code>.explorer.properties</code>,
           the current directory for a file named <code>explorer.properties</code> and finally
@@ -183,25 +186,28 @@
         </div>
         <p>
           Settings changed using the <strong>Preferences</strong> dialog are applied to the current view,
-          and can be saves as a <em>properties</em> file using the <em>Save Preferences...</em> menu. This
+          and can be saves as a <em>.properties</em> file using the <em>Save Preferences...</em> menu. This
           will write out all configuration options that have been explicitly set, either from the
           initial configuration file or by changes made using the <strong>Preferences</strong> dialog.
         </p>
         <blockquote>
-          <strong>Note</strong> <em>The saved <strong>properties</strong> file will have the same name
+          <strong>Note</strong> <em>The saved <strong>.properties</strong> file will have the same name
           as the configuration file specified on the command line. If the name is not changed then the
           contents will be overwritten and any comments or formatting will be lost.</em>
         </blockquote>
         <h3>Options</h3>
         <p>
           The most interesting configuration properties are the <code>explorer.mode</code>,
-          <code>explorer.render</code>, <code>explorer.transform</code> and <code>explorer.palette.*</code>
-          options. These determine the colour and style that will be used to display the
-          IFS on screen.
+          <code>explorer.render</code> and <code>explorer.transform</code> which together
+          define the way the IFS will be rendered and coloured. Additionally, the set of
+          <code>explorer.palette.*</code> options help to determine the colours used, and
+          <code>explorer.gamma</code> and <code>explorer.vibrancy</code> control the way
+          on-screen colours are displayed.
         </p>
         <blockquote>
-          <strong>Note</strong> <em>Many of these options interact with each other and
-          not all combinations of settings will make sense.</em>
+          <strong>Note</strong> <em>Some of these options interact with each other, and
+          also with the IFS transforms being displayed. Not all combinations of settings
+          will make sense for a particular IFS configuration.</em>
         </blockquote>
         <p>
           The <code>explorer.mode</code> setting determines the way that colours
