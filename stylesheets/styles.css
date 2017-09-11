@@ -85,6 +85,7 @@ code, pre {
 
 pre {
   padding:8px 15px;
+  line-height:1;
   background:#f8f8f8;  
   border-radius:5px;
   border:1px solid #e5e5e5;
