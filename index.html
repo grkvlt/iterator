@@ -177,25 +177,15 @@
         <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> export JAVA_OPTS="-Dexplorer.palette.seed=1234"
 <b>$</b> export JAVA_MEM="-Xms1g -Xmx2g"
 <b>$</b> ./bin/explorer.sh --palette wave ./data/spikes.xml</code></pre>
-        <p>
-          The <em>Preferences...</em> menu option displays a dialog with some of the
-          available options. In particular there are drop-down menus to select the IFS
-          display mode, such as <em>ifs-colour</em> or <em>gray</em>, and the rendering
-          style, from <em>standard</em> to the range of density estimation based options
-          such as <em>log-density-flame-inverse</em>.
-          See the <a href="#options"><em>Options</em></a> section for more details on these.
-        </p>
         <div style="page-break-inside: avoid;">
-          <pre style="margin-left: 25px; margin-bottom: 10px; width: 455px;"><code><b>explorer.gamma</b> = <i>0.5</i>
-<b>explorer.mode</b> = <i>ifs-colour</i>
-<b>explorer.render</b> = <i>log-density-flame-inverse</i>
-<b>explorer.window.height</b> = <i>2000</i>
-<b>explorer.window.width</b> = <i>2000</i></code></pre>
-          <p style="margin-left: 25px;">
-            <em>Example <strong><code>.properties</code></strong> configuration file contents.</em>
+          <p>
+            The <em>Preferences...</em> menu option displays a dialog with some of the
+            available options. In particular there are drop-down menus to select the IFS
+            display mode, such as <em>ifs-colour</em> or <em>gray</em>, and the rendering
+            style, from <em>standard</em> to the range of density estimation based options
+            such as <em>log-density-flame-inverse</em>.
+            See the <a href="#options"><em>Options</em></a> section for more details on these.
           </p>
-        </div>
-        <div style="page-break-inside: avoid;">
           <div style="margin-left: 25px;">
             <img src="images/preferences.png" alt="Preferences" title="Preferences Dialog" border="1" width="160" height="160">
           </div>
@@ -209,6 +199,16 @@
           will write out all configuration options that have been explicitly set, either from the
           initial configuration file or by changes made using the <strong>Preferences</strong> dialog.
         </p>
+        <div style="page-break-inside: avoid;">
+          <pre style="margin-left: 25px; margin-bottom: 10px; width: 455px;"><code><b>explorer.gamma</b> = <i>0.5</i>
+<b>explorer.mode</b> = <i>ifs-colour</i>
+<b>explorer.render</b> = <i>log-density-flame-inverse</i>
+<b>explorer.window.height</b> = <i>2000</i>
+<b>explorer.window.width</b> = <i>2000</i></code></pre>
+          <p style="margin-left: 25px;">
+            <em>Example saved <strong><code>.properties</code></strong> configuration file contents.</em>
+          </p>
+        </div>
         <blockquote>
           <strong>Note</strong> <em>The save dialog for the <strong><code>.properties</code></strong>
           file defaults to using the same name as the configuration file specified on the command line.
