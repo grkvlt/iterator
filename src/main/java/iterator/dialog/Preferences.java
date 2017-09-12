@@ -72,7 +72,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
 
         mode = addDropDown(messages.getText(DIALOG_PREFERENCES_MODE), Mode.values());
         render = addDropDown(messages.getText(DIALOG_PREFERENCES_RENDER), Render.values());
-        transform = addDropDown(messages.getText(DIALOG_PREFERENCES_TRANSFORM), CoordinateTransform.Type.values());
+        transform = addDropDown(messages.getText(DIALOG_PREFERENCES_TRANSFORM), CoordinateTransform.Type.ordered());
         paletteFile = addDropDown(messages.getText(DIALOG_PREFERENCES_PALETTE_FILE), Config.PALETTE_FILES);
         paletteSize = addSpinner(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), Config.MIN_PALETTE_SIZE, Config.MAX_PALETTE_SIZE);
         seed = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SEED), Formatter.longs());

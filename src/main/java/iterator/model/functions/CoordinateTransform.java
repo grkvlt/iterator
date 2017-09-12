@@ -2,10 +2,13 @@ package iterator.model.functions;
 
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
+import java.util.Arrays;
+import java.util.List;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import com.google.common.primitives.Ints;
 
 import iterator.model.Function;
 
@@ -38,6 +41,12 @@ public abstract class CoordinateTransform implements Function {
         public String getShortName() { return name; }
 
         public CoordinateTransform getFunction() { return function; }
+
+        public static Type[] ordered() {
+            List<Type> values = Arrays.asList(values());
+            values.sort((a, b) -> Ints.compare(a.getFunction().id, b.getFunction().id));
+            return values.toArray(new Type[0]);
+        }
 
         @Override
         public String toString() {
