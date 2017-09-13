@@ -134,6 +134,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private int kernel;
     private long max;
     private Timer timer;
+    private AtomicBoolean latch = new AtomicBoolean(true);
     private AtomicReference<Point2D> p1 = Atomics.newReference(), p2 = Atomics.newReference();
     private AtomicLong count = new AtomicLong(0l);
     private AtomicInteger task = new AtomicInteger(0);
@@ -684,6 +685,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
     public Runnable task(AtomicBoolean cancel, Runnable task) {
         return () -> {
+            while (latch.get()); // Wait until latch released
             long initial = token.get();
             String name = Thread.currentThread().getName();
             controller.debug("Started task %s", name);
@@ -731,6 +733,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             pause.setEnabled(true);
             resume.setEnabled(false);
             timer.start();
+            latch.set(false);
         }
     }
 
@@ -738,11 +741,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         boolean stopped = running.compareAndSet(true, false);
         if (stopped) {
             controller.debug("Stopping");
+            latch.set(true);
             token.incrementAndGet();
+            timer.stop();
             synchronized (tasks) {
                 state.values().forEach(b -> b.compareAndSet(false, true));
             }
-            timer.stop();
+            while (tasks.size() > 0); // Wait until all tasks stopped
             pause.setEnabled(false);
             resume.setEnabled(true);
             repaint();
