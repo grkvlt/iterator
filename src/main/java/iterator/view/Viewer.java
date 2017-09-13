@@ -365,41 +365,47 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             view.translate(-x0, -y0);
 
             // Calculate grid position
-            Rectangle unit = new Rectangle(getSize());
             double spacing = controller.getMaxGrid() / scale;
             double mx = centre.getX() - (size.getWidth() / 2d / scale) - (size.getWidth() / 2d);
             double my = centre.getY() - (size.getHeight() / 2d / scale) - (size.getHeight() / 2d);
-            double nx = centre.getX() + (size.getWidth() / 2d / scale);
-            double ny = centre.getY() + (size.getHeight() / 2d / scale);
             double rx = Math.IEEEremainder(mx, spacing);
             double ry = Math.IEEEremainder(my, spacing);
             double sx = mx - rx + (size.getWidth() / 2d);
             double sy = my - ry + (size.getHeight() / 2d);
+            int xn = (int) ((sx - x0) / spacing);
+            int yn = (int) ((sy - y0) / spacing);
+            double x1 = sx + (xn - 1) * spacing;
+            double y1 = sy + (yn - 1) * spacing;
+            int n = (size.width / controller.getMaxGrid()) + 2;
 
             // Draw grid lines
             g.setStroke(DASHED_LINE_1);
-            for (double x = sx; x < nx; x += spacing) {
-                if (DoubleMath.fuzzyEquals(x, size.getWidth() / 2d, 0.001d)) {
+            for (int i = 0; i < n; i++) {
+                double x = x1 + i * spacing;
+                if (DoubleMath.fuzzyEquals(x, size.getWidth() / 2d, spacing / 10d)) {
                     g.setPaint(alpha(controller.getRender().getForeground(), 128));
                 } else {
                     g.setPaint(alpha(controller.getRender().getForeground(), 64));
                 }
-                Line2D line = new Line2D.Double(x, my, x, ny);
-                Shape s = view.createTransformedShape(line);
-                if (s.intersects(unit)) {
-                    g.draw(s);
+                double pts[] = { x, y1, x, y1 + n * spacing };
+                view.transform(pts, 0, pts, 0, 2);
+                if (pts[0] > 0d && pts[0] < size.getWidth()) {
+                    Line2D line = new Line2D.Double(pts[0], pts[1], pts[2], pts[3]);
+                    g.draw(line);
                 }
             }
-            for (double y = sy; y < ny; y += spacing) {
-                if (DoubleMath.fuzzyEquals(y, size.getHeight() / 2d, 0.001d)) {
+            for (int i = 0; i < n; i++) {
+                double y = y1 + i * spacing;
+                if (DoubleMath.fuzzyEquals(y, size.getHeight() / 2d, spacing / 10d)) {
                     g.setPaint(alpha(controller.getRender().getForeground(), 128));
                 } else {
                     g.setPaint(alpha(controller.getRender().getForeground(), 64));
                 }
-                Line2D line = new Line2D.Double(mx, y, nx, y);
-                Shape s = view.createTransformedShape(line);
-                if (s.intersects(unit)) {
-                    g.draw(s);
+                double pts[] = { x1, y, x1 + n * spacing, y };
+                view.transform(pts, 0, pts, 0, 2);
+                if (pts[1] > 0d && pts[1] < size.getWidth()) {
+                    Line2D line = new Line2D.Double(pts[0], pts[1], pts[2], pts[3]);
+                    g.draw(line);
                 }
             }
         });
