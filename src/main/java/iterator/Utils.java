@@ -154,14 +154,31 @@ public class Utils {
     }
 
     /** Critical secion with a {@link Semaphore}. */
-    public static void critical(Semaphore semaphore, Runnable action) {
+    public static void critical(Semaphore semaphore, Runnable action, BiConsumer<Throwable, String>...exceptionHandlers) {
         try {
             semaphore.acquire();
             action.run();
         } catch (InterruptedException ie) {
             Thread.interrupted();
+        } catch (Throwable t) {
+            for (BiConsumer<Throwable, String> h : exceptionHandlers) {
+                h.accept(t, "Error executing critical section");
+            }
         } finally {
             semaphore.release();
+        }
+    }
+
+    /** Critical secion with a {@code synchronized} block. */
+    public static void locked(Object mutex, Runnable action, BiConsumer<Throwable, String>...exceptionHandlers) {
+        synchronized (mutex) {
+            try {
+                action.run();
+            } catch (Throwable t) {
+                for (BiConsumer<Throwable, String> h : exceptionHandlers) {
+                    h.accept(t, "Error executing critical section");
+                }
+            }
         }
     }
 
