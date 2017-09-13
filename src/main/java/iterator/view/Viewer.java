@@ -26,6 +26,7 @@ import static iterator.Utils.calibri;
 import static iterator.Utils.checkBoxItem;
 import static iterator.Utils.context;
 import static iterator.Utils.menuItem;
+import static iterator.Utils.locked;
 import static iterator.Utils.unity;
 import static iterator.Utils.weight;
 import static iterator.util.Messages.MENU_VIEWER_GRID;
@@ -135,6 +136,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private long max;
     private Timer timer;
     private AtomicBoolean latch = new AtomicBoolean(true);
+    private Object mutex = new Object[0];
     private AtomicReference<Point2D> p1 = Atomics.newReference(), p2 = Atomics.newReference();
     private AtomicLong count = new AtomicLong(0l);
     private AtomicInteger task = new AtomicInteger(0);
@@ -723,40 +725,44 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
     public void start() {
         if (running.compareAndSet(false, true)) {
-            controller.debug("Starting");
-            int iterators = controller.getThreads() - (controller.getRender().isDensity() ? 1 : 0);
-            for (int i = 0; i < iterators; i++) {
-                submit(Task.ITERATE, this);
-            }
-            if (controller.getRender().isDensity()) {
-                submit(Task.PLOT_DENSITY, () -> {
-                    BufferedImage old = image.get();
-                    BufferedImage plot = newImage(getSize());
-                    plotDensity(plot, 1, controller.getRender(), controller.getMode());
-                    image.compareAndSet(old, plot);
-                });
-            }
-            pause.setEnabled(true);
-            resume.setEnabled(false);
-            timer.start();
-            latch.set(false);
+            locked(mutex, () -> {
+                controller.debug("Starting");
+                int iterators = controller.getThreads() - (controller.getRender().isDensity() ? 1 : 0);
+                for (int i = 0; i < iterators; i++) {
+                    submit(Task.ITERATE, this);
+                }
+                if (controller.getRender().isDensity()) {
+                    submit(Task.PLOT_DENSITY, () -> {
+                        BufferedImage old = image.get();
+                        BufferedImage plot = newImage(getSize());
+                        plotDensity(plot, 1, controller.getRender(), controller.getMode());
+                        image.compareAndSet(old, plot);
+                    });
+                }
+                pause.setEnabled(true);
+                resume.setEnabled(false);
+                timer.start();
+                latch.set(false);
+            });
         }
     }
 
     public boolean stop() {
         boolean stopped = running.compareAndSet(true, false);
         if (stopped) {
-            controller.debug("Stopping");
-            latch.set(true);
-            token.incrementAndGet();
-            timer.stop();
-            synchronized (tasks) {
-                state.values().forEach(b -> b.compareAndSet(false, true));
-            }
-            while (tasks.size() > 0); // Wait until all tasks stopped
-            pause.setEnabled(false);
-            resume.setEnabled(true);
-            repaint();
+            locked(mutex, () -> {
+                controller.debug("Stopping");
+                latch.set(true);
+                token.incrementAndGet();
+                timer.stop();
+                synchronized (tasks) {
+                    state.values().forEach(b -> b.compareAndSet(false, true));
+                }
+                while (tasks.size() > 0); // Wait until all tasks stopped
+                pause.setEnabled(false);
+                resume.setEnabled(true);
+                repaint();
+            });
         }
         return stopped;
     }
