@@ -147,7 +147,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
@@ -385,25 +384,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             setBounds(insets.left, insets.top, screen.width - (insets.left + insets.right), screen.height - (insets.top + insets.bottom));
         }
 
-        // Load dialogs
-        prefs = Preferences.dialog(this);
-        about = About.dialog(this);
-
-        // Setup platform specifics
-        // TODO Windows specific UI configuration
-        if (platform == Platform.MAC_OS_X) {
-            try {
-                Class<?> support = Class.forName("iterator.AppleSupport");
-                Constructor<?> ctor = support.getConstructor(EventBus.class, Explorer.class);
-                Method setup = support.getDeclaredMethod("setup");
-                Object apple = ctor.newInstance(bus, this);
-                setup.invoke(apple);
-            } catch (InvocationTargetException ite) {
-                error(ite.getCause(), "Error while configuring OSX support: %s", ite.getCause().getMessage());
-            } catch (Exception e) {
-                error(e, "Unable to configure OSX support");
-            }
-        }
+        // Setup LAF
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
@@ -505,6 +486,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     @SuppressWarnings("serial")
     public void start() {
+        prefs = Preferences.dialog(this);
+        about = About.dialog(this);
+
         JPanel content = new JPanel(new BorderLayout());
 
         menuBar = new JMenuBar();
@@ -591,7 +575,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                     try {
                         job.print();
                     } catch (PrinterException pe) {
-                        Throwables.propagate(pe);
+                        throw new RuntimeException(pe);
                     }
                 }
             });
@@ -697,6 +681,22 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         addKeyListener(this);
         addKeyListener(editor);
         addKeyListener(viewer);
+
+        // Platform specifics
+        // TODO Windows specific UI configuration
+        if (platform == Platform.MAC_OS_X) {
+            try {
+                Class<?> support = Class.forName("iterator.AppleSupport");
+                Constructor<?> ctor = support.getConstructor(EventBus.class, Explorer.class);
+                Method setup = support.getDeclaredMethod("setup");
+                Object apple = ctor.newInstance(bus, this);
+                setup.invoke(apple);
+            } catch (InvocationTargetException ite) {
+                error(ite.getCause(), "Error while configuring OSX support: %s", ite.getCause().getMessage());
+            } catch (Exception e) {
+                error(e, "Unable to configure OSX support");
+            }
+        }
 
         IFS untitled = new IFS();
         bus.post(untitled);
