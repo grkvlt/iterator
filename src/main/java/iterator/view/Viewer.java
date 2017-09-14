@@ -73,6 +73,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.stream.Collectors;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -137,7 +138,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private Timer timer;
     private AtomicBoolean latch = new AtomicBoolean(true);
     private Object mutex = new Object[0];
-    private AtomicReference<Point2D> p1 = Atomics.newReference(), p2 = Atomics.newReference();
+    private AtomicReferenceArray<Point2D> points = Atomics.newReferenceArray(2);
     private AtomicLong count = new AtomicLong(0l);
     private AtomicInteger task = new AtomicInteger(0);
     private AtomicBoolean running = new AtomicBoolean(false);
@@ -427,8 +428,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
         image.set(newImage(getSize()));
 
-        p1.set(new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
-        p2.set(new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
+        points.set(0, new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
+        points.set(1, new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
 
         vibrancy = controller.getVibrancy();
         kernel = controller.getBlurKernel();
@@ -511,8 +512,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 }
 
                 // Evaluate the function twice, first for (x,y) position and then for hue/saturation color space
-                current = p1.updateAndGet(p -> function.apply(f.apply(p)));
-                old = p2.getAndUpdate(p -> function.apply(f.apply(p)));
+                current = points.updateAndGet(0, p -> function.apply(f.apply(p)));
+                old = points.getAndUpdate(1, p -> function.apply(f.apply(p)));
 
                 // Discard first 10K points
                 if (count.get() < 10) {
