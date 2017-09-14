@@ -338,10 +338,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
 
         // Load configuration
-        config = Config.loadProperties(override);
-        if (override != null) {
-            print("Loaded %s", override.getFileName());
-        }
+        config = Config.loadProperties(this, override);
 
         // Set performance properties
         setThreads(config.get(THREADS_PROPERTY, Math.max(Runtime.getRuntime().availableProcessors() / 2, MIN_THREADS)));
@@ -547,6 +544,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         export = menuItem(messages.getText(MENU_FILE_EXPORT), e -> {
             File target = new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".png");
             saveDialog(target, DIALOG_FILES_PNG, "png", f -> {
+                print("Saving PNG image %s", f.getName());
                 saveImage(viewer.getImage(), f);
             });
         });
@@ -809,13 +807,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void save(File file) {
-        print("Saving %s", file.getName());
+        print("Saving IFS file %s", file.getName());
         cwd = file.getParentFile();
         IFS.save(ifs, file);
     }
 
     public IFS load(File file) {
-        print("Loading %s", file.getName());
+        print("Loading IFS file %s", file.getName());
         cwd = file.getParentFile();
         return IFS.load(file);
     }

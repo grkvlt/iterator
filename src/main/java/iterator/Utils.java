@@ -26,6 +26,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -45,7 +46,6 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 
 import com.google.common.base.StandardSystemProperty;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
@@ -254,7 +254,7 @@ public class Utils {
         try {
             return ImageIO.read(url);
         } catch (IOException ioe) {
-            throw Throwables.propagate(ioe);
+            throw new UncheckedIOException(ioe);
         }
     }
 
@@ -268,7 +268,7 @@ public class Utils {
         try {
             ImageIO.write(source, "png", file);
         } catch (IOException ioe) {
-            throw Throwables.propagate(ioe);
+            throw new UncheckedIOException(ioe);
         }
     }
 
