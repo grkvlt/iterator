@@ -24,7 +24,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,7 +48,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.StandardSystemProperty;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ForwardingSortedMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
@@ -202,16 +203,18 @@ public class Config extends ForwardingSortedMap<String, String> {
 
     public static final Predicate<CharSequence> EXPLORER_KEYS = Predicates.containsPattern("^" + EXPLORER_PROPERTY + ".");
 
+    private final Explorer controller;
     private final Optional<Path> override;
     private final SortedMap<String, String> config;
 
-    private Config(Path override) {
+    private Config(Explorer controller, Path override) {
         this.override = Optional.fromNullable(override);
         this.config = Maps.newTreeMap();
+        this.controller = controller;
     }
 
-    public static Config loadProperties(Path override) {
-        Config instance = new Config(override);
+    public static Config loadProperties(Explorer controller, Path override) {
+        Config instance = new Config(controller, override);
         instance.load();
         return instance;
     }
@@ -243,19 +246,24 @@ public class Config extends ForwardingSortedMap<String, String> {
 
     public void load(Path path) {
         if (Files.isReadable(path)) {
+            controller.print("Loading configuration file %s", path.getFileName());
             try (Reader reader = Files.newBufferedReader(path, Charsets.UTF_8)) {
                 load(reader);
             } catch (IOException ioe) {
-                throw Throwables.propagate(ioe);
+                throw new UncheckedIOException(ioe);
             }
         }
     }
 
     public void load(URL url) {
         try (Reader reader = new InputStreamReader(url.openStream())) {
+            Path file = Paths.get(url.toURI()).getFileName();
+            controller.print("Loading configuration URL %s", file.toString());
             load(reader);
         } catch (IOException ioe) {
-            throw Throwables.propagate(ioe);
+            throw new UncheckedIOException(ioe);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -265,7 +273,7 @@ public class Config extends ForwardingSortedMap<String, String> {
             properties.load(reader);
             load(properties);
         } catch (IOException ioe) {
-            throw Throwables.propagate(ioe);
+            throw new UncheckedIOException(ioe);
         }
     }
 
@@ -296,7 +304,7 @@ public class Config extends ForwardingSortedMap<String, String> {
                   .append(NEWLINE)
                   .append(String.format(footer, timestamp, user));
         } catch (IOException ioe) {
-            throw Throwables.propagate(ioe);
+            throw new UncheckedIOException(ioe);
         }
     }
 
@@ -306,9 +314,10 @@ public class Config extends ForwardingSortedMap<String, String> {
             throw new IllegalStateException(String.format("Cannot write file %s", path));
         }
         try {
+            controller.print("Saving configuration file %s", path.getFileName());
             save(Files.newOutputStream(path));
         } catch (IOException ioe) {
-            throw Throwables.propagate(ioe);
+            throw new UncheckedIOException(ioe);
         }
     }
 
