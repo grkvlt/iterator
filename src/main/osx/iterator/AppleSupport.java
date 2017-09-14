@@ -27,10 +27,16 @@ import com.apple.eawt.OpenFilesHandler;
 import com.apple.eawt.PreferencesHandler;
 import com.apple.eawt.QuitHandler;
 import com.apple.eawt.QuitResponse;
+import com.apple.eawt.event.GestureUtilities;
+import com.apple.eawt.event.MagnificationEvent;
+import com.apple.eawt.event.MagnificationListener;
+import com.apple.eawt.event.RotationEvent;
+import com.apple.eawt.event.RotationListener;
 import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
 
 import iterator.model.IFS;
+import iterator.model.Transform;
 import iterator.util.Dialog;
 
 /**
@@ -53,6 +59,30 @@ public class AppleSupport implements OpenFilesHandler, AboutHandler, Preferences
         app.setPreferencesHandler(this);
         app.setQuitHandler(this);
         app.setDockIconImage(controller.getIcon());
+
+        GestureUtilities.addGestureListenerTo(controller.getEditor(), new RotationListener() {
+            @Override
+            public void rotate(RotationEvent re) {
+                if (controller.getEditor().isVisible()) {
+                    Transform selected = controller.getEditor().getSelected();
+                    if (selected != null && !selected.isMatrix()) {
+                        selected.r -= Math.toRadians(re.getRotation());
+                    }
+                }
+            }
+        });
+        GestureUtilities.addGestureListenerTo(controller.getEditor(), new MagnificationListener() {
+            @Override
+            public void magnify(MagnificationEvent me) {
+                if (controller.getEditor().isVisible()) {
+                    Transform selected = controller.getEditor().getSelected();
+                    if (selected != null && !selected.isMatrix()) {
+                        selected.w *= 1d + me.getMagnification();
+                        selected.h *= 1d + me.getMagnification();
+                    }
+                }
+            }
+        });
     }
 
     /** @see com.apple.eawt.OpenFilesHandler#openFiles(com.apple.eawt.AppEvent.OpenFilesEvent) */
