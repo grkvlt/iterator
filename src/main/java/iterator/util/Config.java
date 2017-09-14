@@ -16,16 +16,17 @@
 package iterator.util;
 
 import static iterator.Utils.NEWLINE;
+import static iterator.Utils.initFileSystem;
 
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -35,6 +36,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -246,7 +248,8 @@ public class Config extends ForwardingSortedMap<String, String> {
 
     public void load(Path path) {
         if (Files.isReadable(path)) {
-            controller.print("Loading configuration file %s", path.getFileName());
+            boolean zip = path.getFileSystem().getClass().getName().toLowerCase(Locale.UK).contains("zip");
+            controller.print("Loading configuration %s %s", zip ? "resource" : "file", path.getFileName());
             try (Reader reader = Files.newBufferedReader(path, Charsets.UTF_8)) {
                 load(reader);
             } catch (IOException ioe) {
@@ -256,12 +259,10 @@ public class Config extends ForwardingSortedMap<String, String> {
     }
 
     public void load(URL url) {
-        try (Reader reader = new InputStreamReader(url.openStream())) {
-            Path file = Paths.get(url.toURI()).getFileName();
-            controller.print("Loading configuration URL %s", file.toString());
-            load(reader);
-        } catch (IOException ioe) {
-            throw new UncheckedIOException(ioe);
+        try {
+            URI uri = url.toURI();
+            initFileSystem(uri);
+            load(Paths.get(uri));
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }

@@ -27,9 +27,14 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.FileSystems;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
@@ -46,7 +51,9 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 
 import com.google.common.base.StandardSystemProperty;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 
 import iterator.model.Transform;
@@ -242,6 +249,19 @@ public class Utils {
     public static Color alpha(int rgb, int alpha) {
         int rgba = (rgb & RGB24) | ((alpha & 0xff) << 24);
         return new Color(rgba, true);
+    }
+
+    public static FileSystem initFileSystem(URI uri) {
+        try {
+            return FileSystems.getFileSystem(uri);
+        } catch (FileSystemNotFoundException fsnfe) {
+            try {
+                Map<String, String> env = ImmutableMap.of("create", "true");
+                return FileSystems.newFileSystem(uri, env);
+            } catch (IOException ioe) {
+                throw new UncheckedIOException(ioe);
+            }
+        }
     }
 
     /**
