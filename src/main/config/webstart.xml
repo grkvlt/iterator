@@ -55,6 +55,12 @@
     <dependencySets>
         <dependencySet>
             <outputDirectory>/lib</outputDirectory>
+            <excludes>
+                <exclude>org.codehaus.mojo:animal-sniffer-annotations</exclude>
+                <exclude>com.google.errorprone:error_prone_annotations</exclude>
+                <exclude>com.google.j2objc:j2objc-annotations</exclude>
+                <exclude>com.google.code.findbugs:jsr305</exclude>
+            </excludes>
         </dependencySet>
     </dependencySets>
 </assembly>
