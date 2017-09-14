@@ -78,7 +78,7 @@
         -->
 
         <jquery.version>1.7.2</jquery.version>
-        <guava.version>19.0</guava.version>
+        <guava.version>23.0</guava.version>
 
         <jquery.js.src>http://ajax.googleapis.com/ajax/libs/jquery/${jquery.version}/jquery.min.js</jquery.js.src>
     </properties>
