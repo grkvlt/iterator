@@ -377,15 +377,15 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             double sy = my - ry + (size.getHeight() / 2d);
             int xn = (int) ((sx - x0) / spacing);
             int yn = (int) ((sy - y0) / spacing);
-            double x1 = sx + (xn - 1) * spacing;
-            double y1 = sy + (yn - 1) * spacing;
-            int n = (size.width / controller.getMaxGrid()) + 2;
+            double x1 = sx + (xn - 2) * spacing;
+            double y1 = sy + (yn - 2) * spacing;
+            int n = (size.width / controller.getMaxGrid()) + 4;
 
             // Draw grid lines
             g.setStroke(DASHED_LINE_1);
             for (int i = 0; i < n; i++) {
                 double x = x1 + i * spacing;
-                if (DoubleMath.fuzzyEquals(x, size.getWidth() / 2d, spacing / 10d)) {
+                if (DoubleMath.fuzzyEquals(x, size.getWidth() / 2d, spacing / 100d)) {
                     g.setPaint(alpha(controller.getRender().getForeground(), 128));
                 } else {
                     g.setPaint(alpha(controller.getRender().getForeground(), 64));
@@ -399,7 +399,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             }
             for (int i = 0; i < n; i++) {
                 double y = y1 + i * spacing;
-                if (DoubleMath.fuzzyEquals(y, size.getHeight() / 2d, spacing / 10d)) {
+                if (DoubleMath.fuzzyEquals(y, size.getHeight() / 2d, spacing / 100d)) {
                     g.setPaint(alpha(controller.getRender().getForeground(), 128));
                 } else {
                     g.setPaint(alpha(controller.getRender().getForeground(), 64));
