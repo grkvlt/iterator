@@ -53,7 +53,6 @@ import com.google.common.base.StandardSystemProperty;
 import com.google.common.collect.ForwardingSortedMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
-import com.google.common.io.Resources;
 
 import iterator.Explorer;
 import iterator.dialog.Preferences;
@@ -227,9 +226,6 @@ public class Config extends ForwardingSortedMap<String, String> {
 
     public void load() {
         clear();
-
-        // Defaults from classpath
-        load(Resources.getResource(PROPERTIES_FILE));
 
         // Configuration from home directory
         load(Paths.get(StandardSystemProperty.USER_HOME.value(), "." + PROPERTIES_FILE));
