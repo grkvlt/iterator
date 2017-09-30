@@ -1,0 +1,476 @@
+/*
+ * Copyright 2012-2017 by Andrew Kennedy.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package iterator.view;
+
+import static iterator.Utils.RGB24;
+import static iterator.Utils.alpha;
+import static iterator.Utils.context;
+import static iterator.Utils.locked;
+import static iterator.Utils.unity;
+import static iterator.Utils.weight;
+
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceArray;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.Timer;
+
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
+import com.google.common.math.LongMath;
+import com.google.common.util.concurrent.Atomics;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+
+import iterator.dialog.Zoom;
+import iterator.model.Function;
+import iterator.model.IFS;
+import iterator.model.Transform;
+import iterator.util.Config;
+import iterator.util.Config.Mode;
+import iterator.util.Config.Render;
+import iterator.util.Subscriber;
+
+/**
+ * Rendered IFS viewer.
+ */
+public class Iterator implements Subscriber, Runnable, ThreadFactory {
+
+    private static enum Task { ITERATE, PLOT_DENSITY }
+
+    private final Config config;
+    private final EventBus bus;
+    private final BiConsumer<Throwable, String> exceptionHandler;
+
+    private IFS ifs;
+    private AtomicReference<BufferedImage> image = Atomics.newReference();
+    private String infoText;
+    private int top[];
+    private long density[];
+    private long blur[];
+    private double colour[];
+    private float vibrancy;
+    private int kernel;
+    private long max;
+    private Timer timer;
+    private AtomicBoolean latch = new AtomicBoolean(true);
+    private Object mutex = new Object[0];
+    private AtomicReferenceArray<Point2D> points = Atomics.newReferenceArray(2);
+    private AtomicLong count = new AtomicLong(0l);
+    private AtomicInteger task = new AtomicInteger(0);
+    private AtomicBoolean running = new AtomicBoolean(false);
+    private AtomicLong token = new AtomicLong(0l);
+    private Random random = new Random();
+    private float scale = 1.0f;
+    private Point2D centre;
+    private Dimension size;
+    private Rectangle zoom;
+    private ThreadGroup group = new ThreadGroup("iterator");
+    private ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool(this));
+    private Multimap<Task, Future<?>> tasks = Multimaps.synchronizedListMultimap(Multimaps.newListMultimap(Maps.newHashMap(), Lists::newArrayList));
+    private ConcurrentMap<Future<?>, AtomicBoolean> state = Maps.newConcurrentMap();
+    private boolean overlay, info, grid;
+    private JPopupMenu viewer;
+    private Zoom properties;
+    private JCheckBoxMenuItem showGrid, showOverlay, showInfo;
+    private JMenuItem pause, resume;
+
+    // Listener task to clean up task state collections
+    private Runnable cleaner = () -> {
+            synchronized (tasks) {
+                List<Future<?>> done = tasks.values()
+                        .stream()
+                        .filter(f -> f.isDone())
+                        .collect(Collectors.toList());
+                tasks.values().removeAll(done);
+                state.keySet().removeAll(done);
+            }
+            if (tasks.isEmpty() && isRunning()) {
+                stop();
+            }
+        };
+
+    public Iterator(BiConsumer<Throwable, String> exceptionHandler, EventBus bus, Config config, Dimension size) {
+        this.bus = bus;
+        this.config = config;
+        this.size = size;
+        this.exceptionHandler = exceptionHandler;
+
+        bus.register(this);
+    }
+
+    public long getCount() { return count.get(); }
+
+    /** @see Subscriber#updated(IFS) */
+    @Override
+    @Subscribe
+    public void updated(IFS ifs) {
+        this.ifs = ifs;
+        if (!running.get()) {
+            reset();
+            rescale();
+        }
+    }
+
+    /** @see Subscriber#resized(Dimension) */
+    @Override
+    @Subscribe
+    public void resized(Dimension size) {
+        boolean started = stop();
+        this.size = size;
+        this.centre = new Point2D.Double(size.getWidth() / 2d, size.getHeight() / 2d);
+        reset();
+        if (started) {
+            start();
+        }
+    }
+
+    public void rescale(float scale, Point2D centre) {
+        this.scale = scale;
+        this.centre = centre;
+    }
+
+    public void rescale() {
+        rescale(1f, new Point2D.Double(size.getWidth() / 2d, size.getHeight() / 2d));
+    }
+
+    public void reset() {
+        points.set(0, new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
+        points.set(1, new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
+
+        vibrancy = config.getVibrancy();
+        kernel = config.getBlurKernel();
+        top = new int[size.width * size.height];
+        density = new long[size.width * size.height];
+        blur = new long[(size.width / kernel + 1) * (size.height / kernel + 1)];
+        colour = new double[size.width * size.height];
+        max = 1;
+
+        count.set(0l);
+    }
+
+    public void iterate(BufferedImage targetImage, int s, long k, float scale, Point2D centre, Render render, Mode mode, List<Function> functions, Function function) {
+        context(exceptionHandler, targetImage.getGraphics(), g -> {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+            g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, vibrancy));
+
+            if (functions.isEmpty()) return;
+
+            int t = functions.size();
+            int r = ifs.getReflections().size();
+            int n = t - r;
+            double weight = weight(Lists.newArrayList(Iterables.filter(functions, Transform.class)));
+            float hsb[] = new float[3];
+            Rectangle rect = new Rectangle(0, 0, s, s);
+            function.setSize(size);
+            Point2D old, current;
+
+            for (long i = 0l; i < k; i++) {
+                if (i % 1000l == 0l) {
+                    count.incrementAndGet();
+                }
+
+                // Skip based on transform weighting
+                int j = random.nextInt(functions.size());
+                Function f = functions.get(j);
+                if ((j < n ? ((Transform) f).getWeight() : weight) < random.nextDouble() * weight * (r + 1d)) {
+                    continue;
+                }
+
+                // Evaluate the function twice, first for (x,y) position and then for hue/saturation color space
+                current = points.updateAndGet(0, p -> function.apply(f.apply(p)));
+                old = points.getAndUpdate(1, p -> function.apply(f.apply(p)));
+
+                // Discard first 10K points
+                if (count.get() < 10) {
+                    continue;
+                }
+
+                int x = (int) ((current.getX() - centre.getX()) * scale + (size.getWidth() / 2d));
+                int y = (int) ((current.getY() - centre.getY()) * scale + (size.getHeight() / 2d));
+                if (x >= 0 && y >= 0 && x < size.width && y < size.height) {
+                    int p = x + y * size.width;
+
+                    if (render == Render.TOP) {
+                        if (j > top[p]) top[p] = j;
+                    }
+
+                    // Density estimation histogram
+                    if (render.isDensity()) {
+                        try {
+                            density[p] = LongMath.checkedAdd(density[p], 1l);
+                            switch (render) {
+                                case LOG_DENSITY_BLUR:
+                                case LOG_DENSITY_BLUR_INVERSE:
+                                    density[p] = LongMath.checkedAdd(density[p], kernel - 1);
+                                    int q = (x / kernel) + (y / kernel) * (size.width / kernel);
+                                    blur[q] = LongMath.checkedAdd(blur[q], 1);
+                                    break;
+                                case LOG_DENSITY_POWER:
+                                case DENSITY_POWER:
+                                case LOG_DENSITY_POWER_INVERSE:
+                                    density[p] = (long) Math.min(((double) density[p]) * 1.01d, Long.MAX_VALUE);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            max = Math.max(max, density[p]);
+                        } catch (ArithmeticException ae) { /* ignored */ }
+                    }
+
+                    // Choose the colour based on the display mode
+                    Color color = Color.BLACK;
+                    if (mode.isColour()) {
+                        if (mode.isIFSColour()) {
+                            color = Color.getHSBColor((float) (old.getX() / size.getWidth()), (float) (old.getY() / size.getHeight()), vibrancy);
+                        } else if (mode.isPalette()) {
+                            if (mode.isStealing()) {
+                                color = controller.getSourcePixel(old.getX(), old.getY());
+                            } else {
+                                if (render == Render.TOP) {
+                                    color = Iterables.get(config.getColours(), top[p] % config.getPaletteSize());
+                                } else {
+                                    color = Iterables.get(controller.getColours(), j % config.getPaletteSize());
+                                }
+                            }
+                        } else {
+                            if (render == Render.TOP) {
+                                color = Color.getHSBColor((float) top[p] / (float) ifs.size(), vibrancy, vibrancy);
+                            } else {
+                                color = Color.getHSBColor((float) j / (float) ifs.size(), vibrancy, vibrancy);
+                            }
+                        }
+                        if (render.isDensity()) {
+                            if (mode.isIFSColour()) {
+                                colour[p] = (double) (color.getRGB() & RGB24) / (double) RGB24;
+                            } else {
+                                colour[p] = (colour[p] + (double) (color.getRGB() & RGB24) / (double) RGB24) / 2d;
+                            }
+                        }
+                    }
+
+                    // Set the paint colour according to the rendering mode
+                    if (render == Render.IFS) {
+                        g.setPaint(alpha(color, 255));
+                    } else {
+                        if (render == Render.MEASURE) {
+                            if (top[p] != 0) {
+                                color = new Color(top[p]);
+                                Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
+                                if (hsb[2] < 0.5f) {
+                                    color = color.brighter();
+                                }
+                            }
+                            top[p] = color.getRGB();
+                        }
+                        g.setPaint(alpha(color, 128));
+                    }
+
+                    // Paint pixels unless using density rendering
+                    if (!render.isDensity()) {
+                        // Apply controller gamma correction
+                        Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
+                        g.setPaint(alpha(Color.HSBtoRGB(hsb[0], hsb[1] * vibrancy, (float) Math.pow(hsb[2], config.getGamma())), color.getAlpha()));
+                        rect.setLocation(x, y);
+                        g.fill(rect);
+                    }
+                }
+            }
+        });
+    }
+
+    public void plotDensity(BufferedImage targetImage, int r, Render render, Mode mode) {
+        context(exceptionHandler, targetImage.getGraphics(), g -> {
+            boolean log = render.isLog();
+            boolean invert = render.isInverse();
+            float hsb[] = new float[3];
+            int rgb[] = new int[3];
+            float gamma = config.getGamma();
+            Rectangle rect = new Rectangle(0, 0, r, r);
+            for (int x = 0; x < size.width; x++) {
+                for (int y = 0; y < size.height; y++) {
+                    int p = x + y * size.width;
+                    double ratio = unity().apply(log ? Math.log(density[p]) / Math.log(max) : (double) density[p] / (double) max);
+                    if (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) {
+                        int q = (x / kernel) + (y / kernel) * (size.width / kernel);
+                        double blurred = unity().apply(Math.log(blur[q]) / Math.log(max)) / kernel;
+                        ratio = (blurred + ratio) / 2d;
+                    }
+                    float gray = (float) Math.pow(invert ? ratio : 1d - ratio, gamma);
+                    if (ratio > 0.001d) {
+                        if (mode.isColour()) {
+                            int color = (int) (colour[p] * RGB24);
+                            rgb[0] = (color >> 16) & 0xff;
+                            rgb[1] = (color >> 8) & 0xff;
+                            rgb[2] = (color >> 0) & 0xff;
+                            if (render == Render.LOG_DENSITY_FLAME || render == Render.LOG_DENSITY_FLAME_INVERSE) {
+                                float alpha = (float) (Math.log(density[p]) / density[p]);
+                                alpha = (float) Math.pow(invert ? alpha : 1f - alpha, gamma);
+                                rgb[0] *= alpha;
+                                rgb[1] *= alpha;
+                                rgb[2] *= alpha;
+                            } else {
+                                rgb[0] *= gray;
+                                rgb[1] *= gray;
+                                rgb[2] *= gray;
+                            }
+                            Color.RGBtoHSB(rgb[0], rgb[1], rgb[2], hsb);
+                            g.setPaint(alpha(Color.HSBtoRGB(hsb[0], hsb[1], gray * vibrancy), (int) (ratio * 255 * vibrancy)));
+                        } else {
+                            g.setPaint(new Color(gray, gray, gray, (float) ratio));
+                        }
+                        if (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) {
+                            int s = 1 + (int) (gray * r * kernel);
+                            rect.setSize(s, s);
+                        }
+                        rect.setLocation(x, y);
+                        g.fill(rect);
+                    }
+                }
+            }
+        });
+    }
+
+    public BufferedImage newImage(Dimension size) {
+        BufferedImage image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
+        context(exceptionHandler, image.getGraphics(), g -> {
+            g.setColor(config.getRender().getBackground());
+            g.fillRect(0, 0, size.width, size.height);
+        });
+        return image;
+    }
+
+    /**
+     * Called as a task to render the IFS.
+     *
+     * @see java.lang.Runnable#run()
+     */
+    @Override
+    public void run() {
+        if (config.isIterationsUnlimited() || (count.get() * 1000l) < config.getIterationsLimit()) {
+            iterate(image.get(), 1, config.getIterations(), scale, centre,
+                    config.getRender(), config.getMode(), ifs, config.getCoordinateTransform());
+        } else {
+            token.incrementAndGet();
+        }
+    }
+
+    public Runnable task(AtomicBoolean cancel, Runnable task) {
+        return () -> {
+            while (latch.get()); // Wait until latch released
+            long initial = token.get();
+            String name = Thread.currentThread().getName();
+            do {
+                task.run();
+            } while (!cancel.get() && token.get() == initial);
+        };
+    }
+
+    public void submit(Task type, Runnable task) {
+        AtomicBoolean cancel = new AtomicBoolean(false);
+        ListenableFuture<?> future = executor.submit(task(cancel, task));
+        future.addListener(cleaner, executor);
+        synchronized (tasks) {
+            tasks.put(type, future);
+            state.put(future, cancel);
+        }
+    }
+
+    /** @see java.util.concurrent.ThreadFactory#newThread(Runnable) */
+    @Override
+    public Thread newThread(Runnable r) {
+        Thread t = new Thread(group, r);
+        t.setName("iterator-" + task.incrementAndGet());
+        t.setPriority(Thread.MIN_PRIORITY);
+        return t;
+    }
+
+    public void start() {
+        if (running.compareAndSet(false, true)) {
+            locked(mutex, () -> {
+                int iterators = config.getThreads() - (config.getRender().isDensity() ? 1 : 0);
+                for (int i = 0; i < iterators; i++) {
+                    submit(Task.ITERATE, this);
+                }
+                if (config.getRender().isDensity()) {
+                    submit(Task.PLOT_DENSITY, () -> {
+                        BufferedImage old = image.get();
+                        BufferedImage plot = newImage(size);
+                        plotDensity(plot, 1, config.getRender(), config.getMode());
+                        image.compareAndSet(old, plot);
+                    });
+                }
+                pause.setEnabled(true);
+                resume.setEnabled(false);
+                timer.start();
+                latch.set(false);
+            });
+        }
+    }
+
+    public boolean stop() {
+        boolean stopped = running.compareAndSet(true, false);
+        if (stopped) {
+            locked(mutex, () -> {
+                latch.set(true);
+                token.incrementAndGet();
+                timer.stop();
+                synchronized (tasks) {
+                    state.values().forEach(b -> b.compareAndSet(false, true));
+                }
+                while (tasks.size() > 0); // Wait until all tasks stopped
+                pause.setEnabled(false);
+                resume.setEnabled(true);
+            });
+        }
+        return stopped;
+    }
+
+    public boolean isRunning() {
+        return running.get();
+    }
+
+}

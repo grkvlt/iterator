@@ -18,17 +18,12 @@ package iterator.view;
 import static iterator.Utils.DASHED_LINE_1;
 import static iterator.Utils.DASHED_LINE_2;
 import static iterator.Utils.DOTTED_LINE_2;
-import static iterator.Utils.NEWLINE;
-import static iterator.Utils.RGB24;
 import static iterator.Utils.SOLID_LINE_2;
 import static iterator.Utils.alpha;
 import static iterator.Utils.calibri;
 import static iterator.Utils.checkBoxItem;
 import static iterator.Utils.context;
 import static iterator.Utils.menuItem;
-import static iterator.Utils.locked;
-import static iterator.Utils.unity;
-import static iterator.Utils.weight;
 import static iterator.util.Messages.MENU_VIEWER_GRID;
 import static iterator.util.Messages.MENU_VIEWER_INFO;
 import static iterator.util.Messages.MENU_VIEWER_OVERLAY;
@@ -36,7 +31,6 @@ import static iterator.util.Messages.MENU_VIEWER_PAUSE;
 import static iterator.util.Messages.MENU_VIEWER_RESUME;
 import static iterator.util.Messages.MENU_VIEWER_ZOOM;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -46,6 +40,10 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -62,19 +60,7 @@ import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.AtomicReferenceArray;
-import java.util.stream.Collectors;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
@@ -84,30 +70,17 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
 
-import com.google.common.base.CaseFormat;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.math.DoubleMath;
-import com.google.common.math.LongMath;
 import com.google.common.util.concurrent.Atomics;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 
 import iterator.Explorer;
 import iterator.dialog.Zoom;
-import iterator.model.Function;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
-import iterator.util.Config.Mode;
-import iterator.util.Config.Render;
+import iterator.util.Config;
 import iterator.util.Dialog;
 import iterator.util.Formatter;
 import iterator.util.Formatter.DoubleFormatter;
@@ -118,61 +91,29 @@ import iterator.util.Subscriber;
 /**
  * Rendered IFS viewer.
  */
-public class Viewer extends JPanel implements ActionListener, KeyListener, MouseInputListener, Printable, Subscriber, Runnable, ThreadFactory {
+public class Viewer extends JPanel implements ActionListener, KeyListener, MouseInputListener, Printable, Subscriber {
 
     private static enum Task { ITERATE, PLOT_DENSITY }
 
     private final Explorer controller;
     private final EventBus bus;
     private final Messages messages;
+    private final Config config;
+    private final Iterator iterator;
 
     private IFS ifs;
     private AtomicReference<BufferedImage> image = Atomics.newReference();
-    private int top[];
-    private long density[];
-    private long blur[];
-    private double colour[];
-    private float vibrancy;
-    private int kernel;
-    private long max;
+    private String infoText;
     private Timer timer;
-    private AtomicBoolean latch = new AtomicBoolean(true);
-    private Object mutex = new Object[0];
-    private AtomicReferenceArray<Point2D> points = Atomics.newReferenceArray(2);
-    private AtomicLong count = new AtomicLong(0l);
-    private AtomicInteger task = new AtomicInteger(0);
-    private AtomicBoolean running = new AtomicBoolean(false);
-    private AtomicLong token = new AtomicLong(0l);
-    private Random random = new Random();
     private float scale = 1.0f;
     private Point2D centre;
     private Dimension size;
     private Rectangle zoom;
-    private ThreadGroup group = new ThreadGroup("iterator");
-    private ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool(this));
-    private Multimap<Task, Future<?>> tasks = Multimaps.synchronizedListMultimap(Multimaps.newListMultimap(Maps.newHashMap(), Lists::newArrayList));
-    private ConcurrentMap<Future<?>, AtomicBoolean> state = Maps.newConcurrentMap();
     private boolean overlay, info, grid;
     private JPopupMenu viewer;
     private Zoom properties;
     private JCheckBoxMenuItem showGrid, showOverlay, showInfo;
     private JMenuItem pause, resume;
-
-    // Listener task to clean up task state collections
-    private Runnable cleaner = () -> {
-            synchronized (tasks) {
-                List<Future<?>> done = tasks.values()
-                        .stream()
-                        .filter(f -> f.isDone())
-                        .collect(Collectors.toList());
-                tasks.values().removeAll(done);
-                state.keySet().removeAll(done);
-            }
-            if (tasks.isEmpty() && isRunning()) {
-                stop();
-            }
-            repaint();
-        };
 
     public Viewer(Explorer controller) {
         super();
@@ -180,6 +121,8 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         this.controller = controller;
         this.bus = controller.getEventBus();
         this.messages = controller.getMessages();
+        this.config = controller.getConfig();
+        this.iterator = controller.getIterator();
 
         timer = new Timer(50, this);
         timer.setCoalesce(true);
@@ -222,21 +165,17 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         bus.register(this);
     }
 
-    public long getCount() { return count.get(); }
-
-    public Point2D getCentre() { return centre; }
-
-    public float getScale() { return scale; }
+    public long getCount() { return iterator.getCount(); }
 
     /** @see Subscriber#updated(IFS) */
     @Override
     @Subscribe
     public void updated(IFS ifs) {
         this.ifs = ifs;
-        if (!running.get()) {
-            setOverlay(controller.isDebug());
-            setInfo(controller.isDebug());
-            setGrid(controller.isDebug());
+        if (!iterator.isRunning()) {
+            setOverlay(config.isDebug());
+            setInfo(config.isDebug());
+            setGrid(config.isDebug());
             reset();
             rescale();
         }
@@ -248,7 +187,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public void resized(Dimension size) {
         stop();
         this.size = size;
-        this.centre = new Point2D.Double(size.getWidth() / 2d, size.getHeight() / 2d);
+        rescale();
         reset();
         if (isVisible()) {
             start();
@@ -269,7 +208,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             }
 
             if (zoom != null) {
-                g.setPaint(controller.getRender().getForeground());
+                g.setPaint(config.getRender().getForeground());
                 g.setStroke(DOTTED_LINE_2);
                 g.draw(zoom);
             }
@@ -284,22 +223,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             }
 
             if (info) {
-                FloatFormatter one = Formatter.floats(1);
-                DoubleFormatter four = Formatter.doubles(4);
-                String scaleText = String.format("%sx (%s,%s) %s/%s %s %s() y%s [%s/%d]",
-                        one.toString(scale),
-                        four.toString(centre.getX() / size.getWidth()),
-                        four.toString(centre.getY() / size.getHeight()),
-                        controller.getMode(), controller.getRender(),
-                        controller.hasPalette() ? controller.getPaletteFile() : (controller.isColour() ? "hsb" : "black"),
-                        controller.getCoordinateTransformType().getShortName(),
-                        one.toString(controller.getGamma()),
-                        tasks.isEmpty() ? "-" : Integer.toString(tasks.size()), controller.getThreads());
-                String countText = String.format("%,dK", count.get()).replaceAll("[^0-9K+]", " ");
+                String countText = String.format("%,dK", getCount()).replaceAll("[^0-9K+]", " ");
 
-                g.setPaint(controller.getRender().getForeground());
+                g.setPaint(config.getRender().getForeground());
                 FontRenderContext frc = g.getFontRenderContext();
-                TextLayout scaleLayout = new TextLayout(scaleText, calibri(Font.BOLD, 16), frc);
+                TextLayout scaleLayout = new TextLayout(updateInfoText(), calibri(Font.BOLD, 16), frc);
                 scaleLayout.draw(g, 10f, size.height - 10f);
                 TextLayout countLayout = new TextLayout(countText, calibri(Font.BOLD | (isRunning() ? Font.PLAIN : Font.ITALIC), 16), frc);
                 countLayout.draw(g, size.width - 10f - (float) countLayout.getBounds().getWidth(), size.height - 10f);
@@ -323,7 +251,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             rect = view.createTransformedShape(rect);
 
             // Draw the outline
-            Color c = alpha(controller.getRender().getForeground(), 128);
+            Color c = alpha(config.getRender().getForeground(), 128);
             g.setPaint(c);
             g.setStroke(SOLID_LINE_2);
             g.draw(rect);
@@ -341,7 +269,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             view.scale(scale, scale);
 
             // Draw the line
-            Color c = alpha(controller.getRender().getForeground(), 128);
+            Color c = alpha(config.getRender().getForeground(), 128);
             g.setPaint(c);
             g.setStroke(DASHED_LINE_2);
             Path2D line = new Path2D.Double(Path2D.WIND_NON_ZERO);
@@ -368,7 +296,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             view.translate(-x0, -y0);
 
             // Calculate grid position
-            double spacing = controller.getMaxGrid() / scale;
+            double spacing = config.getMaxGrid() / scale;
             double mx = centre.getX() - (size.getWidth() / 2d / scale) - (size.getWidth() / 2d);
             double my = centre.getY() - (size.getHeight() / 2d / scale) - (size.getHeight() / 2d);
             double rx = Math.IEEEremainder(mx, spacing);
@@ -379,16 +307,16 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             int yn = (int) ((sy - y0) / spacing);
             double x1 = sx + (xn - 2) * spacing;
             double y1 = sy + (yn - 2) * spacing;
-            int n = (size.width / controller.getMaxGrid()) + 4;
+            int n = (size.width / config.getMaxGrid()) + 4;
 
             // Draw grid lines
             g.setStroke(DASHED_LINE_1);
             for (int i = 0; i < n; i++) {
                 double x = x1 + i * spacing;
                 if (DoubleMath.fuzzyEquals(x, size.getWidth() / 2d, spacing / 100d)) {
-                    g.setPaint(alpha(controller.getRender().getForeground(), 128));
+                    g.setPaint(alpha(config.getRender().getForeground(), 128));
                 } else {
-                    g.setPaint(alpha(controller.getRender().getForeground(), 64));
+                    g.setPaint(alpha(config.getRender().getForeground(), 64));
                 }
                 double pts[] = { x, y1, x, y1 + n * spacing };
                 view.transform(pts, 0, pts, 0, 2);
@@ -400,9 +328,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             for (int i = 0; i < n; i++) {
                 double y = y1 + i * spacing;
                 if (DoubleMath.fuzzyEquals(y, size.getHeight() / 2d, spacing / 100d)) {
-                    g.setPaint(alpha(controller.getRender().getForeground(), 128));
+                    g.setPaint(alpha(config.getRender().getForeground(), 128));
                 } else {
-                    g.setPaint(alpha(controller.getRender().getForeground(), 64));
+                    g.setPaint(alpha(config.getRender().getForeground(), 64));
                 }
                 double pts[] = { x1, y, x1 + n * spacing, y };
                 view.transform(pts, 0, pts, 0, 2);
@@ -414,13 +342,17 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         });
     }
 
-    public void rescale(float scale, Point2D centre) {
-        this.scale = scale;
-        this.centre = centre;
+    public void rescale() {
+        scale = config.getDisplayScale();
+        centre = new Point2D.Double(config.getDisplayCentreX() * size.getWidth(), config.getDisplayCentreY() * size.getHeight());
     }
 
-    public void rescale() {
-        rescale(1f, new Point2D.Double(size.getWidth() / 2d, size.getHeight() / 2d));
+    public void resetScale() {
+        config.setDisplayScale(Config.DEFAULT_DISPLAY_SCALE);
+        config.setDisplayCentreX(Config.DEFAULT_DISPLAY_CENTRE_X);
+        config.setDisplayCentreY(Config.DEFAULT_DISPLAY_CENTRE_Y);
+
+        rescale();
     }
 
     public void reset() {
@@ -428,27 +360,24 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
         image.set(newImage(getSize()));
 
-        points.set(0, new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
-        points.set(1, new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
+        iterator.reset();
 
-        vibrancy = controller.getVibrancy();
-        kernel = controller.getBlurKernel();
-        top = new int[size.width * size.height];
-        density = new long[size.width * size.height];
-        blur = new long[(size.width / kernel + 1) * (size.height / kernel + 1)];
-        colour = new double[size.width * size.height];
-        max = 1;
-
-        count.set(0l);
+        updateInfoText();
     }
 
-    public BufferedImage newImage(Dimension size) {
-        BufferedImage image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
-        context(controller, image.getGraphics(), g -> {
-            g.setColor(controller.getRender().getBackground());
-            g.fillRect(0, 0, size.width, size.height);
-        });
-        return image;
+    public String updateInfoText() {
+        FloatFormatter one = Formatter.floats(1);
+        DoubleFormatter four = Formatter.doubles(4);
+        infoText = String.format("%sx (%s,%s) %s/%s %s %s() y%s [%d]",
+                one.toString(scale),
+                four.toString(centre.getX() / size.getWidth()),
+                four.toString(centre.getY() / size.getHeight()),
+                config.getMode(), config.getRender(),
+                config.getMode().isPalette() ? config.getPaletteFile() : (config.getMode().isColour() ? "hsb" : "black"),
+                config.getCoordinateTransformType().getShortName(),
+                one.toString(config.getGamma()),
+                config.getThreads());
+        return infoText;
     }
 
     public BufferedImage getImage() {
@@ -474,196 +403,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         return PAGE_EXISTS;
     }
 
-    public void iterate(BufferedImage targetImage, int s, long k, float scale, Point2D centre, Render render, Mode mode, Function function) {
-        context(controller, targetImage.getGraphics(), g -> {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-            g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
-            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, vibrancy));
-
-            List<Transform> transforms = controller.getEditor().getTransforms();
-            List<Reflection> reflections = controller.getEditor().getReflections();
-            List<Function> functions = ImmutableList.<Function>builder()
-                    .addAll(transforms)
-                    .addAll(reflections)
-                    .build();
-            if (functions.isEmpty()) return;
-
-            double weight = weight(transforms);
-            int n = transforms.size();
-            int m = reflections.size();
-            float hsb[] = new float[3];
-            Rectangle rect = new Rectangle(0, 0, s, s);
-            function.setSize(size);
-            Point2D old, current;
-
-            for (long i = 0l; i < k; i++) {
-                if (i % 1000l == 0l) {
-                    count.incrementAndGet();
-                }
-
-                // Skip based on transform weighting
-                int j = random.nextInt(functions.size());
-                Function f = functions.get(j);
-                if ((j < n ? ((Transform) f).getWeight() : weight) < random.nextDouble() * weight * (m + 1d)) {
-                    continue;
-                }
-
-                // Evaluate the function twice, first for (x,y) position and then for hue/saturation color space
-                current = points.updateAndGet(0, p -> function.apply(f.apply(p)));
-                old = points.getAndUpdate(1, p -> function.apply(f.apply(p)));
-
-                // Discard first 10K points
-                if (count.get() < 10) {
-                    continue;
-                }
-
-                int x = (int) ((current.getX() - centre.getX()) * scale + (size.getWidth() / 2d));
-                int y = (int) ((current.getY() - centre.getY()) * scale + (size.getHeight() / 2d));
-                if (x >= 0 && y >= 0 && x < size.width && y < size.height) {
-                    int p = x + y * size.width;
-
-                    if (render == Render.TOP) {
-                        if (j > top[p]) top[p] = j;
-                    }
-
-                    // Density estimation histogram
-                    if (render.isDensity()) {
-                        try {
-                            density[p] = LongMath.checkedAdd(density[p], 1l);
-                            switch (render) {
-                                case LOG_DENSITY_BLUR:
-                                case LOG_DENSITY_BLUR_INVERSE:
-                                    density[p] = LongMath.checkedAdd(density[p], kernel - 1);
-                                    int q = (x / kernel) + (y / kernel) * (size.width / kernel);
-                                    blur[q] = LongMath.checkedAdd(blur[q], 1);
-                                    break;
-                                case LOG_DENSITY_POWER:
-                                case DENSITY_POWER:
-                                case LOG_DENSITY_POWER_INVERSE:
-                                    density[p] = (long) Math.min(((double) density[p]) * 1.01d, Long.MAX_VALUE);
-                                    break;
-                                default:
-                                    break;
-                            }
-                            max = Math.max(max, density[p]);
-                        } catch (ArithmeticException ae) { /* ignored */ }
-                    }
-
-                    // Choose the colour based on the display mode
-                    Color color = Color.BLACK;
-                    if (mode.isColour()) {
-                        if (mode.isIFSColour()) {
-                            color = Color.getHSBColor((float) (old.getX() / size.getWidth()), (float) (old.getY() / size.getHeight()), vibrancy);
-                        } else if (mode.isPalette()) {
-                            if (mode.isStealing()) {
-                                color = controller.getSourcePixel(old.getX(), old.getY());
-                            } else {
-                                if (render == Render.TOP) {
-                                    color = Iterables.get(controller.getColours(), top[p] % controller.getPaletteSize());
-                                } else {
-                                    color = Iterables.get(controller.getColours(), j % controller.getPaletteSize());
-                                }
-                            }
-                        } else {
-                            if (render == Render.TOP) {
-                                color = Color.getHSBColor((float) top[p] / (float) ifs.size(), vibrancy, vibrancy);
-                            } else {
-                                color = Color.getHSBColor((float) j / (float) ifs.size(), vibrancy, vibrancy);
-                            }
-                        }
-                        if (render.isDensity()) {
-                            if (mode.isIFSColour()) {
-                                colour[p] = (double) (color.getRGB() & RGB24) / (double) RGB24;
-                            } else {
-                                colour[p] = (colour[p] + (double) (color.getRGB() & RGB24) / (double) RGB24) / 2d;
-                            }
-                        }
-                    }
-
-                    // Set the paint colour according to the rendering mode
-                    if (render == Render.IFS) {
-                        g.setPaint(alpha(color, 255));
-                    } else {
-                        if (render == Render.MEASURE) {
-                            if (top[p] != 0) {
-                                color = new Color(top[p]);
-                                Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
-                                if (hsb[2] < 0.5f) {
-                                    color = color.brighter();
-                                }
-                            }
-                            top[p] = color.getRGB();
-                        }
-                        g.setPaint(alpha(color, isVisible() ? 16 : 128));
-                    }
-
-                    // Paint pixels unless using density rendering
-                    if (!render.isDensity()) {
-                        // Apply controller gamma correction
-                        Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
-                        g.setPaint(alpha(Color.HSBtoRGB(hsb[0], hsb[1] * vibrancy, (float) Math.pow(hsb[2], controller.getGamma())), color.getAlpha()));
-                        rect.setLocation(x, y);
-                        g.fill(rect);
-                    }
-                }
-            }
-        });
-    }
-
-    public void plotDensity(BufferedImage targetImage, int r, Render render, Mode mode) {
-        context(controller, targetImage.getGraphics(), g -> {
-            boolean log = render.isLog();
-            boolean invert = render.isInverse();
-            float hsb[] = new float[3];
-            int rgb[] = new int[3];
-            float gamma = controller.getGamma();
-            Rectangle rect = new Rectangle(0, 0, r, r);
-            for (int x = 0; x < size.width; x++) {
-                for (int y = 0; y < size.height; y++) {
-                    int p = x + y * size.width;
-                    double ratio = unity().apply(log ? Math.log(density[p]) / Math.log(max) : (double) density[p] / (double) max);
-                    if (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) {
-                        int q = (x / kernel) + (y / kernel) * (size.width / kernel);
-                        double blurred = unity().apply(Math.log(blur[q]) / Math.log(max)) / kernel;
-                        ratio = (blurred + ratio) / 2d;
-                    }
-                    float gray = (float) Math.pow(invert ? ratio : 1d - ratio, gamma);
-                    if (ratio > 0.001d) {
-                        if (mode.isColour()) {
-                            int color = (int) (colour[p] * RGB24);
-                            rgb[0] = (color >> 16) & 0xff;
-                            rgb[1] = (color >> 8) & 0xff;
-                            rgb[2] = (color >> 0) & 0xff;
-                            if (render == Render.LOG_DENSITY_FLAME || render == Render.LOG_DENSITY_FLAME_INVERSE) {
-                                float alpha = (float) (Math.log(density[p]) / density[p]);
-                                alpha = (float) Math.pow(invert ? alpha : 1f - alpha, gamma);
-                                rgb[0] *= alpha;
-                                rgb[1] *= alpha;
-                                rgb[2] *= alpha;
-                            } else {
-                                rgb[0] *= gray;
-                                rgb[1] *= gray;
-                                rgb[2] *= gray;
-                            }
-                            Color.RGBtoHSB(rgb[0], rgb[1], rgb[2], hsb);
-                            g.setPaint(alpha(Color.HSBtoRGB(hsb[0], hsb[1], gray * vibrancy), (int) (ratio * 255 * vibrancy)));
-                        } else {
-                            g.setPaint(new Color(gray, gray, gray, (float) ratio));
-                        }
-                        if (render == Render.LOG_DENSITY_BLUR || render == Render.LOG_DENSITY_BLUR_INVERSE) {
-                            int s = 1 + (int) (gray * r * kernel);
-                            rect.setSize(s, s);
-                        }
-                        rect.setLocation(x, y);
-                        g.fill(rect);
-                    }
-                }
-            }
-        });
-    }
 
     /**
      * Invoked when the timer fires, to refresh the image when rendering.
@@ -677,99 +416,16 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         }
     }
 
-    /**
-     * Called as a task to render the IFS.
-     *
-     * @see java.lang.Runnable#run()
-     */
-    @Override
-    public void run() {
-        if (controller.isIterationsUnlimited() || (count.get() * 1000l) < controller.getIterationsLimit()) {
-            iterate(getImage(), 1, controller.getIterations(), scale, centre,
-                    controller.getRender(), controller.getMode(), controller.getCoordinateTransform());
-        } else {
-            token.incrementAndGet();
-        }
-    }
-
-    public Runnable task(AtomicBoolean cancel, Runnable task) {
-        return () -> {
-            while (latch.get()); // Wait until latch released
-            long initial = token.get();
-            String name = Thread.currentThread().getName();
-            controller.debug("Started task %s", name);
-            do {
-                task.run();
-            } while (!cancel.get() && token.get() == initial);
-            controller.debug("Stopped task %s", name);
-        };
-    }
-
-    public void submit(Task type, Runnable task) {
-        AtomicBoolean cancel = new AtomicBoolean(false);
-        ListenableFuture<?> future = executor.submit(task(cancel, task));
-        future.addListener(cleaner, executor);
-        synchronized (tasks) {
-            tasks.put(type, future);
-            state.put(future, cancel);
-        }
-    }
-
-    /** @see java.util.concurrent.ThreadFactory#newThread(Runnable) */
-    @Override
-    public Thread newThread(Runnable r) {
-        Thread t = new Thread(group, r);
-        t.setName("iterator-" + task.incrementAndGet());
-        t.setPriority(Thread.MIN_PRIORITY);
-        return t;
-    }
-
     public void start() {
-        if (running.compareAndSet(false, true)) {
-            locked(mutex, () -> {
-                controller.debug("Starting");
-                int iterators = controller.getThreads() - (controller.getRender().isDensity() ? 1 : 0);
-                for (int i = 0; i < iterators; i++) {
-                    submit(Task.ITERATE, this);
-                }
-                if (controller.getRender().isDensity()) {
-                    submit(Task.PLOT_DENSITY, () -> {
-                        BufferedImage old = image.get();
-                        BufferedImage plot = newImage(getSize());
-                        plotDensity(plot, 1, controller.getRender(), controller.getMode());
-                        image.compareAndSet(old, plot);
-                    });
-                }
-                pause.setEnabled(true);
-                resume.setEnabled(false);
-                timer.start();
-                latch.set(false);
-            });
-        }
+        iterator.start(image);
     }
 
     public boolean stop() {
-        boolean stopped = running.compareAndSet(true, false);
-        if (stopped) {
-            locked(mutex, () -> {
-                controller.debug("Stopping");
-                latch.set(true);
-                token.incrementAndGet();
-                timer.stop();
-                synchronized (tasks) {
-                    state.values().forEach(b -> b.compareAndSet(false, true));
-                }
-                while (tasks.size() > 0); // Wait until all tasks stopped
-                pause.setEnabled(false);
-                resume.setEnabled(true);
-                repaint();
-            });
-        }
-        return stopped;
+        return iterator.stop();
     }
 
     public boolean isRunning() {
-        return running.get();
+        return iterator.isRunning();
     }
 
     /** @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent) */
@@ -777,6 +433,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public void keyPressed(KeyEvent e) {
         if (isVisible()) {
             switch (e.getKeyCode()) {
+                case KeyEvent.VK_C:
+                    if (e.isControlDown() || e.isMetaDown()) {
+                        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                        Transferable text = new StringSelection(updateInfoText());
+                        clipboard.setContents(text, null);
+                    }
+                    break;
                 case KeyEvent.VK_SPACE:
                     if (isRunning()) {
                         stop();
@@ -792,16 +455,18 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     break;
                 case KeyEvent.VK_MINUS:
                     stop();
-                    rescale(scale / 2f, centre);
+                    config.setDisplayScale(scale / 2f);
+                    rescale();
                     reset();
                     start();
                     break;
                 case KeyEvent.VK_EQUALS:
                     stop();
                     if (e.isShiftDown()) {
-                        rescale(scale * 2f, centre);
-                    } else {
+                        config.setDisplayScale(scale * 2f);
                         rescale();
+                    } else {
+                        resetScale();
                     }
                     reset();
                     start();
@@ -814,56 +479,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     break;
                 case KeyEvent.VK_G:
                     setGrid(!grid);
-                    break;
-                case KeyEvent.VK_T:
-                    List<String> dump = Lists.newArrayList();
-                    synchronized (tasks) {
-                        for (Task type : Task.values()) {
-                            int count = tasks.get(type).size();
-                            dump.add(String.format("%s (%d)", CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, type.name()), count));
-                        }
-                        Thread[] threads = new Thread[group.activeCount()];
-                        group.enumerate(threads);
-                        for (Thread thread : threads) {
-                            StackTraceElement stack = thread.getStackTrace()[0];
-                            if (stack.isNativeMethod() // FIXME OpenJDK only
-                                    && stack.getMethodName().equals("park")
-                                    && stack.getClassName().endsWith("Unsafe")) continue;
-                            dump.add(String.format("%s - %s", thread.getName(), stack));
-                        }
-                    }
-                    String output = dump.stream()
-                            .map(Explorer.STACK::concat)
-                            .collect(Collectors.joining(NEWLINE));
-                    controller.timestamp("Thread dump");
-                    System.err.println(output);
-
-                    break;
-                case KeyEvent.VK_UP:
-                    synchronized (tasks) {
-                        controller.setThreads(controller.getThreads() + 1);
-                        if (controller.getThreads() > tasks.size()) {
-                            if (isRunning()) {
-                                submit(Task.ITERATE, this);
-                            }
-                        }
-                    }
-                    repaint();
-                    break;
-                case KeyEvent.VK_DOWN:
-                    synchronized (tasks) {
-                        controller.setThreads(controller.getThreads() - 1);
-                        if (tasks.size() > controller.getThreads()) {
-                            if (isRunning()) {
-                                Optional<Future<?>> cancel = tasks.get(Task.ITERATE)
-                                        .stream()
-                                        .filter(f -> !f.isDone())
-                                        .findFirst();
-                                cancel.ifPresent(f -> state.get(f).set(true));
-                            }
-                        }
-                    }
-                    repaint();
                     break;
             }
         }
@@ -915,7 +530,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
             int y1 = Math.min(end.y, zoom.y);
             int y2 = Math.max(end.y, zoom.y);
             int side = Math.min(x2 - x1,  y2 - y1);
-            if (side < controller.getSnapGrid()) {
+            if (side < config.getSnapGrid()) {
                 side = 0;
             }
             zoom.setSize(new Dimension(side, side));
@@ -934,10 +549,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 Point2D origin = new Point2D.Double((centre.getX() * scale) - (size.getWidth() / 2d), (centre.getY() * scale) - (size.getHeight() / 2d));
                 Point2D updated = new Point2D.Double((zoom.x + (zoom.width / 2d) + origin.getX()) / scale, (zoom.y + (zoom.height / 2d) + origin.getY()) / scale);
                 if (zoom.width == 0) {
-                    rescale(scale * 2f, updated);
+                    config.setDisplayScale(scale * 2f);
                 } else {
-                    rescale(scale * ((float) size.getWidth() / (float) zoom.width), updated);
+                    config.setDisplayScale(scale * ((float) size.getWidth() / (float) zoom.width));
                 }
+                config.setDisplayCentreX(updated.getX() / size.getWidth());
+                config.setDisplayCentreX(updated.getY() / size.getHeight());
+                rescale();
                 controller.debug("Zoom: %.1fx scale, centre (%.1f, %.1f) via click at (%d, %d)",
                         scale, centre.getX(), centre.getY(), (int) (zoom.x + (zoom.width / 2d)), (int) (zoom.y + (zoom.height / 2d)));
 

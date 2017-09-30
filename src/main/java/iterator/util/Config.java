@@ -16,9 +16,12 @@
 package iterator.util;
 
 import static iterator.Utils.NEWLINE;
+import static iterator.Utils.clamp;
 import static iterator.Utils.initFileSystem;
+import static iterator.Utils.threads;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -95,6 +98,11 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String WINDOW_PROPERTY = EXPLORER_PROPERTY + ".window";
     public static final String WINDOW_WIDTH_PROPERTY = WINDOW_PROPERTY + ".width";
     public static final String WINDOW_HEIGHT_PROPERTY = WINDOW_PROPERTY + ".height";
+    public static final String DISPLAY_PROPERTY = EXPLORER_PROPERTY + ".display";
+    public static final String DISPLAY_SCALE_PROPERTY = DISPLAY_PROPERTY + ".scale";
+    public static final String DISPLAY_CENTRE_PROPERTY = DISPLAY_PROPERTY + ".centre";
+    public static final String DISPLAY_CENTRE_X_PROPERTY = DISPLAY_CENTRE_PROPERTY + ".x";
+    public static final String DISPLAY_CENTRE_Y_PROPERTY = DISPLAY_CENTRE_PROPERTY + ".y";
     public static final String DEBUG_PROPERTY = EXPLORER_PROPERTY + ".debug";
     public static final String THREADS_PROPERTY = EXPLORER_PROPERTY + ".threads";
     public static final String ITERATIONS_PROPERTY = EXPLORER_PROPERTY + ".iterations";
@@ -117,6 +125,9 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Integer DEFAULT_GRID_MAX = 50;
     public static final Integer DEFAULT_GRID_SNAP = 5;
     public static final Integer DEFAULT_WINDOW_SIZE = 600;
+    public static final Float DEFAULT_DISPLAY_SCALE = 1f;
+    public static final Double DEFAULT_DISPLAY_CENTRE_X = 0.5d;
+    public static final Double DEFAULT_DISPLAY_CENTRE_Y = 0.5d;
     public static final Long DEFAULT_ITERATIONS = 10_000l;
     public static final Long DEFAULT_ITERATIONS_LIMIT = 10_000_000l;
     public static final Integer MIN_WINDOW_SIZE = 400; // Details view requires 350px
@@ -361,6 +372,86 @@ public class Config extends ForwardingSortedMap<String, String> {
             throw new IllegalArgumentException(String.format("Cannot cast %s to %s", value, type.getName()));
         }
     }
+
+    public void setThreads(int value) { set(THREADS_PROPERTY, threads().apply(value)); }
+
+    public int getThreads() { return get(THREADS_PROPERTY, Math.max(Runtime.getRuntime().availableProcessors() / 2, MIN_THREADS)); }
+
+    public void setDebug(boolean value) { set(DEBUG_PROPERTY, value); }
+
+    public boolean isDebug() { return get(DEBUG_PROPERTY, DEFAULT_DEBUG); }
+
+    public void setSeed(long value) { set(PALETTE_SEED_PROPERTY, value); }
+
+    public long getSeed() { return get(PALETTE_SEED_PROPERTY, DEFAULT_PALETTE_SEED); }
+
+    public void setPaletteFile(String value) { set(PALETTE_FILE_PROPERTY, value); }
+
+    public String getPaletteFile() { return get(PALETTE_FILE_PROPERTY, DEFAULT_PALETTE_FILE); }
+
+    public void setPaletteSize(int value) { set(PALETTE_SIZE_PROPERTY, clamp(MIN_PALETTE_SIZE, MAX_PALETTE_SIZE).apply(value)); }
+
+    public int getPaletteSize() { return get(PALETTE_SIZE_PROPERTY, DEFAULT_PALETTE_SIZE); }
+
+    public void setRender(Render value) { set(RENDER_PROPERTY, value); }
+
+    public Render getRender() { return get(RENDER_PROPERTY, DEFAULT_RENDER); }
+
+    public void setMode(Mode value) { set(MODE_PROPERTY, value); }
+
+    public Mode getMode() { return get(MODE_PROPERTY, DEFAULT_MODE); }
+
+    public void setCoordinateTransformType(CoordinateTransform.Type value) { set(TRANSFORM_PROPERTY, value); }
+
+    public CoordinateTransform.Type getCoordinateTransformType() { return get(TRANSFORM_PROPERTY, DEFAULT_TRANSFORM); }
+
+    public CoordinateTransform getCoordinateTransform() { return getCoordinateTransformType().getFunction(); }
+
+    public void setGamma(float value) { set(GAMMA_PROPERTY, value); }
+
+    public float getGamma() { return get(GAMMA_PROPERTY, DEFAULT_GAMMA); }
+
+    public void setVibrancy(float value) { set(VIBRANCY_PROPERTY, value); }
+
+    public float getVibrancy() { return get(VIBRANCY_PROPERTY, DEFAULT_VIBRANCY); }
+
+    public void setBlurKernel(int value) { set(BLUR_KERNEL_PROPERTY, value); }
+
+    public int getBlurKernel() { return get(BLUR_KERNEL_PROPERTY, DEFAULT_BLUR_KERNEL); }
+
+    public void setIterationsLimit(long value) { set(ITERATIONS_LIMIT_PROPERTY, value); }
+
+    public long getIterationsLimit() { return get(ITERATIONS_LIMIT_PROPERTY, DEFAULT_ITERATIONS_LIMIT); }
+
+    public void setIterationsUnimited(boolean value) { set(ITERATIONS_UNLIMITED_PROPERTY, value); }
+
+    public boolean isIterationsUnlimited() { return get(ITERATIONS_UNLIMITED_PROPERTY, DEFAULT_ITERATIONS_UNLIMITED); }
+
+    public int getMinGrid() { return get(GRID_MIN_PROPERTY, DEFAULT_GRID_MIN); }
+
+    public int getMaxGrid() { return get(GRID_MAX_PROPERTY, DEFAULT_GRID_MAX); }
+
+    public int getSnapGrid() { return get(GRID_SNAP_PROPERTY, DEFAULT_GRID_SNAP); }
+
+    public long getIterations() { return get(ITERATIONS_PROPERTY, DEFAULT_ITERATIONS); }
+
+    public int getWidndowWidth() { return get(WINDOW_WIDTH_PROPERTY, DEFAULT_WINDOW_SIZE); }
+
+    public int getWidndowHeight() { return get(WINDOW_HEIGHT_PROPERTY, DEFAULT_WINDOW_SIZE); }
+
+    public Dimension getWidndowSize() { return new Dimension(getWidndowWidth(), getWidndowHeight()); }
+
+    public void setDisplayScale(float value) { set(DISPLAY_SCALE_PROPERTY, value); }
+
+    public float getDisplayScale() { return get(DISPLAY_SCALE_PROPERTY, DEFAULT_DISPLAY_SCALE); }
+
+    public void setDisplayCentreX(double value) { set(DISPLAY_CENTRE_X_PROPERTY, value); }
+
+    public double getDisplayCentreX() { return get(DISPLAY_CENTRE_X_PROPERTY, DEFAULT_DISPLAY_CENTRE_X); }
+
+    public void setDisplayCentreY(double value) { set(DISPLAY_CENTRE_Y_PROPERTY, value); }
+
+    public double getDisplayCentreY() { return get(DISPLAY_CENTRE_Y_PROPERTY, DEFAULT_DISPLAY_CENTRE_Y); }
 
     @Override
     protected SortedMap<String, String> delegate() {

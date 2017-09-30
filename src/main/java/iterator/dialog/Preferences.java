@@ -94,42 +94,43 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
             running = controller.getViewer().stop();
         }
 
-        mode.set(controller.getMode());
-        render.set(controller.getRender());
-        transform.set(controller.getCoordinateTransformType());
-        paletteFile.set(controller.getPaletteFile());
-        paletteSize.set(controller.getPaletteSize());
-        seed.set(controller.getSeed());
-        gamma.set(controller.getGamma());
-        vibrancy.set(controller.getVibrancy());
-        blurKernel.set(controller.getBlurKernel());
-        limit.set(controller.isIterationsUnlimited() ? Optional.absent() : Optional.of(controller.getIterationsLimit()));
-        threads.set(controller.getThreads());
-        debug.set(controller.isDebug());
+        mode.set(config.getMode());
+        render.set(config.getRender());
+        transform.set(config.getCoordinateTransformType());
+        paletteFile.set(config.getPaletteFile());
+        paletteSize.set(config.getPaletteSize());
+        seed.set(config.getSeed());
+        gamma.set(config.getGamma());
+        vibrancy.set(config.getVibrancy());
+        blurKernel.set(config.getBlurKernel());
+        limit.set(config.isIterationsUnlimited() ? Optional.absent() : Optional.of(config.getIterationsLimit()));
+        threads.set(config.getThreads());
+        debug.set(config.isDebug());
 
         super.showDialog();
     }
 
     @Override
     public void onSuccess() {
-        controller.setMode(mode.get());
-        controller.setRender(render.get());
-        controller.setCoordinateTransformType(transform.get());
-        controller.setPaletteFile(paletteFile.get());
-        controller.setPaletteSize(paletteSize.get());
-        controller.setSeed(seed.get());
-        controller.setGamma(gamma.get());
-        controller.setVibrancy(vibrancy.get());
-        controller.setBlurKernel(blurKernel.get());
+        config.setMode(mode.get());
+        config.setRender(render.get());
+        config.setCoordinateTransformType(transform.get());
+        config.setPaletteFile(paletteFile.get());
+        config.setPaletteSize(paletteSize.get());
+        config.setSeed(seed.get());
+        config.setGamma(gamma.get());
+        config.setVibrancy(vibrancy.get());
+        config.setBlurKernel(blurKernel.get());
 
         if (limit.isPresent()) {
-            controller.setIterationsLimit(limit.get().get());
-            controller.setIterationsUnimited(false);
+            config.setIterationsLimit(limit.get().get());
+            config.setIterationsUnimited(false);
         } else {
-            controller.setIterationsUnimited(true);
+            config.setIterationsUnimited(true);
         }
-        controller.setThreads(threads.get());
-        controller.setDebug(debug.get());
+        config.setThreads(threads.get());
+        config.setDebug(debug.get());
+
         controller.loadColours();
 
         controller.getViewer().reset();

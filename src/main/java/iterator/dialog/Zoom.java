@@ -63,16 +63,20 @@ public class Zoom extends AbstractPropertyDialog<Zoom> {
             running = controller.getViewer().stop();
         }
 
-        x.set(controller.getViewer().getCentre().getX() / controller.getWidth());
-        y.set(controller.getViewer().getCentre().getY() / controller.getHeight());
-        scale.set(controller.getViewer().getScale());
+        x.set(config.getDisplayCentreX());
+        y.set(config.getDisplayCentreY());
+        scale.set(config.getDisplayScale());
 
         super.showDialog();
     }
 
     @Override
     public void onSuccess() {
-        controller.getViewer().rescale(scale.get(), new Point2D.Double(x.get() * controller.getWidth(), y.get() * controller.getHeight()));
+        config.setDisplayCentreX(x.get());
+        config.setDisplayCentreY(y.get());
+        config.setDisplayScale(scale.get());
+
+        controller.getViewer().rescale();
         controller.getViewer().reset();
         controller.getViewer().start();
     }

@@ -55,6 +55,7 @@ public abstract class AbstractPropertyDialog<T extends AbstractPropertyDialog<T>
 
     protected final Messages messages;
     protected final Explorer controller;
+    protected final Config config;
     protected final EventBus bus;
     protected final GridBagLayout gridbag = new GridBagLayout();
     protected final GridBagConstraints constraints = new GridBagConstraints();
@@ -65,6 +66,7 @@ public abstract class AbstractPropertyDialog<T extends AbstractPropertyDialog<T>
         this.controller = controller;
         this.bus = controller.getEventBus();
         this.messages = controller.getMessages();
+        this.config = controller.getConfig();
 
         addKeyListener(this);
         Dimension size = new Dimension(200, 100);

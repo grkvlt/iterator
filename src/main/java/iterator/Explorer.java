@@ -17,53 +17,12 @@ package iterator;
 
 import static iterator.Utils.NEWLINE;
 import static iterator.Utils.checkBoxItem;
-import static iterator.Utils.clamp;
 import static iterator.Utils.context;
 import static iterator.Utils.loadImage;
 import static iterator.Utils.menuItem;
 import static iterator.Utils.printError;
 import static iterator.Utils.saveImage;
-import static iterator.Utils.threads;
-import static iterator.util.Config.BLUR_KERNEL_PROPERTY;
-import static iterator.util.Config.DEBUG_PROPERTY;
-import static iterator.util.Config.DEFAULT_BLUR_KERNEL;
-import static iterator.util.Config.DEFAULT_DEBUG;
-import static iterator.util.Config.DEFAULT_GAMMA;
-import static iterator.util.Config.DEFAULT_GRID_MAX;
-import static iterator.util.Config.DEFAULT_GRID_MIN;
-import static iterator.util.Config.DEFAULT_GRID_SNAP;
-import static iterator.util.Config.DEFAULT_ITERATIONS;
-import static iterator.util.Config.DEFAULT_ITERATIONS_LIMIT;
-import static iterator.util.Config.DEFAULT_ITERATIONS_UNLIMITED;
-import static iterator.util.Config.DEFAULT_MODE;
-import static iterator.util.Config.DEFAULT_PALETTE_FILE;
-import static iterator.util.Config.DEFAULT_PALETTE_SEED;
-import static iterator.util.Config.DEFAULT_PALETTE_SIZE;
-import static iterator.util.Config.DEFAULT_RENDER;
-import static iterator.util.Config.DEFAULT_TRANSFORM;
-import static iterator.util.Config.DEFAULT_VIBRANCY;
-import static iterator.util.Config.DEFAULT_WINDOW_SIZE;
-import static iterator.util.Config.GAMMA_PROPERTY;
-import static iterator.util.Config.GRID_MAX_PROPERTY;
-import static iterator.util.Config.GRID_MIN_PROPERTY;
-import static iterator.util.Config.GRID_SNAP_PROPERTY;
-import static iterator.util.Config.ITERATIONS_LIMIT_PROPERTY;
-import static iterator.util.Config.ITERATIONS_PROPERTY;
-import static iterator.util.Config.ITERATIONS_UNLIMITED_PROPERTY;
-import static iterator.util.Config.MAX_PALETTE_SIZE;
-import static iterator.util.Config.MIN_PALETTE_SIZE;
-import static iterator.util.Config.MIN_THREADS;
 import static iterator.util.Config.MIN_WINDOW_SIZE;
-import static iterator.util.Config.MODE_PROPERTY;
-import static iterator.util.Config.PALETTE_FILE_PROPERTY;
-import static iterator.util.Config.PALETTE_SEED_PROPERTY;
-import static iterator.util.Config.PALETTE_SIZE_PROPERTY;
-import static iterator.util.Config.RENDER_PROPERTY;
-import static iterator.util.Config.THREADS_PROPERTY;
-import static iterator.util.Config.TRANSFORM_PROPERTY;
-import static iterator.util.Config.VIBRANCY_PROPERTY;
-import static iterator.util.Config.WINDOW_HEIGHT_PROPERTY;
-import static iterator.util.Config.WINDOW_WIDTH_PROPERTY;
 import static iterator.util.Messages.DIALOG_FILES_PNG;
 import static iterator.util.Messages.DIALOG_FILES_PROPERTIES;
 import static iterator.util.Messages.DIALOG_FILES_XML;
@@ -157,10 +116,7 @@ import com.google.common.io.Resources;
 import iterator.dialog.About;
 import iterator.dialog.Preferences;
 import iterator.model.IFS;
-import iterator.model.functions.CoordinateTransform;
 import iterator.util.Config;
-import iterator.util.Config.Mode;
-import iterator.util.Config.Render;
 import iterator.util.Dialog;
 import iterator.util.Messages;
 import iterator.util.Platform;
@@ -168,6 +124,7 @@ import iterator.util.Subscriber;
 import iterator.util.Version;
 import iterator.view.Details;
 import iterator.view.Editor;
+import iterator.view.Iterator;
 import iterator.view.Viewer;
 
 /**
@@ -241,28 +198,15 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private Config config;
     private Path override;
 
-    private boolean fullScreen = false;
-
-    private Mode mode;
-    private Render render;
-    private CoordinateTransform.Type transform;
-    private CoordinateTransform function;
-    private int paletteSize;
-    private String paletteFile;
-    private long seed;
-    private float gamma;
-    private float vibrancy;
-    private int kernel;
-    private int threads;
-    private boolean debug;
-    private long limit;
-    private boolean unlimited;
-
     private Platform platform = Platform.getPlatform();
     private BufferedImage icon, source;
     private Preferences prefs;
     private About about;
 
+    private boolean fullScreen = false;
+    private String paletteFile;
+
+    private Iterator iterator;
     private IFS ifs;
     private Set<Color> colours;
     private Dimension size;
@@ -339,33 +283,17 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
         // Load configuration
         config = Config.loadProperties(this, override);
-
-        // Set performance properties
-        setThreads(config.get(THREADS_PROPERTY, Math.max(Runtime.getRuntime().availableProcessors() / 2, MIN_THREADS)));
-        setDebug(config.get(DEBUG_PROPERTY, DEFAULT_DEBUG));
-        setIterationsLimit(config.get(ITERATIONS_LIMIT_PROPERTY, DEFAULT_ITERATIONS_LIMIT));
-        setIterationsUnimited(config.get(ITERATIONS_UNLIMITED_PROPERTY, DEFAULT_ITERATIONS_UNLIMITED));
-
-        // Set colour mode and rendering configuration
-        setMode(config.get(MODE_PROPERTY, Strings.isNullOrEmpty(paletteFile) ? DEFAULT_MODE : Mode.PALETTE));
-        setRender(config.get(RENDER_PROPERTY, DEFAULT_RENDER));
-        setCoordinateTransformType(config.get(TRANSFORM_PROPERTY, DEFAULT_TRANSFORM));
-        setSeed(config.get(PALETTE_SEED_PROPERTY, DEFAULT_PALETTE_SEED));
-        if (Strings.isNullOrEmpty(paletteFile)) {
-            setPaletteFile(config.get(PALETTE_FILE_PROPERTY, DEFAULT_PALETTE_FILE));
+        if (!Strings.isNullOrEmpty(paletteFile)) {
+            config.setPaletteFile(paletteFile);
         }
-        setPaletteSize(config.get(PALETTE_SIZE_PROPERTY, DEFAULT_PALETTE_SIZE));
-        setGamma(config.get(GAMMA_PROPERTY, DEFAULT_GAMMA));
-        setVibrancy(config.get(VIBRANCY_PROPERTY, DEFAULT_VIBRANCY));
-        setBlurKernel(config.get(BLUR_KERNEL_PROPERTY, DEFAULT_BLUR_KERNEL));
-        debug("Configured rendering as %s/%s %s", render, mode, mode.isPalette() ? paletteFile : mode.isColour() ? "hsb" : "black");
+        debug("Configured rendering as %s/%s %s", config.getRender(), config.getMode(), config.getMode().isPalette() ? config.getPaletteFile() : config.getMode().isColour() ? "hsb" : "black");
 
         // Load colour palette if required
         loadColours();
 
         // Get window size configuration
-        int w = Math.max(MIN_WINDOW_SIZE, config.get(WINDOW_WIDTH_PROPERTY, DEFAULT_WINDOW_SIZE));
-        int h = Math.max(MIN_WINDOW_SIZE, config.get(WINDOW_HEIGHT_PROPERTY, DEFAULT_WINDOW_SIZE));
+        int w = Math.max(MIN_WINDOW_SIZE, config.getWidndowWidth());
+        int h = Math.max(MIN_WINDOW_SIZE, config.getWidndowHeight());
         size = new Dimension(w, h);
 
         // Load icon resources
@@ -389,85 +317,24 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
     }
 
-    public void setThreads(int value) {
-        threads = threads().apply(value);
-        config.set(THREADS_PROPERTY, threads);
-    }
+    public boolean isFullScreen() { return fullScreen; }
 
-    public void setDebug(boolean value) {
-        debug = value;
-        config.set(DEBUG_PROPERTY, debug);
-    }
-
-    public void setSeed(long value) {
-        seed = value;
-        config.set(PALETTE_SEED_PROPERTY, seed);
-    }
-
-    public void setPaletteFile(String value) {
-        paletteFile = value;
-        config.set(PALETTE_FILE_PROPERTY, paletteFile);
-    }
-
-    public void setPaletteSize(int value) {
-        paletteSize = clamp(MIN_PALETTE_SIZE, MAX_PALETTE_SIZE).apply(value);
-        config.set(PALETTE_SIZE_PROPERTY, paletteSize);
-    }
-
-    public void setRender(Render value) {
-        render = value;
-        config.set(RENDER_PROPERTY, render);
-    }
-
-    public void setMode(Mode value) {
-        mode = value;
-        config.set(MODE_PROPERTY, mode);
-    }
-
-    public void setCoordinateTransformType(CoordinateTransform.Type value) {
-        transform = value;
-        function = value.getFunction();
-        config.set(TRANSFORM_PROPERTY, transform);
-    }
-
-    public void setGamma(float value) {
-        gamma = value;
-        config.set(GAMMA_PROPERTY, gamma);
-    }
-
-    public void setVibrancy(float value) {
-        vibrancy = value;
-        config.set(VIBRANCY_PROPERTY, vibrancy);
-    }
-
-    public void setBlurKernel(int value) {
-        kernel = value;
-        config.set(BLUR_KERNEL_PROPERTY, kernel);
-    }
-
-    public void setIterationsLimit(long value) {
-        limit = value;
-        config.set(ITERATIONS_LIMIT_PROPERTY, limit);
-    }
-
-    public void setIterationsUnimited(boolean value) {
-        unlimited = value;
-        config.set(ITERATIONS_UNLIMITED_PROPERTY, unlimited);
-    }
+    public Set<Color> getColours() { return colours; }
 
     public void loadColours() {
         try {
-            if (paletteFile.contains(".")) {
-                source = loadImage(URI.create(paletteFile).toURL());
+            String file = config.getPaletteFile();
+            if (file.contains(".")) {
+                source = loadImage(URI.create(file).toURL());
             } else {
-                source = loadImage(Resources.getResource("palette/" + paletteFile + ".png"));
+                source = loadImage(Resources.getResource("palette/" + file + ".png"));
             }
         } catch (MalformedURLException | RuntimeException e) {
             error(e, "Cannot load colour palette %s: %s", paletteFile, e.getMessage());
         }
         colours = Sets.newHashSet();
-        Random random = new Random(seed);
-        while (colours.size() < paletteSize) {
+        Random random = new Random(config.getSeed());
+        while (colours.size() < config.getPaletteSize()) {
             int x = random.nextInt(source.getWidth());
             int y = random.nextInt(source.getHeight());
             Color c = new Color(source.getRGB(x, y));
@@ -483,6 +350,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     @SuppressWarnings("serial")
     public void start() {
+        iterator = new Iterator(this, bus, config, size);
+
         prefs = Preferences.dialog(this);
         about = About.dialog(this);
 
@@ -818,60 +687,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         return IFS.load(file);
     }
 
-    public boolean isFullScreen() { return fullScreen; }
-
-    public boolean isColour() { return mode.isColour(); }
-
-    public boolean hasPalette() { return mode.isPalette() && colours != null; }
-
-    public boolean isStealing() { return mode.isStealing() && source != null; }
-
-    public boolean isIFSColour() { return mode.isIFSColour(); }
-
-    public Set<Color> getColours() { return colours; }
-
-    public String getPaletteFile() { return paletteFile; }
-
-    public int getPaletteSize() { return paletteSize; }
-
-    public Render getRender() { return render; }
-
-    public Mode getMode() { return mode; }
-
-    public CoordinateTransform getCoordinateTransform() { return function; }
-
-    public CoordinateTransform.Type getCoordinateTransformType() { return transform; }
-
-    public float getGamma() { return gamma; }
-
-    public float getVibrancy() { return vibrancy; }
-
-    public int getBlurKernel() { return kernel; }
-
-    public long getSeed() { return seed; }
-
-    /** Debug information shown. */
-    public boolean isDebug() { return debug; }
-
-    /** Small grid spacing. */
-    public int getMinGrid() { return config.get(GRID_MIN_PROPERTY, DEFAULT_GRID_MIN); }
-
-    /** Large grid spacing. */
-    public int getMaxGrid() { return config.get(GRID_MAX_PROPERTY, DEFAULT_GRID_MAX); }
-
-    /** Snap to grid distance. */
-    public int getSnapGrid() { return config.get(GRID_SNAP_PROPERTY, DEFAULT_GRID_SNAP); }
-
-    public int getThreads() { return threads; }
-
-    /** Number of iterations each thread loop. */
-    public long getIterations() { return config.get(ITERATIONS_PROPERTY, DEFAULT_ITERATIONS); }
-
-    /** Maximum number of iterations. */
-    public long getIterationsLimit() { return limit; }
-
-    public boolean isIterationsUnlimited() { return unlimited; }
-
     public BufferedImage getIcon() { return icon; }
 
     public JScrollPane getScroll() { return scroll; }
@@ -899,6 +714,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public Preferences getPreferences() { return prefs; }
 
     public IFS getIFS() { return ifs; }
+
+    public Config getConfig() { return config; }
+
+    public Iterator getIterator() { return iterator; }
 
     public EventBus getEventBus() { return bus; }
 
@@ -941,10 +760,11 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 }
                 break;
             case KeyEvent.VK_S:
+                long seed = config.getSeed();
                 if (e.isShiftDown()) {
-                    setSeed(seed - 1);
+                    config.setSeed(seed - 1);
                 } else {
-                    setSeed(seed + 1);
+                    config.setSeed(seed + 1);
                 }
                 loadColours();
                 bus.post(ifs);
@@ -970,7 +790,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public void keyReleased(KeyEvent e) { }
 
     public void debug(String format, Object...varargs) {
-        output(isDebug() ? System.out : System.err, DEBUG + format, varargs);
+        output(config.isDebug() ? System.out : System.err, DEBUG + format, varargs);
     }
 
     public void error(String format, Object...varargs) {

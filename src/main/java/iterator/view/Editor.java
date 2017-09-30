@@ -76,6 +76,7 @@ import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
@@ -84,10 +85,12 @@ import com.google.common.primitives.Ints;
 import iterator.Explorer;
 import iterator.dialog.Matrix;
 import iterator.dialog.Properties;
+import iterator.model.Function;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
 import iterator.model.functions.CoordinateTransform;
+import iterator.util.Config;
 import iterator.util.Config.Render;
 import iterator.util.Dialog;
 import iterator.util.Formatter;
@@ -103,6 +106,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
     private final EventBus bus;
     private final Explorer controller;
     private final Messages messages;
+    private final Config config;
+    private final Iterator iterator;
 
     private JPopupMenu transformMenu, reflectionMenu, editor;
     private JMenuItem properties;
@@ -122,6 +127,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         this.controller = controller;
         this.bus = controller.getEventBus();
         this.messages = controller.getMessages();
+        this.config = controller.getConfig();
+        this.iterator = controller.getIterator();
 
         timer = new Timer(100, this);
         timer.setCoalesce(true);
@@ -144,13 +151,13 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             if (selected.isMatrix()) {
                 double[] matrix = new double[6];
                 AffineTransform tmp = selected.getTransform();
-                tmp.translate(controller.getMinGrid(), controller.getMinGrid());
+                tmp.translate(config.getMinGrid(), config.getMinGrid());
                 tmp.getMatrix(matrix);
                 copy.setMatrix(matrix);
             } else {
                 copy.duplicate(selected);
-                copy.x += controller.getMinGrid();
-                copy.y += controller.getMinGrid();
+                copy.x += config.getMinGrid();
+                copy.y += config.getMinGrid();
             }
             ifs.add(copy);
             selected = copy;
@@ -238,7 +245,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             double w = Math.max(start.x, end.x) - x;
             double h = Math.max(start.y, end.y) - y;
 
-            int grid = controller.getMinGrid();
+            int grid = config.getMinGrid();
             w = Math.max(grid, w);
             h = Math.max(grid, h);
 
@@ -297,15 +304,22 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
     @Override
     public void actionPerformed(ActionEvent e) {
         if (isVisible() && ifs.size() > 0) {
-            Viewer viewer = controller.getViewer();
             long n = getTransforms().size();
             long m = getReflections().size() + 1;
             long k = Math.min(1_000_000, 50_000 * (long) Math.pow(2d, n * m));
-            k *= (controller.getCoordinateTransformType() == CoordinateTransform.Type.IDENTITY ? 1 : 2);
+            k *= (config.getCoordinateTransformType() == CoordinateTransform.Type.IDENTITY ? 1 : 2);
+
+            List<Transform> transforms = controller.getEditor().getTransforms();
+            List<Reflection> reflections = controller.getEditor().getReflections();
+            List<Function> functions = ImmutableList.<Function>builder()
+                    .addAll(transforms)
+                    .addAll(reflections)
+                    .build();
+
             resetImage();
-            viewer.reset();
-            viewer.iterate(image, 2, k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d),
-                    Render.STANDARD, controller.getMode(), controller.getCoordinateTransform());
+            iterator.reset();
+            iterator.iterate(image, 2, k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d),
+                    Render.STANDARD, config.getMode(), functions, config.getCoordinateTransform());
             repaint();
         }
     }
@@ -485,8 +499,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
     public void paintGrid(Graphics graphics) {
         context(controller, graphics, g -> {
-            int min = controller.getMinGrid();
-            int max = controller.getMaxGrid();
+            int min = config.getMinGrid();
+            int max = config.getMaxGrid();
             Rectangle s = new Rectangle(getSize());
             g.setPaint(Color.WHITE);
             g.fill(s);
@@ -701,7 +715,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
     }
 
     private Point snap(Point point) {
-        int grid = controller.getSnapGrid();
+        int grid = config.getSnapGrid();
         return new Point(grid * (point.x / grid), grid * (point.y / grid));
     }
 
@@ -720,7 +734,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                 start = null;
                 end = null;
 
-                int grid = controller.getSnapGrid();
+                int grid = config.getSnapGrid();
                 if (w <= grid && h <= grid) {
                     reflection = null;
                     repaint();
@@ -843,7 +857,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                             break;
                     }
 
-                    int grid = controller.getSnapGrid();
+                    int grid = config.getSnapGrid();
                     w = Math.max(grid, w);
                     h = Math.max(grid, h);
 
@@ -947,7 +961,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     case KeyEvent.VK_UP:
                     case KeyEvent.VK_DOWN:
                         int dx = 0, dy = 0;
-                        int delta = e.isShiftDown() ? 1 : controller.getSnapGrid();
+                        int delta = e.isShiftDown() ? 1 : config.getSnapGrid();
                         switch (e.getKeyCode()) {
                             case KeyEvent.VK_LEFT:
                                 dx -= delta; break;

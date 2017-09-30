@@ -53,7 +53,6 @@ import javax.swing.JMenuItem;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 
 import iterator.model.Transform;
