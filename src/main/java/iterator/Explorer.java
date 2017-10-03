@@ -44,7 +44,6 @@ import static iterator.util.Messages.MENU_FILE_SAVE_AS;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.SplashScreen;
@@ -67,8 +66,6 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -78,8 +75,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -106,7 +101,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionContext;
@@ -199,7 +193,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     private Path override;
 
     private Platform platform = Platform.getPlatform();
-    private BufferedImage icon, source;
+    private BufferedImage icon;
     private Preferences prefs;
     private About about;
 
@@ -208,7 +202,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     private Iterator iterator;
     private IFS ifs;
-    private Set<Color> colours;
     private Dimension size;
     private Dimension min = new Dimension(MIN_WINDOW_SIZE, MIN_WINDOW_SIZE);
     private File cwd;
@@ -282,14 +275,14 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         }
 
         // Load configuration
-        config = Config.loadProperties(this, override);
+        config = Config.loadProperties(override);
         if (!Strings.isNullOrEmpty(paletteFile)) {
             config.setPaletteFile(paletteFile);
         }
         debug("Configured rendering as %s/%s %s", config.getRender(), config.getMode(), config.getMode().isPalette() ? config.getPaletteFile() : config.getMode().isColour() ? "hsb" : "black");
 
         // Load colour palette if required
-        loadColours();
+        config.loadColours();
 
         // Get window size configuration
         int w = Math.max(MIN_WINDOW_SIZE, config.getWidndowWidth());
@@ -319,38 +312,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     public boolean isFullScreen() { return fullScreen; }
 
-    public Set<Color> getColours() { return colours; }
-
-    public void loadColours() {
-        try {
-            String file = config.getPaletteFile();
-            if (file.contains(".")) {
-                source = loadImage(URI.create(file).toURL());
-            } else {
-                source = loadImage(Resources.getResource("palette/" + file + ".png"));
-            }
-        } catch (MalformedURLException | RuntimeException e) {
-            error(e, "Cannot load colour palette %s: %s", paletteFile, e.getMessage());
-        }
-        colours = Sets.newHashSet();
-        Random random = new Random(config.getSeed());
-        while (colours.size() < config.getPaletteSize()) {
-            int x = random.nextInt(source.getWidth());
-            int y = random.nextInt(source.getHeight());
-            Color c = new Color(source.getRGB(x, y));
-            colours.add(c);
-        }
-    }
-
-    public Color getSourcePixel(double x, double y) {
-        int sx = (int) Math.max(0, Math.min(source.getWidth() - 1, (x / getWidth()) * source.getWidth()));
-        int sy = (int) Math.max(0, Math.min(source.getHeight() - 1, (y / getHeight()) * source.getHeight()));
-        return new Color(source.getRGB(sx, sy));
-    }
-
     @SuppressWarnings("serial")
     public void start() {
-        iterator = new Iterator(this, bus, config, size);
+        iterator = new Iterator(this, config, size);
 
         prefs = Preferences.dialog(this);
         about = About.dialog(this);
@@ -766,7 +730,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 } else {
                     config.setSeed(seed + 1);
                 }
-                loadColours();
+                config.loadColours();
                 bus.post(ifs);
                 break;
             case KeyEvent.VK_SLASH:

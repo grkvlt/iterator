@@ -17,6 +17,7 @@ package iterator;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -289,6 +290,12 @@ public class Utils {
         } catch (IOException ioe) {
             throw new UncheckedIOException(ioe);
         }
+    }
+
+    public static Color getPixel(BufferedImage source, Dimension size, double x, double y) {
+        int sx = (int) Math.max(0, Math.min(source.getWidth() - 1, (x / size.getWidth()) * source.getWidth()));
+        int sy = (int) Math.max(0, Math.min(source.getHeight() - 1, (y / size.getHeight()) * source.getHeight()));
+        return new Color(source.getRGB(sx, sy));
     }
 
     public static double weight(List<Transform> transforms) {

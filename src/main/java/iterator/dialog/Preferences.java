@@ -131,7 +131,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
         config.setThreads(threads.get());
         config.setDebug(debug.get());
 
-        controller.loadColours();
+        config.loadColours();
 
         controller.getViewer().reset();
         if (controller.getCurrent().equals(Explorer.VIEWER)) {

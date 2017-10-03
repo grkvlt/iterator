@@ -49,6 +49,7 @@ import com.google.common.io.Files;
 
 import iterator.model.IFS;
 import iterator.model.Transform;
+import iterator.util.Config;
 import iterator.util.Subscriber;
 import iterator.view.Viewer;
 
@@ -60,6 +61,7 @@ public class Animator implements Subscriber {
     private Explorer explorer;
     private IFS ifs;
     private EventBus bus;
+    private Config config;
     private Dimension size;
     private CountDownLatch ready = new CountDownLatch(3);
     private long delay = 500l, iterations = -1l, frames = 1000l, segment;
@@ -68,10 +70,10 @@ public class Animator implements Subscriber {
     private File input, output;
     private Map<List<Change>, Long> segments = Maps.newLinkedHashMap();
 
-    public Animator(String configFile) throws Exception {
-        File config = new File(configFile);
-        checkArgument(config.exists(), "Config file '%s' not found", config);
-        parse(config);
+    public Animator(String configPath) throws Exception {
+        File configFile = new File(configPath);
+        checkArgument(configFile.exists(), "Config file '%s' not found", configPath);
+        parse(configFile);
 
         // Check input and output settings
         checkNotNull(input, "Input file must be set");
@@ -90,6 +92,7 @@ public class Animator implements Subscriber {
                 explorer = new Explorer();
                 explorer.start();
                 bus = explorer.getEventBus();
+                config = explorer.getConfig();
             }
         });
  
@@ -296,7 +299,10 @@ public class Animator implements Subscriber {
 
                 // Rescale
                 if (centre != null) {
-                    viewer.rescale(scale, centre);
+                    config.setDisplayScale(scale);
+                    config.setDisplayCentreX(centre.getX() / size.getWidth());
+                    config.setDisplayCentreY(centre.getY() / size.getHeight());
+                    viewer.rescale();
                 }
 
                 // render for required time/iterations before saving frame

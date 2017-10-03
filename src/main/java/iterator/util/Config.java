@@ -18,10 +18,12 @@ package iterator.util;
 import static iterator.Utils.NEWLINE;
 import static iterator.Utils.clamp;
 import static iterator.Utils.initFileSystem;
+import static iterator.Utils.loadImage;
 import static iterator.Utils.threads;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,6 +31,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -39,10 +42,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
 
@@ -56,6 +60,8 @@ import com.google.common.base.StandardSystemProperty;
 import com.google.common.collect.ForwardingSortedMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.io.Resources;
 
 import iterator.Explorer;
 import iterator.dialog.Preferences;
@@ -215,18 +221,19 @@ public class Config extends ForwardingSortedMap<String, String> {
 
     public static final Predicate<CharSequence> EXPLORER_KEYS = Predicates.containsPattern("^" + EXPLORER_PROPERTY + ".");
 
-    private final Explorer controller;
     private final Optional<Path> override;
     private final SortedMap<String, String> config;
 
-    private Config(Explorer controller, Path override) {
+    private BufferedImage source;
+    private Set<Color> colours;
+
+    private Config(Path override) {
         this.override = Optional.fromNullable(override);
         this.config = Maps.newTreeMap();
-        this.controller = controller;
     }
 
-    public static Config loadProperties(Explorer controller, Path override) {
-        Config instance = new Config(controller, override);
+    public static Config loadProperties(Path override) {
+        Config instance = new Config(override);
         instance.load();
         return instance;
     }
@@ -255,8 +262,6 @@ public class Config extends ForwardingSortedMap<String, String> {
 
     public void load(Path path) {
         if (Files.isReadable(path)) {
-            boolean zip = path.getFileSystem().getClass().getName().toLowerCase(Locale.UK).contains("zip");
-            controller.print("Loading configuration %s %s", zip ? "resource" : "file", path.getFileName());
             try (Reader reader = Files.newBufferedReader(path, Charsets.UTF_8)) {
                 load(reader);
             } catch (IOException ioe) {
@@ -322,10 +327,34 @@ public class Config extends ForwardingSortedMap<String, String> {
             throw new IllegalStateException(String.format("Cannot write file %s", path));
         }
         try {
-            controller.print("Saving configuration file %s", path.getFileName());
             save(Files.newOutputStream(path));
         } catch (IOException ioe) {
             throw new UncheckedIOException(ioe);
+        }
+    }
+
+    public Set<Color> getColours() { return colours; }
+
+    public BufferedImage getSourceImage() { return source; }
+
+    public void loadColours() {
+        try {
+            String file = getPaletteFile();
+            if (file.contains(".")) {
+                source = loadImage(URI.create(file).toURL());
+            } else {
+                source = loadImage(Resources.getResource("palette/" + file + ".png"));
+            }
+        } catch (MalformedURLException | RuntimeException e) {
+            throw new IllegalStateException(String.format("Cannot load colour palette %s", getPaletteFile()));
+        }
+        colours = Sets.newHashSet();
+        Random random = new Random(getSeed());
+        while (colours.size() < getPaletteSize()) {
+            int x = random.nextInt(source.getWidth());
+            int y = random.nextInt(source.getHeight());
+            Color c = new Color(source.getRGB(x, y));
+            colours.add(c);
         }
     }
 

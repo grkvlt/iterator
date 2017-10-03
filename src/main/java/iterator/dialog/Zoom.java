@@ -22,8 +22,6 @@ import static iterator.util.Messages.DIALOG_ZOOM_TITLE;
 import static iterator.util.Messages.DIALOG_ZOOM_X;
 import static iterator.util.Messages.DIALOG_ZOOM_Y;
 
-import java.awt.geom.Point2D;
-
 import iterator.Explorer;
 import iterator.util.AbstractPropertyDialog;
 import iterator.util.Formatter;

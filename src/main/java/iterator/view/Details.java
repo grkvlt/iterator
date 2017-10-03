@@ -36,13 +36,13 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
-import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 import iterator.Explorer;
 import iterator.model.IFS;
 import iterator.model.Reflection;
 import iterator.model.Transform;
+import iterator.util.Config;
 import iterator.util.Formatter;
 import iterator.util.Formatter.DoubleFormatter;
 import iterator.util.Subscriber;
@@ -53,7 +53,7 @@ import iterator.util.Subscriber;
 public class Details extends JTextPane implements Printable, Subscriber {
 
     private final Explorer controller;
-    private final EventBus bus;
+    private final Config config;
 
     private IFS ifs;
 
@@ -79,7 +79,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
         super();
 
         this.controller = controller;
-        this.bus = controller.getEventBus();
+        this.config = controller.getConfig();
 
         setEditable(false);
         setContentType(HTML_MIME_TYPE);
@@ -90,7 +90,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
             css.addRule(rule);
         }
 
-        bus.register(this);
+        controller.getEventBus().register(this);
     }
 
     /** @see Subscriber#resized(Dimension) */
@@ -116,7 +116,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
     public void setDetails() {
         StringBuilder html = new StringBuilder("<html>");
         String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
-        String words = CharMatcher.JAVA_LETTER_OR_DIGIT.negate().replaceFrom(name, ' ');
+        String words = CharMatcher.javaLetterOrDigit().negate().replaceFrom(name, ' ');
         html.append("<a name=\"top\"></a>")
             .append(String.format("<h1 id=\"title\">IFS %s</h1>", words));
 
@@ -140,9 +140,9 @@ public class Details extends JTextPane implements Printable, Subscriber {
                 t.getTransform().getMatrix(matrix);
 
                 Color c = Color.WHITE;
-                if (controller.isColour()) {
-                    if (controller.hasPalette()) {
-                        c = Iterables.get(controller.getColours(), f % controller.getPaletteSize());
+                if (config.getMode().isColour()) {
+                    if (config.getMode().isPalette()) {
+                        c = Iterables.get(config.getColours(), f % config.getPaletteSize());
                     } else {
                         c = Color.getHSBColor((float) f / (float) ifs.size(), 0.8f, 0.8f);
                     }
@@ -170,7 +170,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                         t.getId(),
                         four.toString(matrix[0]), four.toString(matrix[2]), zero.toString(matrix[4]),
                         100d * t.getWeight() / weight(ifs.getTransforms()),
-                        controller.isColour() ? "black" : "white",
+                        config.getMode().isColour() ? "black" : "white",
                         c.getRed(), c.getGreen(), c.getBlue(),
                         four.toString(matrix[1]), four.toString(matrix[2]), zero.toString(matrix[5]));
                 html.append(transform)
@@ -190,9 +190,9 @@ public class Details extends JTextPane implements Printable, Subscriber {
                         .append("<table class=\"ifs\">");
 
                     Color c = Color.WHITE;
-                    if (controller.isColour()) {
-                        if (controller.hasPalette()) {
-                            c = Iterables.get(controller.getColours(), f % controller.getPaletteSize());
+                    if (config.getMode().isColour()) {
+                        if (config.getMode().isPalette()) {
+                            c = Iterables.get(config.getColours(), f % config.getPaletteSize());
                         } else {
                             c = Color.getHSBColor((float) f / (float) ifs.size(), 0.8f, 0.8f);
                         }
@@ -209,7 +209,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                             "</tr>" +
                             "<tr class=\"space\"><td colspan=\"6\">&nbsp;</td></tr>",
                             r.getId(),
-                            controller.isColour() ? "black" : "white",
+                            config.getMode().isColour() ? "black" : "white",
                             c.getRed(), c.getGreen(), c.getBlue(),
                             Integer.toString(r.x), Integer.toString(r.y), one.toString(Math.toDegrees(r.r)));
                     html.append(reflection)

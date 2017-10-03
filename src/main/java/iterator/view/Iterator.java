@@ -15,9 +15,11 @@
  */
 package iterator.view;
 
+import static iterator.Utils.NEWLINE;
 import static iterator.Utils.RGB24;
 import static iterator.Utils.alpha;
 import static iterator.Utils.context;
+import static iterator.Utils.getPixel;
 import static iterator.Utils.locked;
 import static iterator.Utils.unity;
 import static iterator.Utils.weight;
@@ -29,7 +31,9 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -43,47 +47,37 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.Timer;
-
+import com.google.common.base.CaseFormat;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
 import com.google.common.math.LongMath;
 import com.google.common.util.concurrent.Atomics;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 
-import iterator.dialog.Zoom;
+import iterator.Explorer;
 import iterator.model.Function;
-import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Config;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
-import iterator.util.Subscriber;
 
 /**
  * Rendered IFS viewer.
  */
-public class Iterator implements Subscriber, Runnable, ThreadFactory {
+public class Iterator implements Runnable, ThreadFactory {
 
-    private static enum Task { ITERATE, PLOT_DENSITY }
+    public static enum Task { ITERATE, PLOT_DENSITY }
 
     private final Config config;
-    private final EventBus bus;
     private final BiConsumer<Throwable, String> exceptionHandler;
 
-    private IFS ifs;
+    private List<Function> transforms;
     private AtomicReference<BufferedImage> image = Atomics.newReference();
-    private String infoText;
     private int top[];
     private long density[];
     private long blur[];
@@ -91,7 +85,6 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
     private float vibrancy;
     private int kernel;
     private long max;
-    private Timer timer;
     private AtomicBoolean latch = new AtomicBoolean(true);
     private Object mutex = new Object[0];
     private AtomicReferenceArray<Point2D> points = Atomics.newReferenceArray(2);
@@ -103,16 +96,10 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
     private float scale = 1.0f;
     private Point2D centre;
     private Dimension size;
-    private Rectangle zoom;
     private ThreadGroup group = new ThreadGroup("iterator");
     private ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool(this));
     private Multimap<Task, Future<?>> tasks = Multimaps.synchronizedListMultimap(Multimaps.newListMultimap(Maps.newHashMap(), Lists::newArrayList));
     private ConcurrentMap<Future<?>, AtomicBoolean> state = Maps.newConcurrentMap();
-    private boolean overlay, info, grid;
-    private JPopupMenu viewer;
-    private Zoom properties;
-    private JCheckBoxMenuItem showGrid, showOverlay, showInfo;
-    private JMenuItem pause, resume;
 
     // Listener task to clean up task state collections
     private Runnable cleaner = () -> {
@@ -129,39 +116,15 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
             }
         };
 
-    public Iterator(BiConsumer<Throwable, String> exceptionHandler, EventBus bus, Config config, Dimension size) {
-        this.bus = bus;
+    public Iterator(BiConsumer<Throwable, String> exceptionHandler, Config config, Dimension size) {
         this.config = config;
-        this.size = size;
         this.exceptionHandler = exceptionHandler;
-
-        bus.register(this);
     }
 
     public long getCount() { return count.get(); }
 
-    /** @see Subscriber#updated(IFS) */
-    @Override
-    @Subscribe
-    public void updated(IFS ifs) {
-        this.ifs = ifs;
-        if (!running.get()) {
-            reset();
-            rescale();
-        }
-    }
-
-    /** @see Subscriber#resized(Dimension) */
-    @Override
-    @Subscribe
-    public void resized(Dimension size) {
-        boolean started = stop();
-        this.size = size;
-        this.centre = new Point2D.Double(size.getWidth() / 2d, size.getHeight() / 2d);
-        reset();
-        if (started) {
-            start();
-        }
+    public void setTransforms(List<Function> transforms) {
+        this.transforms = transforms;
     }
 
     public void rescale(float scale, Point2D centre) {
@@ -173,7 +136,14 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
         rescale(1f, new Point2D.Double(size.getWidth() / 2d, size.getHeight() / 2d));
     }
 
-    public void reset() {
+    public void reset(Dimension size) {
+        this.size = size;
+
+        scale = config.getDisplayScale();
+        centre = new Point2D.Double(config.getDisplayCentreX() * size.getWidth(), config.getDisplayCentreY() * size.getHeight());
+
+        image.set(newImage());
+
         points.set(0, new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
         points.set(1, new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
 
@@ -199,10 +169,9 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
 
             if (functions.isEmpty()) return;
 
-            int t = functions.size();
-            int r = ifs.getReflections().size();
-            int n = t - r;
-            double weight = weight(Lists.newArrayList(Iterables.filter(functions, Transform.class)));
+            int n = functions.size();
+            List<Transform> transforms = Lists.newArrayList(Iterables.filter(functions, Transform.class));
+            double weight = weight(transforms);
             float hsb[] = new float[3];
             Rectangle rect = new Rectangle(0, 0, s, s);
             function.setSize(size);
@@ -216,7 +185,7 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
                 // Skip based on transform weighting
                 int j = random.nextInt(functions.size());
                 Function f = functions.get(j);
-                if ((j < n ? ((Transform) f).getWeight() : weight) < random.nextDouble() * weight * (r + 1d)) {
+                if ((j < transforms.size() ? ((Transform) f).getWeight() : weight) < random.nextDouble() * weight * (n - transforms.size() + 1d)) {
                     continue;
                 }
 
@@ -268,19 +237,19 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
                             color = Color.getHSBColor((float) (old.getX() / size.getWidth()), (float) (old.getY() / size.getHeight()), vibrancy);
                         } else if (mode.isPalette()) {
                             if (mode.isStealing()) {
-                                color = controller.getSourcePixel(old.getX(), old.getY());
+                                color = getPixel(config.getSourceImage(), size, old.getX(), old.getY());
                             } else {
                                 if (render == Render.TOP) {
                                     color = Iterables.get(config.getColours(), top[p] % config.getPaletteSize());
                                 } else {
-                                    color = Iterables.get(controller.getColours(), j % config.getPaletteSize());
+                                    color = Iterables.get(config.getColours(), j % config.getPaletteSize());
                                 }
                             }
                         } else {
                             if (render == Render.TOP) {
-                                color = Color.getHSBColor((float) top[p] / (float) ifs.size(), vibrancy, vibrancy);
+                                color = Color.getHSBColor((float) top[p] / (float) functions.size(), vibrancy, vibrancy);
                             } else {
-                                color = Color.getHSBColor((float) j / (float) ifs.size(), vibrancy, vibrancy);
+                                color = Color.getHSBColor((float) j / (float) functions.size(), vibrancy, vibrancy);
                             }
                         }
                         if (render.isDensity()) {
@@ -374,7 +343,7 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
         });
     }
 
-    public BufferedImage newImage(Dimension size) {
+    public BufferedImage newImage() {
         BufferedImage image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
         context(exceptionHandler, image.getGraphics(), g -> {
             g.setColor(config.getRender().getBackground());
@@ -392,7 +361,7 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
     public void run() {
         if (config.isIterationsUnlimited() || (count.get() * 1000l) < config.getIterationsLimit()) {
             iterate(image.get(), 1, config.getIterations(), scale, centre,
-                    config.getRender(), config.getMode(), ifs, config.getCoordinateTransform());
+                    config.getRender(), config.getMode(), transforms, config.getCoordinateTransform());
         } else {
             token.incrementAndGet();
         }
@@ -402,7 +371,6 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
         return () -> {
             while (latch.get()); // Wait until latch released
             long initial = token.get();
-            String name = Thread.currentThread().getName();
             do {
                 task.run();
             } while (!cancel.get() && token.get() == initial);
@@ -428,6 +396,57 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
         return t;
     }
 
+    public Collection<Future<?>> getTaskSet() {
+        return tasks.values();
+    }
+
+    public Multimap<Task, Future<?>> getTasks() {
+        return tasks;
+    }
+
+    public ThreadGroup getThreadGroup() {
+        return group;
+    }
+    
+    public String getThreadDump() {
+        List<String> dump = Lists.newArrayList();
+        synchronized (tasks) {
+            for (Task type : Task.values()) {
+                int count = tasks.get(type).size();
+                dump.add(String.format("%s (%d)", CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, type.name()), count));
+            }
+            Thread[] threads = new Thread[group.activeCount()];
+            group.enumerate(threads);
+            for (Thread thread : threads) {
+                StackTraceElement stack = thread.getStackTrace()[0];
+                if (stack.isNativeMethod() // FIXME OpenJDK only
+                        && stack.getMethodName().equals("park")
+                        && stack.getClassName().endsWith("Unsafe")) continue;
+                dump.add(String.format("%s - %s", thread.getName(), stack));
+            }
+        }
+        String output = dump.stream()
+                .map(Explorer.STACK::concat)
+                .collect(Collectors.joining(NEWLINE));
+        return output;
+    }
+
+    public void updateTasks() {
+        synchronized (tasks) {
+            if (isRunning()) {
+                if (config.getThreads() > tasks.size()) {
+                    submit(Task.ITERATE, this);
+                } else if (tasks.size() > config.getThreads()) {
+                    Optional<Future<?>> cancel = tasks.get(Task.ITERATE)
+                            .stream()
+                            .filter(f -> !f.isDone())
+                            .findFirst();
+                    cancel.ifPresent(f -> state.get(f).set(true));
+                }
+            }
+        }
+    }
+
     public void start() {
         if (running.compareAndSet(false, true)) {
             locked(mutex, () -> {
@@ -438,14 +457,11 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
                 if (config.getRender().isDensity()) {
                     submit(Task.PLOT_DENSITY, () -> {
                         BufferedImage old = image.get();
-                        BufferedImage plot = newImage(size);
+                        BufferedImage plot = newImage();
                         plotDensity(plot, 1, config.getRender(), config.getMode());
                         image.compareAndSet(old, plot);
                     });
                 }
-                pause.setEnabled(true);
-                resume.setEnabled(false);
-                timer.start();
                 latch.set(false);
             });
         }
@@ -457,13 +473,10 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
             locked(mutex, () -> {
                 latch.set(true);
                 token.incrementAndGet();
-                timer.stop();
                 synchronized (tasks) {
                     state.values().forEach(b -> b.compareAndSet(false, true));
                 }
                 while (tasks.size() > 0); // Wait until all tasks stopped
-                pause.setEnabled(false);
-                resume.setEnabled(true);
             });
         }
         return stopped;
@@ -471,6 +484,10 @@ public class Iterator implements Subscriber, Runnable, ThreadFactory {
 
     public boolean isRunning() {
         return running.get();
+    }
+
+    public BufferedImage getImage() {
+        return image.get();
     }
 
 }

@@ -60,7 +60,6 @@ import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
@@ -73,7 +72,6 @@ import javax.swing.event.MouseInputListener;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.math.DoubleMath;
-import com.google.common.util.concurrent.Atomics;
 
 import iterator.Explorer;
 import iterator.dialog.Zoom;
@@ -93,8 +91,6 @@ import iterator.util.Subscriber;
  */
 public class Viewer extends JPanel implements ActionListener, KeyListener, MouseInputListener, Printable, Subscriber {
 
-    private static enum Task { ITERATE, PLOT_DENSITY }
-
     private final Explorer controller;
     private final EventBus bus;
     private final Messages messages;
@@ -102,7 +98,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private final Iterator iterator;
 
     private IFS ifs;
-    private AtomicReference<BufferedImage> image = Atomics.newReference();
     private String infoText;
     private Timer timer;
     private float scale = 1.0f;
@@ -358,9 +353,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public void reset() {
         if (size.getWidth() <= 0 && size.getHeight() <= 0) return;
 
-        image.set(newImage(getSize()));
-
-        iterator.reset();
+        iterator.reset(size);
 
         updateInfoText();
     }
@@ -368,7 +361,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public String updateInfoText() {
         FloatFormatter one = Formatter.floats(1);
         DoubleFormatter four = Formatter.doubles(4);
-        infoText = String.format("%sx (%s,%s) %s/%s %s %s() y%s [%d]",
+        infoText = String.format("%sx (%s,%s) %s/%s %s %s() y%s [%s/%d]",
                 one.toString(scale),
                 four.toString(centre.getX() / size.getWidth()),
                 four.toString(centre.getY() / size.getHeight()),
@@ -376,12 +369,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 config.getMode().isPalette() ? config.getPaletteFile() : (config.getMode().isColour() ? "hsb" : "black"),
                 config.getCoordinateTransformType().getShortName(),
                 one.toString(config.getGamma()),
-                config.getThreads());
+                iterator.getTaskSet().isEmpty() ? "-" : Integer.toString(iterator.getTaskSet().size()), config.getThreads());
         return infoText;
     }
 
     public BufferedImage getImage() {
-        return image.get();
+        return iterator.getImage();
     }
 
     /** @see java.awt.print.Printable#print(Graphics, PageFormat, int) */
@@ -417,10 +410,17 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     }
 
     public void start() {
-        iterator.start(image);
+        iterator.setTransforms(ifs);
+        iterator.start();
+        timer.start();
+        pause.setEnabled(true);
+        resume.setEnabled(false);
     }
 
     public boolean stop() {
+        pause.setEnabled(false);
+        resume.setEnabled(true);
+        timer.stop();
         return iterator.stop();
     }
 
@@ -479,6 +479,20 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     break;
                 case KeyEvent.VK_G:
                     setGrid(!grid);
+                    break;
+                case KeyEvent.VK_T:
+                    controller.timestamp("Thread dump");
+                    System.err.println(iterator.getThreadDump());
+                    break;
+                case KeyEvent.VK_UP:
+                    config.setThreads(config.getThreads() + 1);
+                    iterator.updateTasks();
+                    repaint();
+                    break;
+                case KeyEvent.VK_DOWN:
+                    config.setThreads(config.getThreads() - 1);
+                    iterator.updateTasks();
+                    repaint();
                     break;
             }
         }
@@ -554,7 +568,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     config.setDisplayScale(scale * ((float) size.getWidth() / (float) zoom.width));
                 }
                 config.setDisplayCentreX(updated.getX() / size.getWidth());
-                config.setDisplayCentreX(updated.getY() / size.getHeight());
+                config.setDisplayCentreY(updated.getY() / size.getHeight());
                 rescale();
                 controller.debug("Zoom: %.1fx scale, centre (%.1f, %.1f) via click at (%d, %d)",
                         scale, centre.getX(), centre.getY(), (int) (zoom.x + (zoom.width / 2d)), (int) (zoom.y + (zoom.height / 2d)));

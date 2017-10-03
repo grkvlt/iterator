@@ -309,15 +309,13 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             long k = Math.min(1_000_000, 50_000 * (long) Math.pow(2d, n * m));
             k *= (config.getCoordinateTransformType() == CoordinateTransform.Type.IDENTITY ? 1 : 2);
 
-            List<Transform> transforms = controller.getEditor().getTransforms();
-            List<Reflection> reflections = controller.getEditor().getReflections();
             List<Function> functions = ImmutableList.<Function>builder()
-                    .addAll(transforms)
-                    .addAll(reflections)
+                    .addAll(getTransforms())
+                    .addAll(getReflections())
                     .build();
 
             resetImage();
-            iterator.reset();
+            iterator.reset(getSize());
             iterator.iterate(image, 2, k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d),
                     Render.STANDARD, config.getMode(), functions, config.getCoordinateTransform());
             repaint();
