@@ -137,11 +137,6 @@ public class Renderer implements BiConsumer<Throwable, String> {
         }
         long limit = config.getIterationsLimit() / 1000l;
 
-        iterator = new Iterator(this, config, size);
-        iterator.reset(size);
-        iterator.setTransforms(ifs);
-        iterator.start();
-
         FloatFormatter one = Formatter.floats(1);
         DoubleFormatter four = Formatter.doubles(4);
         String infoText = String.format("%sx (%s,%s) %s/%s %s %s() y%s",
@@ -156,8 +151,13 @@ public class Renderer implements BiConsumer<Throwable, String> {
         System.out.printf("%s%s\n", Utils.PRINT, infoText);
         String limitText = String.format("%,dK", limit).replaceAll("[^0-9K+]", " ");
         System.out.printf("%s%s\n", Utils.PRINT, limitText);
+
+        iterator = new Iterator(this, config, size);
+        iterator.reset(size);
+        iterator.setTransforms(ifs);
+        iterator.start();
         while (iterator.getCount() <= limit) {
-            Utils.sleep(1, TimeUnit.SECONDS);
+            Utils.sleep(100, TimeUnit.MILLISECONDS);
             String countText = String.format("%,dK", iterator.getCount()).replaceAll("[^0-9K+]", " ");
             System.out.printf("\r%s%s", Utils.PAUSE, countText);
         }
@@ -172,7 +172,7 @@ public class Renderer implements BiConsumer<Throwable, String> {
 
     @Override
     public void accept(Throwable t, String message) {
-        System.err.printf("%s: %s\n", message, t);
+        System.err.printf("%s%s: %s\n", Utils.ERROR, message, t);
         System.exit(1);
     }
 
