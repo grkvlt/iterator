@@ -18,6 +18,7 @@ package iterator;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static iterator.Utils.NEWLINE;
 import static iterator.Utils.saveImage;
 import static iterator.Utils.sleep;
 
@@ -37,6 +38,7 @@ import javax.swing.SwingUtilities;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.collect.ImmutableList;
@@ -51,12 +53,29 @@ import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Config;
 import iterator.util.Subscriber;
+import iterator.util.Version;
 import iterator.view.Viewer;
 
 /**
  * IFS Animator.
  */
 public class Animator implements Subscriber {
+
+    public static final List<String> BANNER = Arrays.asList(
+            "  ___ _____ ____       _          _                 _",
+            "  |_ _|  ___/ ___|     / \\   _ __ (_)_ __ ___   __ _| |_ ___  _ __",
+            "   | || |_  \\___ \\    / _ \\ | '_ \\| | '_ ` _ \\ / _` | __/ _ \\| '__|",
+            "   | ||  _|  ___) |  / ___ \\| | | | | | | | | | (_| | || (_) | |",
+            "  |___|_|   |____/  /_/   \\_\\_| |_|_|_| |_| |_|\\__,_|\\__\\___/|_|",
+            "",
+            "    Iterated Function System Animator %s",
+            "",
+            "    Copyright 2012-2017 by Andrew Donald Kennedy",
+            "    Licensed under the Apache Software License, Version 2.0",
+            "    Documentation at https://grkvlt.github.io/iterator/",
+            "");
+
+    public static final Version version = Version.instance();
 
     private Explorer explorer;
     private IFS ifs;
@@ -325,9 +344,14 @@ public class Animator implements Subscriber {
      * Animator.
      */
     public static void main(final String...argv) throws Exception {
+        String banner = Joiner.on(NEWLINE).join(BANNER);
+        System.out.printf(banner, version.get());
+        System.out.println();
+
         if (argv.length != 1) {
             throw new IllegalArgumentException("Must provide animation configuration file as only argument");
         }
+
         Animator animator = new Animator(argv[0]);
         animator.start();
     }
