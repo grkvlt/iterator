@@ -25,7 +25,13 @@ import static iterator.Utils.loadImage;
 import static iterator.Utils.menuItem;
 import static iterator.Utils.printError;
 import static iterator.Utils.saveImage;
+import static iterator.util.Config.CONFIG_OPTION;
+import static iterator.util.Config.CONFIG_OPTION_LONG;
+import static iterator.util.Config.FULLSCREEN_OPTION;
+import static iterator.util.Config.FULLSCREEN_OPTION_LONG;
 import static iterator.util.Config.MIN_WINDOW_SIZE;
+import static iterator.util.Config.PALETTE_OPTION;
+import static iterator.util.Config.PALETTE_OPTION_LONG;
 import static iterator.util.Messages.DIALOG_FILES_PNG;
 import static iterator.util.Messages.DIALOG_FILES_PROPERTIES;
 import static iterator.util.Messages.DIALOG_FILES_XML;
@@ -173,13 +179,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             "",
             "    See https://grkvlt.github.io/iterator/ for more.",
             "");
-
-    public static final String FULLSCREEN_OPTION = "-f";
-    public static final String FULLSCREEN_OPTION_LONG = "--fullscreen";
-    public static final String PALETTE_OPTION = "-p";
-    public static final String PALETTE_OPTION_LONG = "--palette";
-    public static final String CONFIG_OPTION = "-c";
-    public static final String CONFIG_OPTION_LONG = "--config";
 
     public static final String EDITOR = "editor";
     public static final String VIEWER = "viewer";

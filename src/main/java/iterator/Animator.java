@@ -20,20 +20,25 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static iterator.Utils.NEWLINE;
 import static iterator.Utils.saveImage;
-import static iterator.Utils.sleep;
+import static iterator.util.Config.CONFIG_OPTION;
+import static iterator.util.Config.CONFIG_OPTION_LONG;
+import static iterator.util.Config.MIN_WINDOW_SIZE;
+import static iterator.util.Config.PALETTE_OPTION;
+import static iterator.util.Config.PALETTE_OPTION_LONG;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import javax.swing.SwingUtilities;
+import java.util.function.BiConsumer;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
@@ -41,25 +46,22 @@ import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.StandardSystemProperty;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
-import com.google.common.io.Files;
 
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Config;
-import iterator.util.Subscriber;
 import iterator.util.Version;
-import iterator.view.Viewer;
+import iterator.view.Iterator;
 
 /**
  * IFS Animator.
  */
-public class Animator implements Subscriber {
+public class Animator implements BiConsumer<Throwable, String> {
 
     public static final List<String> BANNER = Arrays.asList(
             "  ___ _____ ____       _          _                 _",
@@ -77,22 +79,81 @@ public class Animator implements Subscriber {
 
     public static final Version version = Version.instance();
 
-    private Explorer explorer;
+    /**
+     * Data objects holding the changes made to a {@link Transform} during a segment.
+     */
+
+    public static class Change {
+        public int transform;
+        public double start, end;
+        public String field;
+    }
+
+    public static class Segment {
+        public List<Change> changes;
+        public Map<String,String> config;
+        public long frames;
+    }
+
+    private static final long DEFAULT_FRAMES = 1000l;
+    
     private IFS ifs;
-    private EventBus bus;
     private Config config;
     private Dimension size;
-    private CountDownLatch ready = new CountDownLatch(3);
-    private long delay = 500l, iterations = -1l, frames = 1000l, segment;
+    private String paletteFile;
+    private Path override;
+    private long iterations = -1l;
+    private long frames = DEFAULT_FRAMES;
     private float scale = 1f;
     private Point2D centre = null;
     private File input, output;
-    private Map<List<Change>, Long> segments = Maps.newLinkedHashMap();
+    private List<Segment> segments = Lists.newArrayList();
 
-    public Animator(String configPath) throws Exception {
-        File configFile = new File(configPath);
-        checkArgument(configFile.exists(), "Config file '%s' not found", configPath);
-        parse(configFile);
+    public Animator(String...argv) throws Exception {
+        // Parse arguments
+        if (argv.length < 1) {
+            throw new IllegalArgumentException("Must have at least one argument");
+        }
+        for (int i = 0; i < argv.length - 2; i++) {
+            if (argv[i].charAt(0) == '-') {
+                // Argument is a program option
+                if (argv[i].equalsIgnoreCase(PALETTE_OPTION) ||
+                        argv[i].equalsIgnoreCase(PALETTE_OPTION_LONG)) {
+                    if (argv.length >= i + 1) {
+                        paletteFile = argv[++i];
+                    } else throw new IllegalArgumentException("Palette argument not provided");
+                } else if (argv[i].equalsIgnoreCase(CONFIG_OPTION) ||
+                        argv[i].equalsIgnoreCase(CONFIG_OPTION_LONG)) {
+                    if (argv.length >= i + 1) {
+                        override = Paths.get(argv[++i]);
+                        if (Files.notExists(override)) {
+                            throw new IllegalArgumentException(String.format("Configuration file does not exist: %s", override));
+                        }
+                    } else throw new IllegalArgumentException("Configuration file argument not provided");
+                } else {
+                    throw new IllegalArgumentException(String.format("Cannot parse option: %s", argv[i]));
+                }
+            }
+        }
+
+        // Load configuration
+        config = Config.loadProperties(override);
+        if (!Strings.isNullOrEmpty(paletteFile)) {
+            config.setPaletteFile(paletteFile);
+        }
+
+        // Load colour palette if required
+        config.loadColours();
+
+        // Get window size configuration
+        int w = Math.max(MIN_WINDOW_SIZE, config.getWindowWidth());
+        int h = Math.max(MIN_WINDOW_SIZE, config.getWindowHeight());
+        size = new Dimension(w, h);
+
+        // Animation file argument
+        Path animation = Paths.get(argv[argv.length - 1]);
+        checkArgument(Files.exists(animation), "Animation file '%s' not found", animation);
+        parse(animation);
 
         // Check input and output settings
         checkNotNull(input, "Input file must be set");
@@ -103,29 +164,6 @@ public class Animator implements Subscriber {
         } else {
             output.mkdirs();
         }
-
-        // Start application
-        SwingUtilities.invokeAndWait(new Runnable() {
-            @Override
-            public void run() {
-                explorer = new Explorer();
-                explorer.start();
-                bus = explorer.getEventBus();
-                config = explorer.getConfig();
-            }
-        });
- 
-        // Register ourselves with the application bus
-        bus.register(this);
-    }
-
-    /**
-     * A data object holding the changes made to a {@link Transform} during a segment.
-     */
-    public static class Change {
-        public int transform;
-        public double start, end;
-        public String field;
     }
 
     /**
@@ -150,9 +188,11 @@ public class Animator implements Subscriber {
      * @throws IllegalStateException
      * @throws NumberFormatException
      */
-    public void parse(File config) throws IOException {
-        List<Change> list = Lists.newArrayList();
-        List<String> lines = Files.readLines(config, Charsets.UTF_8);
+    public void parse(Path animation) throws IOException {
+        List<Change> changes = Lists.newArrayList();
+        Map<String,String> configuration = Maps.newHashMap();
+        long length = frames;
+        List<String> lines = Files.readAllLines(animation, Charsets.UTF_8);
         for (int l = 0; l < lines.size(); l++) {
             String line = lines.get(l);
             List<String> tokens = Splitter.on(' ').omitEmptyStrings().trimResults().splitToList(line);
@@ -172,9 +212,6 @@ public class Animator implements Subscriber {
                     break;
                 case "frames": // count
                     frames = Long.valueOf(tokens.get(1));
-                    break;
-                case "delay": // ms
-                    delay = Long.valueOf(tokens.get(1));
                     break;
                 case "iterations": // thousands
                     iterations = Long.valueOf(tokens.get(1));
@@ -196,24 +233,35 @@ public class Animator implements Subscriber {
                     }
                     change.start = Double.valueOf(tokens.get(3));
                     change.end = Double.valueOf(tokens.get(4));
-                    list.add(change);
+                    changes.add(change);
+                    break;
+                case "config": // key value
+                    String key = tokens.get(1);
+                    String value = tokens.get(2);
+                    configuration.put(key,  value);
                     break;
                 case "segment": // frames?
-                    if (list.size() > 0) {
+                    if (changes.size() > 0) {
                         throw new IllegalStateException(String.format("Parse error: Segments cannot be nested at line %d", l));
                     }
                     if (args == 1) {
-                        segment = Long.valueOf(tokens.get(1));
+                        length = Long.valueOf(tokens.get(1));
                     } else {
-                        segment = frames;
+                        length = frames;
                     }
                     break;
                 case "end":
-                    if (list.isEmpty()) {
+                    if (changes.isEmpty()) {
                         throw new IllegalStateException(String.format("Parse error: Cannot end an empty segment at line %d", l));
                     }
-                    segments.put(ImmutableList.copyOf(list), segment);
-                    list.clear();
+                    Segment segment = new Segment();
+                    segment.changes = ImmutableList.copyOf(changes);
+                    segment.config = ImmutableMap.copyOf(configuration);
+                    segment.frames = length;
+                    segments.add(segment);
+
+                    changes.clear();
+                    configuration.clear();
                     break;
                 default:
                     throw new IllegalStateException(String.format("Parse error: Unknown directive '%s' at line %d", type, l));
@@ -221,8 +269,12 @@ public class Animator implements Subscriber {
         }
 
         // Deal with single segment case (no 'segment' or 'end' token)
-        if (segments.isEmpty() && list.size() > 0) {
-            segments.put(ImmutableList.copyOf(list), frames);
+        if (segments.isEmpty() && changes.size() > 0) {
+            Segment segment = new Segment();
+            segment.changes = ImmutableList.copyOf(changes);
+            segment.config = ImmutableMap.copyOf(configuration);
+            segment.frames = frames;
+            segments.add(segment);
         }
     }
 
@@ -235,11 +287,11 @@ public class Animator implements Subscriber {
             .put("ifs", 1)
             .put("save", 1)
             .put("frames", 1)
-            .put("delay", 1)
             .put("iterations", 1)
             .put("zoom", 3)
             .put("transform", 4)
             .put("segment", 1)
+            .put("config", 2)
             .build();
     private static final Function<String, Integer> NUMBER = Functions.forMap(NUMBER_ARGUMENTS, 0);
 
@@ -254,49 +306,37 @@ public class Animator implements Subscriber {
         }
     }
 
-    @Subscribe
-    @Override
-    public void updated(IFS ifs) {
-        ready.countDown();
-    }
-
-    @Subscribe
-    @Override
-    public void resized(Dimension size) {
-        this.size = size;
-    }
-
     /**
      * Generate the set of animation frames.
      */
     public void start() throws Exception {
-        ready.await();
+        // Update config
+        if (config.isIterationsUnlimited()) {
+            config.setIterationsUnimited(false);
+        }
+        config.setIterationsLimit(iterations);
 
         // Load the IFS
-        ifs = explorer.load(input);
+        ifs = IFS.load(input);
         ifs.setSize(size);
 
-        // Show and reset the viewer
-        SwingUtilities.invokeAndWait(new Runnable() {
-            @Override
-            public void run() {
-                explorer.show(Explorer.VIEWER);
-            }
-        });
-        final Viewer viewer = explorer.getViewer();
+        // Initialize iterator
+        Iterator iterator = new Iterator(this, config, size);
 
         // Run the animation segments
         long frame = 0;
-        for (Map.Entry<List<Change>, Long> segment : segments.entrySet()) {
-            long length = segment.getValue();
+        for (Segment segment : segments) {
+            long length = segment.frames;
+
+            // Config for this segment
+            config.putAll(segment.config);
 
             // Frame sequence for a segment
             for (int i = 0; i < length; i++) {
-                viewer.stop();
                 double fraction = (double) i / (double) length;
 
                 // Set of changes for a single frame
-                for (Change change : segment.getKey()) {
+                for (Change change : segment.changes) {
                     Transform transform = ifs.getTransforms().get(change.transform);
                     if (transform.isMatrix()) {
                         throw new UnsupportedOperationException("Cannot animate matrix transforms currently");
@@ -313,31 +353,39 @@ public class Animator implements Subscriber {
                     }
                 }
 
-                // Update the viewer
-                bus.post(ifs);
-
                 // Rescale
                 if (centre != null) {
                     config.setDisplayScale(scale);
                     config.setDisplayCentreX(centre.getX() / size.getWidth());
                     config.setDisplayCentreY(centre.getY() / size.getHeight());
-                    viewer.rescale();
+                    iterator.rescale();
                 }
 
-                // render for required time/iterations before saving frame
-                viewer.start();
-                if (iterations > 0) {
-                    while (viewer.getCount() < iterations) {
-                        sleep(10l, TimeUnit.MILLISECONDS);
-                    }
-                } else {
-                    sleep(delay, TimeUnit.MILLISECONDS);
+                // Render for required iterations
+                iterator.reset(size);
+                iterator.setTransforms(ifs);
+                iterator.start();
+                while (iterator.getCount() <= iterations) {
+                    Utils.sleep(100, TimeUnit.MILLISECONDS);
+                    String countText = String.format("%,dK", iterator.getCount()).replaceAll("[^0-9K+]", " ");
+                    System.out.printf("\r%s%s", Utils.PAUSE, countText);
                 }
-                saveImage(viewer.getImage(), new File(output, String.format("%04d.png", frame++)));
+                iterator.stop();
+
+                // Save the image
+                String image = String.format("%04d.png", frame++);
+                saveImage(iterator.getImage(), new File(output, image));
+                System.out.printf("\r%sSaved %s\n", Utils.STACK, image);
             }
         }
 
         System.exit(0);
+    }
+
+    @Override
+    public void accept(Throwable t, String message) {
+        System.err.printf("%s%s: %s\n", Utils.ERROR, message, t);
+        System.exit(1);
     }
 
     /**
@@ -348,11 +396,7 @@ public class Animator implements Subscriber {
         System.out.printf(banner, version.get());
         System.out.println();
 
-        if (argv.length != 1) {
-            throw new IllegalArgumentException("Must provide animation configuration file as only argument");
-        }
-
-        Animator animator = new Animator(argv[0]);
+        Animator animator = new Animator(argv);
         animator.start();
     }
 

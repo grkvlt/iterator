@@ -14,7 +14,7 @@ REM
 SET BIN=%~p0%
 SET LIB=%BIN:bin=lib%
 IF NOT DEFINED JAVA_MEM SET JAVA_MEM="-Xms1g -Xmx4g"
-SET JAVA_OPTS="%JAVA_OPTS% %JAVA_MEM% -splash:%LIB%\splash.png"
+SET JAVA_OPTS="%JAVA_OPTS% %JAVA_MEM%"
 
 REM
 REM Exexcute Java

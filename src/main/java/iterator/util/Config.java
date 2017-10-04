@@ -84,6 +84,13 @@ import iterator.model.functions.CoordinateTransform;
  */
 public class Config extends ForwardingSortedMap<String, String> {
 
+    public static final String FULLSCREEN_OPTION = "-f";
+    public static final String FULLSCREEN_OPTION_LONG = "--fullscreen";
+    public static final String PALETTE_OPTION = "-p";
+    public static final String PALETTE_OPTION_LONG = "--palette";
+    public static final String CONFIG_OPTION = "-c";
+    public static final String CONFIG_OPTION_LONG = "--config";
+
     public static final String PROPERTIES_FILE = "explorer.properties";
 
     public static final String EXPLORER_PROPERTY = "explorer";

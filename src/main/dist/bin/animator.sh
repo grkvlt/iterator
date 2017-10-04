@@ -15,9 +15,7 @@
 BIN=$(dirname $0)
 PARENT=$(echo "${BIN}/.." | sed -e "s/\/bin\/..//")
 LIB="${PARENT}/lib"
-JAVA_OPTS="${JAVA_OPTS} ${JAVA_MEM:--Xms1g -Xmx4g} -splash:${LIB}/splash.png \
-        -Dawt.useSystemAAFontSettings=on \
-        -Dswing.aatext=true"
+JAVA_OPTS="${JAVA_OPTS} ${JAVA_MEM:--Xms1g -Xmx4g}"
 
 ##
 # Exexcute Java

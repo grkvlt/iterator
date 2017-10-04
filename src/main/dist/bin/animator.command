@@ -15,12 +15,8 @@
 BIN=$(dirname $0)
 PARENT=$(echo "${BIN}/.." | sed -e "s/\/bin\/..//")
 LIB="${PARENT}/lib"
-JAVA_OPTS="${JAVA_OPTS} ${JAVA_MEM:--Xms1g -Xmx4g} -splash:${LIB}/splash.png \
-        -Dapple.laf.useScreenMenuBar=true \
-        -Dapple.awt.antialiasing=on \
-        -Dapple.awt.textantialiasing=on \
+JAVA_OPTS="${JAVA_OPTS} ${JAVA_MEM:--Xms1g -Xmx4g} \
         -Dapple.awt.graphics.UseQuartz=true \
-        -Dcom.apple.mrj.application.apple.menu.about.name=IFSAnimator \
         -Xdock:name=IFSAnimator"
 
 ##
