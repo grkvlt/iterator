@@ -66,7 +66,14 @@ public class Utils {
 
     public static final String NEWLINE = StandardSystemProperty.LINE_SEPARATOR.value();
 
+    public static final String DEBUG = "[?] ";
+    public static final String PRINT = "[-] ";
+    public static final String ERROR = "[!] ";
+    public static final String STACK = "[>] ";
+    public static final String PAUSE = "[.] ";
+
     public static final int RGB24 = 0xffffff;
+
     public static final Range<Double> UNITY = Range.open(0d, 1d);
 
     public static DoubleFunction<Double> unity() {

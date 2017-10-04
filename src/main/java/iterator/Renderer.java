@@ -153,18 +153,18 @@ public class Renderer implements BiConsumer<Throwable, String> {
                 config.getCoordinateTransformType().getShortName(),
                 one.toString(config.getGamma()));
 
-        System.out.printf("[-] %s\n", infoText);
+        System.out.printf("%s%s\n", Utils.PRINT, infoText);
         String limitText = String.format("%,dK", limit).replaceAll("[^0-9K+]", " ");
-        System.out.printf("[-] %s\n", limitText);
+        System.out.printf("%s%s\n", Utils.PRINT, limitText);
         while (iterator.getCount() <= limit) {
             Utils.sleep(1, TimeUnit.SECONDS);
             String countText = String.format("%,dK", iterator.getCount()).replaceAll("[^0-9K+]", " ");
-            System.out.printf("\r[.] %s", countText);
+            System.out.printf("\r%s%s", Utils.PAUSE, countText);
         }
         System.out.println();
         iterator.stop();
 
-        System.out.printf("[>] Saving %s\n", picture.getName());
+        System.out.printf("%sSaving %s\n", Utils.STACK, picture.getName());
         Utils.saveImage(iterator.getImage(), picture);
 
         System.exit(0);

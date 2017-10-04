@@ -15,7 +15,10 @@
  */
 package iterator;
 
+import static iterator.Utils.DEBUG;
 import static iterator.Utils.NEWLINE;
+import static iterator.Utils.PRINT;
+import static iterator.Utils.STACK;
 import static iterator.Utils.checkBoxItem;
 import static iterator.Utils.context;
 import static iterator.Utils.loadImage;
@@ -183,11 +186,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public static final String DETAILS = "details";
 
     public static final Version version = Version.instance();
-
-    public static final String DEBUG = "[?] ";
-    public static final String PRINT = "[-] ";
-    public static final String ERROR = "[!] ";
-    public static final String STACK = "[>] ";
 
     private Config config;
     private Path override;

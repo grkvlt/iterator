@@ -17,6 +17,7 @@ package iterator.view;
 
 import static iterator.Utils.NEWLINE;
 import static iterator.Utils.RGB24;
+import static iterator.Utils.STACK;
 import static iterator.Utils.alpha;
 import static iterator.Utils.context;
 import static iterator.Utils.getPixel;
@@ -59,7 +60,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 
-import iterator.Explorer;
 import iterator.model.Function;
 import iterator.model.Transform;
 import iterator.util.Config;
@@ -426,7 +426,7 @@ public class Iterator implements Runnable, ThreadFactory {
             }
         }
         String output = dump.stream()
-                .map(Explorer.STACK::concat)
+                .map(STACK::concat)
                 .collect(Collectors.joining(NEWLINE));
         return output;
     }
