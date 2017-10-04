@@ -1,27 +1,23 @@
-# Version 1.4.1
+# Version 1.5.0
 
-The main feature added in this release is co-ordinate transformations,
-which modify the IFS display by applying a function to the result of each
-iteration.
-
-This release also updates the threading and concurrency code, which has
-increased the performance of the IFS rendering engine. Configuration
-preferences can now be saved, and extra properties including a gamma
-correction factor and an iteration limit have been added.
-
-The code has been refactored extensively to use more Java 8 idioms, and
-various display and other issues have been fixed.
-
-## Issues resolved
-
-- Display correct cursors for transform corners
-- Format doubles with no trailing zeros
-- Better name capitalisation
-- Fix grid line drawing when scaled
-- Transform matrix field now uses copy of array
-- Update name without reset of view
+This release moves all the configuration properties from the main
+application class, extracts the iteration algorithm from the viewer, and
+refactors the code to use them. This enables headless rendering of an IFS
+to be performed with a new IFS Renderer application, and for the IFS
+Animator application to run more efficiently. The IFS Animator now
+supports modifying relections, and changing the configuration values
+for each rendered segment. The console output routines have also been
+refactored to give a consistent look and feel to the text output.
 
 ## New Features
+
+- New headless Renderer application
+- Support for reflections in Animator
+- Support configuration changes in Animator
+- Consistent console text output
+- Gradient colour mode
+
+### Features added in 1.4.x
 
 - Final co-ordinate transforms
 - Gamma correction
@@ -37,14 +33,8 @@ various display and other issues have been fixed.
 - Bug fixes in display and editing
 - Updated documentation
 
-### Features added in 1.2.0
-
-- Reflections added as function type
-- Density estimation rendering modes
-- Context menu for viewer pane
-- Zoom editing dialog
-
 See <http://grkvlt.github.io/iterator/> for further documentation.
-----
+
+---
 Copyright 2012-2017 by [Andrew Donald Kennedy](mailto:andrew.international+iterator@gmail.com) and
 Licensed under the [Apache Software License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
