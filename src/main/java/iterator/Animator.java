@@ -20,15 +20,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static iterator.Utils.NEWLINE;
 import static iterator.Utils.saveImage;
-import static iterator.util.Config.CONFIG_OPTION;
+import static iterator.util.Config.*;
 import static iterator.util.Config.CONFIG_OPTION_LONG;
+import static iterator.util.Config.DEFAULT_DISPLAY_CENTRE_X;
+import static iterator.util.Config.DEFAULT_DISPLAY_CENTRE_Y;
+import static iterator.util.Config.DEFAULT_DISPLAY_SCALE;
+import static iterator.util.Config.DEFAULT_ITERATIONS;
 import static iterator.util.Config.MIN_WINDOW_SIZE;
+import static iterator.util.Config.OUTPUT_OPTION;
+import static iterator.util.Config.OUTPUT_OPTION_LONG;
 import static iterator.util.Config.PALETTE_OPTION;
 import static iterator.util.Config.PALETTE_OPTION_LONG;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -80,6 +85,42 @@ public class Animator implements BiConsumer<Throwable, String> {
     public static final Version version = Version.instance();
 
     /**
+     * Tokens for the {@code .animation} file.
+     */
+
+    public static final String SEGMENT = "segment";
+    public static final String SOURCE = "source";
+    public static final String FRAMES = "frames";
+    public static final String TRANSFORM = "transform";
+    public static final String CONFIG = "config";
+    public static final String END = "end";
+
+    public static final String X = "x";
+    public static final String Y = "y";
+    public static final String W = "w";
+    public static final String H = "h";
+    public static final String R = "r";
+    public static final String SHX = "shx";
+    public static final String SHY = "shy";
+
+    public static final Map<String, Boolean> OPTIONAL_ARGUMENTS = ImmutableMap.<String, Boolean>builder()
+            .put(SEGMENT, true)
+            .build();
+
+    public static final Map<String, Integer> NUMBER_ARGUMENTS = ImmutableMap.<String, Integer>builder()
+            .put(SOURCE, 1)
+            .put(FRAMES, 1)
+            .put(TRANSFORM, 4)
+            .put(SEGMENT, 1)
+            .put(CONFIG, 2)
+            .build();
+
+    public static final Function<String, Boolean> OPTIONAL = Functions.forMap(OPTIONAL_ARGUMENTS, false);
+    public static final Function<String, Integer> NUMBER = Functions.forMap(NUMBER_ARGUMENTS, 0);
+
+    public static final List<String> FIELDS = Arrays.asList(X, Y, W, H, R, SHX, SHY);
+
+    /**
      * Data objects holding the changes made to a {@link Transform} during a segment.
      */
 
@@ -101,12 +142,8 @@ public class Animator implements BiConsumer<Throwable, String> {
     private Config config;
     private Dimension size;
     private String paletteFile;
-    private Path override;
-    private long iterations = -1l;
+    private Path override, input, output;
     private long frames = DEFAULT_FRAMES;
-    private float scale = 1f;
-    private Point2D centre = null;
-    private File input, output;
     private List<Segment> segments = Lists.newArrayList();
 
     public Animator(String...argv) throws Exception {
@@ -114,9 +151,9 @@ public class Animator implements BiConsumer<Throwable, String> {
         if (argv.length < 1) {
             throw new IllegalArgumentException("Must have at least one argument");
         }
-        for (int i = 0; i < argv.length - 2; i++) {
+        for (int i = 0; i < argv.length - 1; i++) {
+            // Argument is a program option
             if (argv[i].charAt(0) == '-') {
-                // Argument is a program option
                 if (argv[i].equalsIgnoreCase(PALETTE_OPTION) ||
                         argv[i].equalsIgnoreCase(PALETTE_OPTION_LONG)) {
                     if (argv.length >= i + 1) {
@@ -130,10 +167,26 @@ public class Animator implements BiConsumer<Throwable, String> {
                             throw new IllegalArgumentException(String.format("Configuration file does not exist: %s", override));
                         }
                     } else throw new IllegalArgumentException("Configuration file argument not provided");
+                } else if (argv[i].equalsIgnoreCase(OUTPUT_OPTION) ||
+                        argv[i].equalsIgnoreCase(OUTPUT_OPTION_LONG)) {
+                    if (argv.length >= i + 1) {
+                        output = Paths.get(argv[++i]);
+                        if (Files.notExists(override)) {
+                            throw new IllegalArgumentException(String.format("Configuration file does not exist: %s", override));
+                        }
+                    } else throw new IllegalArgumentException("Configuration file argument not provided");
                 } else {
                     throw new IllegalArgumentException(String.format("Cannot parse option: %s", argv[i]));
                 }
             }
+        }
+
+        // Verify output location
+        checkNotNull(output, "Output location must be set");
+        if (Files.exists(output)) {
+            checkState(Files.isDirectory(output), "Output location '%s' not a direcotry", output);
+        } else {
+            Files.createDirectories(output);
         }
 
         // Load configuration
@@ -156,14 +209,8 @@ public class Animator implements BiConsumer<Throwable, String> {
         parse(animation);
 
         // Check input and output settings
-        checkNotNull(input, "Input file must be set");
-        checkState(input.exists(), "Input file '%s' not found", input);
-        checkNotNull(output, "Output location must be set");
-        if (output.exists()) {
-            checkState(output.isDirectory(), "Output location '%s' not a direcotry", output);
-        } else {
-            output.mkdirs();
-        }
+        checkNotNull(input, "IFS input file must be set");
+        checkState(Files.exists(input), "IFS input file '%s' not found", input);
     }
 
     /**
@@ -172,13 +219,10 @@ public class Animator implements BiConsumer<Throwable, String> {
      * See the online documentation for more details. The format is generally as shown below:
      * <pre>
      * {@code # comment
-     * ifs file
-     * save directory
+     * source file
      * frames count
-     * delay ms
-     * iterations thousands
-     * zoom scale centrex centrey
      * segment frames
+     *     config key value
      *     transform id field start finish
      * end}
      * </pre>
@@ -204,25 +248,13 @@ public class Animator implements BiConsumer<Throwable, String> {
             }
             checkArgs(type, args, l);
             switch (type) {
-                case "ifs": // file
-                    input = new File(tokens.get(1).replace("~", StandardSystemProperty.USER_HOME.value()));
+                case SOURCE: // file
+                    input = Paths.get(tokens.get(1).replace("~", StandardSystemProperty.USER_HOME.value()));
                     break;
-                case "save": // directory
-                    output = new File(tokens.get(1).replace("~", StandardSystemProperty.USER_HOME.value()));
-                    break;
-                case "frames": // count
+                case FRAMES: // count
                     frames = Long.valueOf(tokens.get(1));
                     break;
-                case "iterations": // thousands
-                    iterations = Long.valueOf(tokens.get(1));
-                    break;
-                case "zoom": // scale centrex centrey
-                    scale = Float.valueOf(tokens.get(1));
-                    centre = new Point2D.Double(
-                            Double.valueOf(tokens.get(2)),
-                            Double.valueOf(tokens.get(3)));
-                    break;
-                case "transform": // id field start finish
+                case TRANSFORM: // id field start finish
                     Change change = new Change();
                     change.transform = Integer.valueOf(tokens.get(1));
                     String f = tokens.get(2).toLowerCase(Locale.UK);
@@ -235,12 +267,15 @@ public class Animator implements BiConsumer<Throwable, String> {
                     change.end = Double.valueOf(tokens.get(4));
                     changes.add(change);
                     break;
-                case "config": // key value
+                case CONFIG: // key value
                     String key = tokens.get(1);
+                    if (!key.startsWith(EXPLORER_PROPERTY)) {
+                        key = EXPLORER_PROPERTY + "." + key;
+                    }
                     String value = tokens.get(2);
                     configuration.put(key,  value);
                     break;
-                case "segment": // frames?
+                case SEGMENT: // frames?
                     if (changes.size() > 0) {
                         throw new IllegalStateException(String.format("Parse error: Segments cannot be nested at line %d", l));
                     }
@@ -250,7 +285,7 @@ public class Animator implements BiConsumer<Throwable, String> {
                         length = frames;
                     }
                     break;
-                case "end":
+                case END:
                     if (changes.isEmpty()) {
                         throw new IllegalStateException(String.format("Parse error: Cannot end an empty segment at line %d", l));
                     }
@@ -278,25 +313,6 @@ public class Animator implements BiConsumer<Throwable, String> {
         }
     }
 
-    private static final Map<String, Boolean> OPTIONAL_ARGUMENTS = ImmutableMap.<String, Boolean>builder()
-            .put("segment", true)
-            .build();
-    private static final Function<String, Boolean> OPTIONAL = Functions.forMap(OPTIONAL_ARGUMENTS, false);
-
-    private static final Map<String, Integer> NUMBER_ARGUMENTS = ImmutableMap.<String, Integer>builder()
-            .put("ifs", 1)
-            .put("save", 1)
-            .put("frames", 1)
-            .put("iterations", 1)
-            .put("zoom", 3)
-            .put("transform", 4)
-            .put("segment", 1)
-            .put("config", 2)
-            .build();
-    private static final Function<String, Integer> NUMBER = Functions.forMap(NUMBER_ARGUMENTS, 0);
-
-    private static final List<String> FIELDS = Arrays.asList("x", "y", "w", "h", "r", "shx", "shy");
-
     private void checkArgs(String type, int args, int l) {
         int n = NUMBER.apply(type);
         boolean optional = OPTIONAL.apply(type);
@@ -314,10 +330,9 @@ public class Animator implements BiConsumer<Throwable, String> {
         if (config.isIterationsUnlimited()) {
             config.setIterationsUnimited(false);
         }
-        config.setIterationsLimit(iterations);
 
         // Load the IFS
-        ifs = IFS.load(input);
+        ifs = IFS.load(input.toFile());
         ifs.setSize(size);
 
         // Initialize iterator
@@ -343,29 +358,22 @@ public class Animator implements BiConsumer<Throwable, String> {
                     }
                     double delta = (change.end - change.start) * fraction;
                     switch (change.field) {
-                        case "x": transform.x = (int) (change.start + delta); break;
-                        case "y": transform.y = (int) (change.start + delta); break;
-                        case "w": transform.w = change.start + delta; break;
-                        case "h": transform.h = change.start + delta; break;
-                        case "r": transform.r = Math.toRadians(change.start + delta); break;
-                        case "shx": transform.shx = change.start + delta; break;
-                        case "shy": transform.shy = change.start + delta; break;
+                        case X: transform.x = (int) (change.start + delta); break;
+                        case Y: transform.y = (int) (change.start + delta); break;
+                        case W: transform.w = change.start + delta; break;
+                        case H: transform.h = change.start + delta; break;
+                        case R: transform.r = Math.toRadians(change.start + delta); break;
+                        case SHX: transform.shx = change.start + delta; break;
+                        case SHY: transform.shy = change.start + delta; break;
                     }
                 }
 
-                // Rescale
-                if (centre != null) {
-                    config.setDisplayScale(scale);
-                    config.setDisplayCentreX(centre.getX() / size.getWidth());
-                    config.setDisplayCentreY(centre.getY() / size.getHeight());
-                    iterator.rescale();
-                }
-
                 // Render for required iterations
+                iterator.rescale();
                 iterator.reset(size);
                 iterator.setTransforms(ifs);
                 iterator.start();
-                while (iterator.getCount() <= iterations) {
+                while (iterator.getCount() <= config.getIterationsLimit()) {
                     Utils.sleep(100, TimeUnit.MILLISECONDS);
                     String countText = String.format("%,dK", iterator.getCount()).replaceAll("[^0-9K+]", " ");
                     System.out.printf("\r%s%s", Utils.PAUSE, countText);
@@ -374,7 +382,7 @@ public class Animator implements BiConsumer<Throwable, String> {
 
                 // Save the image
                 String image = String.format("%04d.png", frame++);
-                saveImage(iterator.getImage(), new File(output, image));
+                saveImage(iterator.getImage(), output.resolve(image).toFile());
                 System.out.printf("\r%sSaved %s\n", Utils.STACK, image);
             }
         }

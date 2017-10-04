@@ -90,6 +90,8 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String PALETTE_OPTION_LONG = "--palette";
     public static final String CONFIG_OPTION = "-c";
     public static final String CONFIG_OPTION_LONG = "--config";
+    public static final String OUTPUT_OPTION = "-o";
+    public static final String OUTPUT_OPTION_LONG = "--output";
 
     public static final String PROPERTIES_FILE = "explorer.properties";
 
