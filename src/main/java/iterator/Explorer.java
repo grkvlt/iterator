@@ -285,8 +285,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         config.loadColours();
 
         // Get window size configuration
-        int w = Math.max(MIN_WINDOW_SIZE, config.getWidndowWidth());
-        int h = Math.max(MIN_WINDOW_SIZE, config.getWidndowHeight());
+        int w = Math.max(MIN_WINDOW_SIZE, config.getWindowWidth());
+        int h = Math.max(MIN_WINDOW_SIZE, config.getWindowHeight());
         size = new Dimension(w, h);
 
         // Load icon resources

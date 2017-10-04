@@ -464,11 +464,11 @@ public class Config extends ForwardingSortedMap<String, String> {
 
     public long getIterations() { return get(ITERATIONS_PROPERTY, DEFAULT_ITERATIONS); }
 
-    public int getWidndowWidth() { return get(WINDOW_WIDTH_PROPERTY, DEFAULT_WINDOW_SIZE); }
+    public int getWindowWidth() { return get(WINDOW_WIDTH_PROPERTY, DEFAULT_WINDOW_SIZE); }
 
-    public int getWidndowHeight() { return get(WINDOW_HEIGHT_PROPERTY, DEFAULT_WINDOW_SIZE); }
+    public int getWindowHeight() { return get(WINDOW_HEIGHT_PROPERTY, DEFAULT_WINDOW_SIZE); }
 
-    public Dimension getWidndowSize() { return new Dimension(getWidndowWidth(), getWidndowHeight()); }
+    public Dimension getWidndowSize() { return new Dimension(getWindowWidth(), getWindowHeight()); }
 
     public void setDisplayScale(float value) { set(DISPLAY_SCALE_PROPERTY, value); }
 

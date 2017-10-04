@@ -362,9 +362,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         FloatFormatter one = Formatter.floats(1);
         DoubleFormatter four = Formatter.doubles(4);
         infoText = String.format("%sx (%s,%s) %s/%s %s %s() y%s [%s/%d]",
-                one.toString(scale),
-                four.toString(centre.getX() / size.getWidth()),
-                four.toString(centre.getY() / size.getHeight()),
+                one.toString(config.getDisplayScale()),
+                four.toString(config.getDisplayCentreX()),
+                four.toString(config.getDisplayCentreY()),
                 config.getMode(), config.getRender(),
                 config.getMode().isPalette() ? config.getPaletteFile() : (config.getMode().isColour() ? "hsb" : "black"),
                 config.getCoordinateTransformType().getShortName(),

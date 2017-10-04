@@ -407,7 +407,7 @@ public class Iterator implements Runnable, ThreadFactory {
     public ThreadGroup getThreadGroup() {
         return group;
     }
-    
+
     public String getThreadDump() {
         List<String> dump = Lists.newArrayList();
         synchronized (tasks) {
