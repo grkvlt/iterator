@@ -360,13 +360,13 @@ public class Animator implements BiConsumer<Throwable, String> {
                 }
 
                 // Render for required iterations
-                iterator.rescale();
+                long limit = config.getIterationsLimit() / 1000l;
                 iterator.reset(size);
                 iterator.setTransforms(ifs);
                 iterator.start();
-                while (iterator.getCount() <= config.getIterationsLimit()) {
+                while (iterator.getCount() <= limit) {
                     Utils.sleep(100, TimeUnit.MILLISECONDS);
-                    String countText = String.format("%,dK", Math.min(iterator.getCount(), config.getIterationsLimit())).replaceAll("[^0-9K+]", " ");
+                    String countText = String.format("%,dK", Math.min(iterator.getCount(), limit)).replaceAll("[^0-9K+]", " ");
                     System.out.printf("\r%s%s", Utils.PAUSE, countText);
                 }
                 iterator.stop();

@@ -376,7 +376,7 @@ public class Iterator implements Runnable, ThreadFactory {
      */
     @Override
     public void run() {
-        if (config.isIterationsUnlimited() || (count.get() * 1000l) < config.getIterationsLimit()) {
+        if (config.isIterationsUnlimited() || (count.get() * 1000l) <= config.getIterationsLimit()) {
             iterate(image.get(), 1, config.getIterations(), scale, centre,
                     config.getRender(), config.getMode(), transforms, config.getCoordinateTransform());
         } else {

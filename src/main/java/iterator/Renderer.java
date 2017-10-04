@@ -103,7 +103,11 @@ public class Renderer implements BiConsumer<Throwable, String> {
         }
 
         // Picture file name
-        picture = Paths.get(argv[argv.length - 1]);
+        String pictureFile = argv[argv.length - 1];
+        if (!pictureFile.endsWith(".png")) {
+            pictureFile += ".png";
+        }
+        picture = Paths.get(pictureFile);
 
         // Load configuration
         config = Config.loadProperties(override);
@@ -127,23 +131,28 @@ public class Renderer implements BiConsumer<Throwable, String> {
         }
         long limit = config.getIterationsLimit() / 1000l;
 
+        // Create iterator
+        iterator = new Iterator(this, config, size);
+        iterator.reset(size);
+        iterator.setTransforms(ifs);
+
+        // Print details
         String infoText = iterator.getInfo();
         System.out.printf("%s%s\n", Utils.PRINT, infoText);
         String limitText = String.format("%,dK", limit).replaceAll("[^0-9K+]", " ");
         System.out.printf("%s%s\n", Utils.PRINT, limitText);
 
-        iterator = new Iterator(this, config, size);
-        iterator.reset(size);
-        iterator.setTransforms(ifs);
+        // Render IFS
         iterator.start();
         while (iterator.getCount() <= limit) {
             Utils.sleep(100, TimeUnit.MILLISECONDS);
-            String countText = String.format("%,dK", Math.min(iterator.getCount(), config.getIterationsLimit())).replaceAll("[^0-9K+]", " ");
+            String countText = String.format("%,dK", Math.min(iterator.getCount(), limit)).replaceAll("[^0-9K+]", " ");
             System.out.printf("\r%s%s", Utils.PAUSE, countText);
         }
         System.out.println();
         iterator.stop();
 
+        // Save PNG image
         System.out.printf("%sSaving %s\n", Utils.STACK, picture.getFileName());
         Utils.saveImage(iterator.getImage(), picture.toFile());
 
