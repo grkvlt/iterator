@@ -458,8 +458,8 @@
           example provided in <code>data/leaf.animation</code>, which is rendered
           as follows.
         </p>
-        <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/animator.sh --config animator.properties \
---output leaf ./data/leaf.animation
+        <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ./bin/animator.sh --config ./data/leaf.properties \
+--output ./leaf ./data/leaf.animation
 <b>   ___ _____ ____       _          _                 _
   |_ _|  ___/ ___|     / \   _ __ (_)_ __ ___   __ _| |_ ___  _ __
    | || |_  \___ \    / _ \ | '_ \| | '_ ` _ \ / _` | __/ _ \| '__|
@@ -480,12 +480,13 @@
           Using a utility such as <em>ffmpeg</em>, the generated images
           can then be combined into an <em><code>.avi</code></em> MPEG video file.
         </p>
+        <pre style="margin-left: 25px; width: 455px;"><code><b>$</b> ffmpeg -f image2 -framerate 12 -i leaf/%04d.png \
+-s 1000x1000 leaf.avi</code></pre>
+        <blockquote>
+          <strong>TODO</strong> <em>Further documentation on the <code>.animation</code> file format.</em>
+        </blockquote>
         <iframe id="youtube" style="margin-left: 25px; border: 1px solid black; margin-bottom: 10px;" width="480" height="270" allowfullscreen
             src="http://www.youtube.com/embed/FJY53HxTe0o?modestbranding=0&theme=dark&autohide=1&fs=1"></iframe>
-        <blockquote>
-          <strong>TODO</strong> <em>Further documentation on the <code>.animation</code>
-          file format and generating video files is required.</em>
-        </blockquote>
         <a name="renderer">
         <h3>Renderer</h3>
         </a>
