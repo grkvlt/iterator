@@ -69,7 +69,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.math.DoubleMath;
 
@@ -80,9 +79,6 @@ import iterator.model.Reflection;
 import iterator.model.Transform;
 import iterator.util.Config;
 import iterator.util.Dialog;
-import iterator.util.Formatter;
-import iterator.util.Formatter.DoubleFormatter;
-import iterator.util.Formatter.FloatFormatter;
 import iterator.util.Messages;
 import iterator.util.Subscriber;
 
@@ -92,15 +88,13 @@ import iterator.util.Subscriber;
 public class Viewer extends JPanel implements ActionListener, KeyListener, MouseInputListener, Printable, Subscriber {
 
     private final Explorer controller;
-    private final EventBus bus;
     private final Messages messages;
     private final Config config;
     private final Iterator iterator;
 
     private IFS ifs;
-    private String infoText;
     private Timer timer;
-    private float scale = 1.0f;
+    private float scale;
     private Point2D centre;
     private Dimension size;
     private Rectangle zoom;
@@ -114,13 +108,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         super();
 
         this.controller = controller;
-        this.bus = controller.getEventBus();
         this.messages = controller.getMessages();
         this.config = controller.getConfig();
         this.iterator = controller.getIterator();
 
         timer = new Timer(50, this);
         timer.setCoalesce(true);
+        timer.start();
 
         size = getSize();
 
@@ -157,7 +151,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         addMouseListener(this);
         addMouseMotionListener(this);
 
-        bus.register(this);
+        controller.getEventBus().register(this);
     }
 
     public long getCount() { return iterator.getCount(); }
@@ -219,12 +213,13 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
             if (info) {
                 String countText = String.format("%,dK", getCount()).replaceAll("[^0-9K+]", " ");
+                String infoText = getInfoText();
 
                 g.setPaint(config.getRender().getForeground());
                 FontRenderContext frc = g.getFontRenderContext();
-                TextLayout scaleLayout = new TextLayout(updateInfoText(), calibri(Font.BOLD, 16), frc);
-                scaleLayout.draw(g, 10f, size.height - 10f);
-                TextLayout countLayout = new TextLayout(countText, calibri(Font.BOLD | (isRunning() ? Font.PLAIN : Font.ITALIC), 16), frc);
+                TextLayout infoLayout = new TextLayout(infoText, calibri(Font.BOLD, 16), frc);
+                infoLayout.draw(g, 10f, size.height - 10f);
+                TextLayout countLayout = new TextLayout(countText, calibri(Font.BOLD, 16), frc);
                 countLayout.draw(g, size.width - 10f - (float) countLayout.getBounds().getWidth(), size.height - 10f);
             }
 
@@ -354,23 +349,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         if (size.getWidth() <= 0 && size.getHeight() <= 0) return;
 
         iterator.reset(size);
-
-        updateInfoText();
     }
 
-    public String updateInfoText() {
-        FloatFormatter one = Formatter.floats(1);
-        DoubleFormatter four = Formatter.doubles(4);
-        infoText = String.format("%sx (%s,%s) %s/%s %s %s() y%s [%s/%d]",
-                one.toString(config.getDisplayScale()),
-                four.toString(config.getDisplayCentreX()),
-                four.toString(config.getDisplayCentreY()),
-                config.getMode(), config.getRender(),
-                config.getMode().isPalette() ? config.getPaletteFile() : (config.getMode().isColour() ? "hsb" : "black"),
-                config.getCoordinateTransformType().getShortName(),
-                one.toString(config.getGamma()),
-                iterator.getTaskSet().isEmpty() ? "-" : Integer.toString(iterator.getTaskSet().size()), config.getThreads());
-        return infoText;
+    public String getInfoText() {
+        String text = String.format("%s [%s/%d]",
+                iterator.getInfo(), iterator.getTaskSet().isEmpty() ? "-" : Integer.toString(iterator.getTaskSet().size()), config.getThreads());
+        return text;
     }
 
     public BufferedImage getImage() {
@@ -412,7 +396,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public void start() {
         iterator.setTransforms(ifs);
         iterator.start();
-        timer.start();
         pause.setEnabled(true);
         resume.setEnabled(false);
     }
@@ -420,7 +403,6 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     public boolean stop() {
         pause.setEnabled(false);
         resume.setEnabled(true);
-        timer.stop();
         return iterator.stop();
     }
 
@@ -436,7 +418,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 case KeyEvent.VK_C:
                     if (e.isControlDown() || e.isMetaDown()) {
                         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                        Transferable text = new StringSelection(updateInfoText());
+                        Transferable text = new StringSelection(iterator.getInfo());
                         clipboard.setContents(text, null);
                     }
                     break;

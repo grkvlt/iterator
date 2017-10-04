@@ -36,7 +36,7 @@ public class Version implements Supplier<String> {
 
     private Version() {
         URL resource = Resources.getResource(VERSION_RESOURCE_FILE);
-        this.version = readVersion(resource);
+        version = readVersion(resource);
     }
 
     public static final Version instance() {

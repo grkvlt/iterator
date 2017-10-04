@@ -63,8 +63,11 @@ import com.google.common.util.concurrent.MoreExecutors;
 import iterator.model.Function;
 import iterator.model.Transform;
 import iterator.util.Config;
+import iterator.util.Formatter;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
+import iterator.util.Formatter.DoubleFormatter;
+import iterator.util.Formatter.FloatFormatter;
 
 /**
  * Rendered IFS viewer.
@@ -156,6 +159,20 @@ public class Iterator implements Runnable, ThreadFactory {
         max = 1;
 
         count.set(0l);
+    }
+
+    public String getInfo() {
+        FloatFormatter one = Formatter.floats(1);
+        DoubleFormatter four = Formatter.doubles(4);
+        String text = String.format("%sx (%s,%s) %s/%s %s %s() y%s",
+                one.toString(config.getDisplayScale()),
+                four.toString(config.getDisplayCentreX()),
+                four.toString(config.getDisplayCentreY()),
+                config.getMode(), config.getRender(),
+                config.getMode().isPalette() ? config.getPaletteFile() : (config.getMode().isColour() ? "hsb" : "black"),
+                config.getCoordinateTransformType().getShortName(),
+                one.toString(config.getGamma()));
+        return text;
     }
 
     public void iterate(BufferedImage targetImage, int s, long k, float scale, Point2D centre, Render render, Mode mode, List<Function> functions, Function function) {

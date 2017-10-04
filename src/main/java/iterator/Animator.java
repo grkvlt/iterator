@@ -20,12 +20,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static iterator.Utils.NEWLINE;
 import static iterator.Utils.saveImage;
-import static iterator.util.Config.*;
+import static iterator.Utils.version;
+import static iterator.util.Config.CONFIG_OPTION;
 import static iterator.util.Config.CONFIG_OPTION_LONG;
-import static iterator.util.Config.DEFAULT_DISPLAY_CENTRE_X;
-import static iterator.util.Config.DEFAULT_DISPLAY_CENTRE_Y;
-import static iterator.util.Config.DEFAULT_DISPLAY_SCALE;
-import static iterator.util.Config.DEFAULT_ITERATIONS;
+import static iterator.util.Config.EXPLORER_PROPERTY;
 import static iterator.util.Config.MIN_WINDOW_SIZE;
 import static iterator.util.Config.OUTPUT_OPTION;
 import static iterator.util.Config.OUTPUT_OPTION_LONG;
@@ -33,7 +31,6 @@ import static iterator.util.Config.PALETTE_OPTION;
 import static iterator.util.Config.PALETTE_OPTION_LONG;
 
 import java.awt.Dimension;
-import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,16 +57,15 @@ import com.google.common.collect.Maps;
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Config;
-import iterator.util.Version;
 import iterator.view.Iterator;
 
 /**
- * IFS Animator.
+ * IFS Animator main class.
  */
 public class Animator implements BiConsumer<Throwable, String> {
 
     public static final List<String> BANNER = Arrays.asList(
-            "  ___ _____ ____       _          _                 _",
+            "   ___ _____ ____       _          _                 _",
             "  |_ _|  ___/ ___|     / \\   _ __ (_)_ __ ___   __ _| |_ ___  _ __",
             "   | || |_  \\___ \\    / _ \\ | '_ \\| | '_ ` _ \\ / _` | __/ _ \\| '__|",
             "   | ||  _|  ___) |  / ___ \\| | | | | | | | | | (_| | || (_) | |",
@@ -81,8 +77,6 @@ public class Animator implements BiConsumer<Throwable, String> {
             "    Licensed under the Apache Software License, Version 2.0",
             "    Documentation at https://grkvlt.github.io/iterator/",
             "");
-
-    public static final Version version = Version.instance();
 
     /**
      * Tokens for the {@code .animation} file.
@@ -171,10 +165,7 @@ public class Animator implements BiConsumer<Throwable, String> {
                         argv[i].equalsIgnoreCase(OUTPUT_OPTION_LONG)) {
                     if (argv.length >= i + 1) {
                         output = Paths.get(argv[++i]);
-                        if (Files.notExists(override)) {
-                            throw new IllegalArgumentException(String.format("Configuration file does not exist: %s", override));
-                        }
-                    } else throw new IllegalArgumentException("Configuration file argument not provided");
+                    } else throw new IllegalArgumentException("Output directory argument not provided");
                 } else {
                     throw new IllegalArgumentException(String.format("Cannot parse option: %s", argv[i]));
                 }
@@ -375,7 +366,7 @@ public class Animator implements BiConsumer<Throwable, String> {
                 iterator.start();
                 while (iterator.getCount() <= config.getIterationsLimit()) {
                     Utils.sleep(100, TimeUnit.MILLISECONDS);
-                    String countText = String.format("%,dK", iterator.getCount()).replaceAll("[^0-9K+]", " ");
+                    String countText = String.format("%,dK", Math.min(iterator.getCount(), config.getIterationsLimit())).replaceAll("[^0-9K+]", " ");
                     System.out.printf("\r%s%s", Utils.PAUSE, countText);
                 }
                 iterator.stop();
@@ -401,7 +392,7 @@ public class Animator implements BiConsumer<Throwable, String> {
      */
     public static void main(final String...argv) throws Exception {
         String banner = Joiner.on(NEWLINE).join(BANNER);
-        System.out.printf(banner, version.get());
+        System.out.printf(banner, version());
         System.out.println();
 
         Animator animator = new Animator(argv);

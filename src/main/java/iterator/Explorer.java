@@ -25,6 +25,7 @@ import static iterator.Utils.loadImage;
 import static iterator.Utils.menuItem;
 import static iterator.Utils.printError;
 import static iterator.Utils.saveImage;
+import static iterator.Utils.version;
 import static iterator.util.Config.CONFIG_OPTION;
 import static iterator.util.Config.CONFIG_OPTION_LONG;
 import static iterator.util.Config.FULLSCREEN_OPTION;
@@ -124,7 +125,6 @@ import iterator.util.Dialog;
 import iterator.util.Messages;
 import iterator.util.Platform;
 import iterator.util.Subscriber;
-import iterator.util.Version;
 import iterator.view.Details;
 import iterator.view.Editor;
 import iterator.view.Iterator;
@@ -132,8 +132,6 @@ import iterator.view.Viewer;
 
 /**
  * IFS Explorer main class.
- *
- * @author andrew.international@gmail.com
  */
 public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHandler, SubscriberExceptionHandler, BiConsumer<Throwable, String>, Subscriber {
 
@@ -183,8 +181,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public static final String EDITOR = "editor";
     public static final String VIEWER = "viewer";
     public static final String DETAILS = "details";
-
-    public static final Version version = Version.instance();
 
     private Config config;
     private Path override;
@@ -836,7 +832,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public static void main(final String...argv) throws Exception {
         // Print text banner
         String banner = Joiner.on(NEWLINE).join(BANNER);
-        System.out.printf(banner, version.get());
+        System.out.printf(banner, version());
         System.out.println();
 
         // Print splash screen text

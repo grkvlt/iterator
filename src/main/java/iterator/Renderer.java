@@ -16,10 +16,10 @@
 package iterator;
 
 import static iterator.Utils.NEWLINE;
+import static iterator.Utils.version;
 import static iterator.util.Config.MIN_WINDOW_SIZE;
 
 import java.awt.Dimension;
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,21 +33,15 @@ import com.google.common.base.Strings;
 
 import iterator.model.IFS;
 import iterator.util.Config;
-import iterator.util.Formatter;
-import iterator.util.Formatter.DoubleFormatter;
-import iterator.util.Formatter.FloatFormatter;
-import iterator.util.Version;
 import iterator.view.Iterator;
 
 /**
- * IFS Picture renderer main class.
- *
- * @author andrew.international@gmail.com
+ * IFS Renderer main class.
  */
 public class Renderer implements BiConsumer<Throwable, String> {
 
     public static final List<String> BANNER = Arrays.asList(
-            "  ___ _____ ____    ____                _",
+            "   ___ _____ ____    ____                _",
             "  |_ _|  ___/ ___|  |  _ \\ ___ _ __   __| | ___ _ __ ___ _ __",
             "   | || |_  \\___ \\  | |_) / _ \\ '_ \\ / _` |/ _ \\ '__/ _ \\ '__|",
             "   | ||  _|  ___) | |  _ <  __/ | | | (_| |  __/ | |  __/ |",
@@ -65,19 +59,15 @@ public class Renderer implements BiConsumer<Throwable, String> {
     public static final String CONFIG_OPTION = "-c";
     public static final String CONFIG_OPTION_LONG = "--config";
 
-    public static final Version version = Version.instance();
-
     private Config config;
     private Path override;
     private String paletteFile;
     private Iterator iterator;
     private IFS ifs;
     private Dimension size;
-    private File picture;
+    private Path picture;
 
     public Renderer(String...argv) {
-        super();
-
         // Parse arguments
         if (argv.length < 2) {
             throw new IllegalArgumentException("Must have at least two arguments");
@@ -95,7 +85,7 @@ public class Renderer implements BiConsumer<Throwable, String> {
                     if (argv.length >= i + 1) {
                         override = Paths.get(argv[++i]);
                         if (Files.notExists(override)) {
-                            throw new IllegalArgumentException(String.format("Configuration file does not exist: %s", override));
+                            throw new IllegalArgumentException(String.format("Configuration file does not exist: %s", override.getFileName()));
                         }
                     } else throw new IllegalArgumentException("Configuration file argument not provided");
                 } else {
@@ -105,15 +95,15 @@ public class Renderer implements BiConsumer<Throwable, String> {
         }
 
         // IFS file argument
-        File file = new File(argv[argv.length - 2]);
-        if (file.canRead()) {
-            ifs = IFS.load(file);
+        Path file = Paths.get(argv[argv.length - 2]);
+        if (Files.isReadable(file)) {
+            ifs = IFS.load(file.toFile());
         } else {
-            throw new IllegalArgumentException(String.format("Cannot load XML data file: %s", file.getName()));
+            throw new IllegalArgumentException(String.format("Cannot load XML data file: %s", file.getFileName()));
         }
 
         // Picture file name
-        picture = new File(argv[argv.length - 1]);
+        picture = Paths.get(argv[argv.length - 1]);
 
         // Load configuration
         config = Config.loadProperties(override);
@@ -137,17 +127,7 @@ public class Renderer implements BiConsumer<Throwable, String> {
         }
         long limit = config.getIterationsLimit() / 1000l;
 
-        FloatFormatter one = Formatter.floats(1);
-        DoubleFormatter four = Formatter.doubles(4);
-        String infoText = String.format("%sx (%s,%s) %s/%s %s %s() y%s",
-                one.toString(config.getDisplayScale()),
-                four.toString(config.getDisplayCentreX()),
-                four.toString(config.getDisplayCentreY()),
-                config.getMode(), config.getRender(),
-                config.getMode().isPalette() ? config.getPaletteFile() : (config.getMode().isColour() ? "hsb" : "black"),
-                config.getCoordinateTransformType().getShortName(),
-                one.toString(config.getGamma()));
-
+        String infoText = iterator.getInfo();
         System.out.printf("%s%s\n", Utils.PRINT, infoText);
         String limitText = String.format("%,dK", limit).replaceAll("[^0-9K+]", " ");
         System.out.printf("%s%s\n", Utils.PRINT, limitText);
@@ -158,14 +138,14 @@ public class Renderer implements BiConsumer<Throwable, String> {
         iterator.start();
         while (iterator.getCount() <= limit) {
             Utils.sleep(100, TimeUnit.MILLISECONDS);
-            String countText = String.format("%,dK", iterator.getCount()).replaceAll("[^0-9K+]", " ");
+            String countText = String.format("%,dK", Math.min(iterator.getCount(), config.getIterationsLimit())).replaceAll("[^0-9K+]", " ");
             System.out.printf("\r%s%s", Utils.PAUSE, countText);
         }
         System.out.println();
         iterator.stop();
 
-        System.out.printf("%sSaving %s\n", Utils.STACK, picture.getName());
-        Utils.saveImage(iterator.getImage(), picture);
+        System.out.printf("%sSaving %s\n", Utils.STACK, picture.getFileName());
+        Utils.saveImage(iterator.getImage(), picture.toFile());
 
         System.exit(0);
     }
@@ -177,15 +157,15 @@ public class Renderer implements BiConsumer<Throwable, String> {
     }
 
     /**
-     * Renderer application launch.
+     * Renderer.
      */
     public static void main(final String...argv) throws Exception {
         String banner = Joiner.on(NEWLINE).join(BANNER);
-        System.out.printf(banner, version.get());
+        System.out.printf(banner, version());
         System.out.println();
 
-        Renderer picture = new Renderer(argv);
-        picture.start();
+        Renderer renderer = new Renderer(argv);
+        renderer.start();
     }
 
 }

@@ -58,11 +58,16 @@ import com.google.common.collect.Range;
 
 import iterator.model.Transform;
 import iterator.util.Config;
+import iterator.util.Version;
 
 /**
  * Useful static methods.
  */
 public class Utils {
+
+    public static final String version() {
+        return Version.instance().get();
+    }
 
     public static final String NEWLINE = StandardSystemProperty.LINE_SEPARATOR.value();
 
