@@ -230,13 +230,9 @@ public class Utils {
         return new JCheckBoxMenuItem(action(text, handler));
     }
 
-    public static BiConsumer<Throwable, String> logError(Explorer controller) {
-        return (t, m) -> { controller.error(t, m); };
-    }
-
     public static BiConsumer<Throwable, String> printError() {
         return (t, m) -> {
-            System.out.println(String.format("%s: %s", m, t.getMessage()));
+            System.out.println(String.format("%s%s: %s", ERROR, m, t.getMessage()));
             t.printStackTrace(System.err);
             System.exit(1);
         };

@@ -38,18 +38,22 @@ import com.google.common.eventbus.EventBus;
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Dialog;
+import iterator.util.Output;
 
 /**
  * Apple OSX native support.
  */
 public class AppleSupport implements OpenFilesHandler, AboutHandler, PreferencesHandler, QuitHandler {
-    private final EventBus bus;
-    private final Explorer controller;
 
-    public AppleSupport(EventBus bus, Explorer controller) {
+    private final Explorer controller;
+    private final EventBus bus;
+    private final Output out;
+
+    public AppleSupport(Explorer controller) {
         super();
-        this.bus = bus;
         this.controller = controller;
+        this.bus = controller.getEventBus();
+        this.out = controller.getOutput();
     }
 
     public void setup() {
@@ -103,8 +107,8 @@ public class AppleSupport implements OpenFilesHandler, AboutHandler, Preferences
     /** @see com.apple.eawt.QuitHandler#handleQuitRequestWith(com.apple.eawt.AppEvent.QuitEvent, com.apple.eawt.QuitResponse) */
     @Override
     public void handleQuitRequestWith(QuitEvent e, QuitResponse r) {
+        out.print("Exiting");
         r.performQuit();
-        controller.print("Exiting");
         System.exit(0);
     }
 

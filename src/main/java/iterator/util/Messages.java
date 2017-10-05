@@ -20,8 +20,6 @@ import java.util.Locale.Category;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-import iterator.Explorer;
-
 /**
  * Internationalized messaages.
  */
@@ -116,13 +114,13 @@ public class Messages {
 
     private ResourceBundle resources;
 
-    public Messages(final Explorer controller) {
+    public Messages(Output out) {
         super();
 
         try {
             resources = ResourceBundle.getBundle("iterator.Explorer", Locale.getDefault(Category.DISPLAY));
         } catch (MissingResourceException mre) {
-            controller.error("Cannot load resources for %s", Locale.getDefault(Category.DISPLAY).getDisplayName());
+            out.error("Cannot load resources for %s", Locale.getDefault(Category.DISPLAY).getDisplayName());
         }
     }
 

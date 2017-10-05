@@ -63,9 +63,9 @@ import com.google.common.util.concurrent.MoreExecutors;
 import iterator.model.Function;
 import iterator.model.Transform;
 import iterator.util.Config;
-import iterator.util.Formatter;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
+import iterator.util.Formatter;
 import iterator.util.Formatter.DoubleFormatter;
 import iterator.util.Formatter.FloatFormatter;
 

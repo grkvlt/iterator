@@ -80,6 +80,7 @@ import iterator.model.Transform;
 import iterator.util.Config;
 import iterator.util.Dialog;
 import iterator.util.Messages;
+import iterator.util.Output;
 import iterator.util.Subscriber;
 
 /**
@@ -90,6 +91,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     private final Explorer controller;
     private final Messages messages;
     private final Config config;
+    private final Output out;
     private final Iterator iterator;
 
     private IFS ifs;
@@ -110,6 +112,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         this.controller = controller;
         this.messages = controller.getMessages();
         this.config = controller.getConfig();
+        this.out = controller.getOutput();
         this.iterator = controller.getIterator();
 
         timer = new Timer(50, this);
@@ -463,7 +466,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                     setGrid(!grid);
                     break;
                 case KeyEvent.VK_T:
-                    controller.timestamp("Thread dump");
+                    out.timestamp("Thread dump");
                     System.err.println(iterator.getThreadDump());
                     break;
                 case KeyEvent.VK_UP:
@@ -552,8 +555,11 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 config.setDisplayCentreX(updated.getX() / size.getWidth());
                 config.setDisplayCentreY(updated.getY() / size.getHeight());
                 rescale();
-                controller.debug("Zoom: %.1fx scale, centre (%.1f, %.1f) via click at (%d, %d)",
-                        scale, centre.getX(), centre.getY(), (int) (zoom.x + (zoom.width / 2d)), (int) (zoom.y + (zoom.height / 2d)));
+
+                if (config.isDebug()) {
+                    out.debug("Zoom: %.1fx scale, centre (%.1f, %.1f) via click at (%d, %d)",
+                            scale, centre.getX(), centre.getY(), (int) (zoom.x + (zoom.width / 2d)), (int) (zoom.y + (zoom.height / 2d)));
+                }
 
                 zoom = null;
                 reset();

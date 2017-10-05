@@ -17,7 +17,11 @@ package iterator;
 
 import static iterator.Utils.NEWLINE;
 import static iterator.Utils.version;
+import static iterator.util.Config.CONFIG_OPTION;
+import static iterator.util.Config.CONFIG_OPTION_LONG;
 import static iterator.util.Config.MIN_WINDOW_SIZE;
+import static iterator.util.Config.PALETTE_OPTION;
+import static iterator.util.Config.PALETTE_OPTION_LONG;
 
 import java.awt.Dimension;
 import java.nio.file.Files;
@@ -33,6 +37,7 @@ import com.google.common.base.Strings;
 
 import iterator.model.IFS;
 import iterator.util.Config;
+import iterator.util.Output;
 import iterator.view.Iterator;
 
 /**
@@ -54,12 +59,8 @@ public class Renderer implements BiConsumer<Throwable, String> {
             "    Documentation at https://grkvlt.github.io/iterator/",
             "");
 
-    public static final String PALETTE_OPTION = "-p";
-    public static final String PALETTE_OPTION_LONG = "--palette";
-    public static final String CONFIG_OPTION = "-c";
-    public static final String CONFIG_OPTION_LONG = "--config";
-
     private Config config;
+    private Output out = new Output();
     private Path override;
     private String paletteFile;
     private Iterator iterator;
@@ -70,26 +71,30 @@ public class Renderer implements BiConsumer<Throwable, String> {
     public Renderer(String...argv) {
         // Parse arguments
         if (argv.length < 2) {
-            throw new IllegalArgumentException("Must have at least two arguments");
+            out.error("Must have at least two arguments");
         }
         for (int i = 0; i < argv.length - 2; i++) {
+            // Argument is a program option
             if (argv[i].charAt(0) == '-') {
-                // Argument is a program option
                 if (argv[i].equalsIgnoreCase(PALETTE_OPTION) ||
                         argv[i].equalsIgnoreCase(PALETTE_OPTION_LONG)) {
                     if (argv.length >= i + 1) {
                         paletteFile = argv[++i];
-                    } else throw new IllegalArgumentException("Palette argument not provided");
+                    } else {
+                        out.error("Palette argument not provided");
+                    }
                 } else if (argv[i].equalsIgnoreCase(CONFIG_OPTION) ||
                         argv[i].equalsIgnoreCase(CONFIG_OPTION_LONG)) {
                     if (argv.length >= i + 1) {
                         override = Paths.get(argv[++i]);
                         if (Files.notExists(override)) {
-                            throw new IllegalArgumentException(String.format("Configuration file does not exist: %s", override.getFileName()));
+                            out.error("Configuration file does not exist: %s", override.getFileName());
                         }
-                    } else throw new IllegalArgumentException("Configuration file argument not provided");
+                    } else {
+                        out.error("Configuration file argument not provided");
+                    }
                 } else {
-                    throw new IllegalArgumentException(String.format("Cannot parse option: %s", argv[i]));
+                    out.error("Cannot parse option: %s", argv[i]);
                 }
             }
         }
@@ -99,7 +104,7 @@ public class Renderer implements BiConsumer<Throwable, String> {
         if (Files.isReadable(file)) {
             ifs = IFS.load(file.toFile());
         } else {
-            throw new IllegalArgumentException(String.format("Cannot load XML data file: %s", file.getFileName()));
+            out.error("Cannot load XML data file: %s", file.getFileName());
         }
 
         // Picture file name
@@ -126,6 +131,8 @@ public class Renderer implements BiConsumer<Throwable, String> {
     }
 
     public void start() {
+        out.timestamp("Started");
+
         if (config.isIterationsUnlimited()) {
             config.setIterationsUnimited(false);
         }
@@ -138,22 +145,22 @@ public class Renderer implements BiConsumer<Throwable, String> {
 
         // Print details
         String infoText = iterator.getInfo();
-        System.out.printf("%s%s\n", Utils.PRINT, infoText);
+        out.print(infoText);
         String limitText = String.format("%,dK", limit).replaceAll("[^0-9K+]", " ");
-        System.out.printf("%s%s\n", Utils.PRINT, limitText);
+        out.print("%s Iterations", limitText);
 
         // Render IFS
         iterator.start();
         while (iterator.getCount() <= limit) {
             Utils.sleep(100, TimeUnit.MILLISECONDS);
             String countText = String.format("%,dK", Math.min(iterator.getCount(), limit)).replaceAll("[^0-9K+]", " ");
-            System.out.printf("\r%s%s", Utils.PAUSE, countText);
+            out.pause(countText);
         }
-        System.out.println();
+        out.println();
         iterator.stop();
 
         // Save PNG image
-        System.out.printf("%sSaving %s\n", Utils.STACK, picture.getFileName());
+        out.stack("Saving %s", picture.getFileName());
         Utils.saveImage(iterator.getImage(), picture.toFile());
 
         System.exit(0);
@@ -161,8 +168,7 @@ public class Renderer implements BiConsumer<Throwable, String> {
 
     @Override
     public void accept(Throwable t, String message) {
-        System.err.printf("%s%s: %s\n", Utils.ERROR, message, t);
-        System.exit(1);
+        out.accept(t,  message);
     }
 
     /**

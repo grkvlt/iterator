@@ -15,9 +15,7 @@
  */
 package iterator;
 
-import static iterator.Utils.DEBUG;
 import static iterator.Utils.NEWLINE;
-import static iterator.Utils.PRINT;
 import static iterator.Utils.STACK;
 import static iterator.Utils.checkBoxItem;
 import static iterator.Utils.context;
@@ -69,22 +67,16 @@ import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.PrintStream;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -106,7 +98,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
@@ -123,6 +114,7 @@ import iterator.model.IFS;
 import iterator.util.Config;
 import iterator.util.Dialog;
 import iterator.util.Messages;
+import iterator.util.Output;
 import iterator.util.Platform;
 import iterator.util.Subscriber;
 import iterator.view.Details;
@@ -133,7 +125,7 @@ import iterator.view.Viewer;
 /**
  * IFS Explorer main class.
  */
-public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHandler, SubscriberExceptionHandler, BiConsumer<Throwable, String>, Subscriber {
+public class Explorer extends JFrame implements KeyListener, SubscriberExceptionHandler, BiConsumer<Throwable, String>, Subscriber {
 
     public static final List<String> BANNER = Arrays.asList(
             "   ___ _____ ____    _____            _                     ",
@@ -184,7 +176,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     private Config config;
     private Path override;
-
+    private Output out = new Output();
     private Platform platform = Platform.getPlatform();
     private BufferedImage icon;
     private Preferences prefs;
@@ -220,15 +212,14 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         bus = new EventBus(this);
         bus.register(this);
 
-        messages = new Messages(this);
-
-        Thread.setDefaultUncaughtExceptionHandler(this);
+        // Load i18n text
+        messages = new Messages(out);
 
         // Parse arguments
         if (argv.length != 0) {
             for (int i = 0; i < argv.length; i++) {
+                // Argument is a program option
                 if (argv[i].charAt(0) == '-') {
-                    // Argument is a program option
                     if (argv[i].equalsIgnoreCase(FULLSCREEN_OPTION) ||
                             argv[i].equalsIgnoreCase(FULLSCREEN_OPTION_LONG)) {
                         fullScreen = true;
@@ -236,17 +227,21 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                             argv[i].equalsIgnoreCase(PALETTE_OPTION_LONG)) {
                         if (argv.length >= i + 1) {
                             paletteFile = argv[++i];
-                        } else error("Palette argument not provided");
+                        } else {
+                            out.error("Palette argument not provided");
+                        }
                     } else if (argv[i].equalsIgnoreCase(CONFIG_OPTION) ||
                             argv[i].equalsIgnoreCase(CONFIG_OPTION_LONG)) {
                         if (argv.length >= i + 1) {
                             override = Paths.get(argv[++i]);
                             if (Files.notExists(override)) {
-                                error("Configuration file does not exist: %s", override);
+                                out.error("Configuration file does not exist: %s", override);
                             }
-                        } else error("Configuration file argument not provided");
+                        } else {
+                            out.error("Configuration file argument not provided");
+                        }
                     } else {
-                        error("Cannot parse option: %s", argv[i]);
+                        out.error("Cannot parse option: %s", argv[i]);
                     }
                 } else if (i == argv.length - 1) {
                     // Last argument is a file
@@ -259,10 +254,10 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                             bus.post(loaded);
                         };
                     } else {
-                        error("Cannot load XML data file: %s", argv[i]);
+                        out.error("Cannot load XML data file: %s", argv[i]);
                     }
                 } else {
-                    error("Unknown argument: %s", argv[i]);
+                    out.error("Unknown argument: %s", argv[i]);
                 }
             }
         }
@@ -272,7 +267,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         if (!Strings.isNullOrEmpty(paletteFile)) {
             config.setPaletteFile(paletteFile);
         }
-        debug("Configured rendering as %s/%s %s", config.getRender(), config.getMode(), config.getMode().isPalette() ? config.getPaletteFile() : config.getMode().isColour() ? "hsb" : "black");
+        if (config.isDebug()) {
+            out.debug("Configured rendering as %s/%s %s", config.getRender(), config.getMode(), config.getMode().isPalette() ? config.getPaletteFile() : config.getMode().isColour() ? "hsb" : "black");
+        }
 
         // Load colour palette if required
         config.loadColours();
@@ -299,7 +296,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
-            error(e, "Unable to configure UI support");
+            out.error(e, "Unable to configure UI support");
         }
     }
 
@@ -307,6 +304,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
 
     @SuppressWarnings("serial")
     public void start() {
+        out.print("Starting Explorer UI");
+        out.timestamp("Started");
+
         iterator = new Iterator(this, config, size);
 
         prefs = Preferences.dialog(this);
@@ -370,7 +370,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         export = menuItem(messages.getText(MENU_FILE_EXPORT), e -> {
             File target = new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".png");
             saveDialog(target, DIALOG_FILES_PNG, "png", f -> {
-                print("Saving PNG image %s", f.getName());
+                out.print("Saving PNG image %s", f.getName());
                 saveImage(viewer.getImage(), f);
             });
         });
@@ -453,7 +453,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
             /** @see WindowListener#windowClosed(WindowEvent) */
             @Override
             public void windowClosing(WindowEvent e) {
-                print("Exiting");
+                out.print("Exiting");
                 System.exit(0);
             }
         });
@@ -511,14 +511,14 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         if (platform == Platform.MAC_OS_X) {
             try {
                 Class<?> support = Class.forName("iterator.AppleSupport");
-                Constructor<?> ctor = support.getConstructor(EventBus.class, Explorer.class);
+                Constructor<?> ctor = support.getConstructor(Explorer.class);
                 Method setup = support.getDeclaredMethod("setup");
-                Object apple = ctor.newInstance(bus, this);
+                Object apple = ctor.newInstance(this);
                 setup.invoke(apple);
             } catch (InvocationTargetException ite) {
-                error(ite.getCause(), "Error while configuring OSX support: %s", ite.getCause().getMessage());
+                out.error(ite.getCause(), "Error while configuring OSX support: %s", ite.getCause().getMessage());
             } catch (Exception e) {
-                error(e, "Unable to configure OSX support");
+                out.error(e, "Unable to configure OSX support");
             }
         }
 
@@ -550,7 +550,7 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
                 try {
                     action.accept(selected);
                 } catch (Exception e) {
-                    error(e, "Error saving file %s", name);
+                    out.error(e, "Error saving file %s", name);
                 }
                 cwd = selected.getParentFile();
             }
@@ -601,7 +601,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     @Subscribe
     public void resized(Dimension resized) {
         size = resized.getSize();
-        debug("Resized: %d, %d", size.width, size.height);
+        if (config.isDebug()) {
+            out.debug("Resized: %d, %d", size.width, size.height);
+        }
     }
 
     /** @see Subscriber#updated(IFS) */
@@ -611,7 +613,9 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         ifs = updated;
         String name = Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED);
         updateName(name);
-        debug("Updated: %s", ifs);
+        if (config.isDebug()) {
+            out.debug("Updated: %s", ifs);
+        }
 
         if (!ifs.isEmpty()) {
             save.setEnabled(true);
@@ -633,13 +637,13 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     }
 
     public void save(File file) {
-        print("Saving IFS file %s", file.getName());
+        out.print("Saving IFS file %s", file.getName());
         cwd = file.getParentFile();
         IFS.save(ifs, file);
     }
 
     public IFS load(File file) {
-        print("Loading IFS file %s", file.getName());
+        out.print("Loading IFS file %s", file.getName());
         cwd = file.getParentFile();
         return IFS.load(file);
     }
@@ -673,6 +677,8 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     public IFS getIFS() { return ifs; }
 
     public Config getConfig() { return config; }
+
+    public Output getOutput() { return out; }
 
     public Iterator getIterator() { return iterator; }
 
@@ -746,84 +752,14 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
     @Override
     public void keyReleased(KeyEvent e) { }
 
-    public void debug(String format, Object...varargs) {
-        output(config.isDebug() ? System.out : System.err, DEBUG + format, varargs);
-    }
-
-    public void error(String format, Object...varargs) {
-        error(Optional.absent(), format, varargs);
-    }
-
-    public void error(Throwable t, String format, Object...varargs) {
-        error(Optional.of(t), format, varargs);
-    }
-
-    public void error(Throwable t, String message) {
-        error(Optional.of(t), "%s: %s", message, t.getMessage());
-    }
-
-    public void error(Optional<Throwable> t, String format, Object...varargs) {
-        output(System.out, ERROR + format, varargs);
-        if (t.isPresent()) {
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            PrintStream print = new PrintStream(bytes);
-            t.get().printStackTrace(print);
-            String trace = Splitter.on(CharMatcher.anyOf("\r\n"))
-                    .omitEmptyStrings()
-                    .splitToList(bytes.toString())
-                    .stream()
-                    .map(STACK::concat)
-                    .collect(Collectors.joining(NEWLINE));
-            System.err.println(trace);
-        }
-        System.exit(1);
-    }
-
-    public void timestamp(String format, Object...varargs) {
-        String message = String.format(format,  varargs);
-        String timestamp = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now());
-        debug("%s at %s", message, timestamp);
-    }
-
-    public void dumpStack() {
-        List<StackTraceElement> stack = Arrays.asList(Thread.getAllStackTraces().get(Thread.currentThread()));
-        String trace = stack.stream()
-                .skip(3)
-                .map(e -> String.format("  %s.%s(%s:%d)", e.getClassName(), e.getMethodName(), e.getFileName(), e.getLineNumber()))
-                .map(STACK::concat)
-                .collect(Collectors.joining(NEWLINE));
-        timestamp("Dumping stack");
-        System.err.println(trace);
-    }
-
-    public void print(String format, Object...varargs) {
-        output(System.out, PRINT + format, varargs);
-    }
-
-    protected void output(PrintStream out, String format, Object...varargs) {
-        String output = String.format(format, varargs);
-        if (!output.endsWith(NEWLINE)) output = output.concat(NEWLINE);
-        out.print(output);
-    }
-
-    /** @see java.lang.Thread.UncaughtExceptionHandler#uncaughtException(Thread, Throwable) */
-    @Override
-    public void uncaughtException(Thread t, Throwable e) {
-        error(Optional.of(e), "Error: Thread %s (%d) caused %s: %s", t.getName(), t.getId(), e.getClass().getName(), e.getMessage());
-    }
-
-    /** @see com.google.common.eventbus.SubscriberExceptionHandler#handleException(Throwable, SubscriberExceptionContext) */
-    @Override
-    public void handleException(Throwable exception, SubscriberExceptionContext context) {
-        debug("Event bus caught %s(%s) in %s#%s(%s)",
-                exception.getClass().getSimpleName(), exception.getMessage(),
-                context.getSubscriber().getClass().getSimpleName(), context.getSubscriberMethod().getName(), Objects.toString(context.getEvent(), "null"));
-        uncaughtException(Thread.currentThread(), exception);
-    }
-
     @Override
     public void accept(Throwable t, String message) {
-        error(t, message);
+        out.accept(t, message);
+    }
+
+    @Override
+    public void handleException(Throwable exception, SubscriberExceptionContext context) {
+        accept(exception, "Subscription error handling " + context.getEvent());
     }
 
     /**
@@ -847,8 +783,6 @@ public class Explorer extends JFrame implements KeyListener, UncaughtExceptionHa
         // Start application
         SwingUtilities.invokeLater(() -> {
             Explorer explorer = new Explorer(argv);
-            explorer.print("Starting Explorer UI");
-            explorer.timestamp("Started");
             explorer.start();
         });
     }

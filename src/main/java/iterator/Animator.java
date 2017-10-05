@@ -57,6 +57,7 @@ import com.google.common.collect.Maps;
 import iterator.model.IFS;
 import iterator.model.Transform;
 import iterator.util.Config;
+import iterator.util.Output;
 import iterator.view.Iterator;
 
 /**
@@ -134,6 +135,7 @@ public class Animator implements BiConsumer<Throwable, String> {
     
     private IFS ifs;
     private Config config;
+    private Output out = new Output();
     private Dimension size;
     private String paletteFile;
     private Path override, input, output;
@@ -143,7 +145,7 @@ public class Animator implements BiConsumer<Throwable, String> {
     public Animator(String...argv) throws Exception {
         // Parse arguments
         if (argv.length < 1) {
-            throw new IllegalArgumentException("Must have at least one argument");
+            out.error("Must have at least one argument");
         }
         for (int i = 0; i < argv.length - 1; i++) {
             // Argument is a program option
@@ -152,22 +154,28 @@ public class Animator implements BiConsumer<Throwable, String> {
                         argv[i].equalsIgnoreCase(PALETTE_OPTION_LONG)) {
                     if (argv.length >= i + 1) {
                         paletteFile = argv[++i];
-                    } else throw new IllegalArgumentException("Palette argument not provided");
+                    } else {
+                        out.error("Palette argument not provided");
+                    }
                 } else if (argv[i].equalsIgnoreCase(CONFIG_OPTION) ||
                         argv[i].equalsIgnoreCase(CONFIG_OPTION_LONG)) {
                     if (argv.length >= i + 1) {
                         override = Paths.get(argv[++i]);
                         if (Files.notExists(override)) {
-                            throw new IllegalArgumentException(String.format("Configuration file does not exist: %s", override));
+                            out.error("Configuration file does not exist: %s", override);
                         }
-                    } else throw new IllegalArgumentException("Configuration file argument not provided");
+                    } else {
+                        out.error("Configuration file argument not provided");
+                    }
                 } else if (argv[i].equalsIgnoreCase(OUTPUT_OPTION) ||
                         argv[i].equalsIgnoreCase(OUTPUT_OPTION_LONG)) {
                     if (argv.length >= i + 1) {
                         output = Paths.get(argv[++i]);
-                    } else throw new IllegalArgumentException("Output directory argument not provided");
+                    } else {
+                        out.error("Output directory argument not provided");
+                    }
                 } else {
-                    throw new IllegalArgumentException(String.format("Cannot parse option: %s", argv[i]));
+                    out.error("Cannot parse option: %s", argv[i]);
                 }
             }
         }
@@ -218,7 +226,6 @@ public class Animator implements BiConsumer<Throwable, String> {
      * end}
      * </pre>
      *
-     * @see <a href="http://grkvlt.github.io/iterator/">online documentation</a>
      * @throws IOException
      * @throws IllegalStateException
      * @throws NumberFormatException
@@ -252,7 +259,7 @@ public class Animator implements BiConsumer<Throwable, String> {
                     if (FIELDS.contains(f)) {
                         change.field = f;
                     } else {
-                        throw new IllegalStateException(String.format("Parse error: Invalid 'transform' field %s at line %d", f, l));
+                        out.error("Parse error: Invalid 'transform' field %s at line %d", f, l);
                     }
                     change.start = Double.valueOf(tokens.get(3));
                     change.end = Double.valueOf(tokens.get(4));
@@ -268,7 +275,7 @@ public class Animator implements BiConsumer<Throwable, String> {
                     break;
                 case SEGMENT: // frames?
                     if (changes.size() > 0) {
-                        throw new IllegalStateException(String.format("Parse error: Segments cannot be nested at line %d", l));
+                        out.error("Parse error: Segments cannot be nested at line %d", l);
                     }
                     if (args == 1) {
                         length = Long.valueOf(tokens.get(1));
@@ -278,7 +285,7 @@ public class Animator implements BiConsumer<Throwable, String> {
                     break;
                 case END:
                     if (changes.isEmpty()) {
-                        throw new IllegalStateException(String.format("Parse error: Cannot end an empty segment at line %d", l));
+                        out.error("Parse error: Cannot end an empty segment at line %d", l);
                     }
                     Segment segment = new Segment();
                     segment.changes = ImmutableList.copyOf(changes);
@@ -290,7 +297,7 @@ public class Animator implements BiConsumer<Throwable, String> {
                     configuration.clear();
                     break;
                 default:
-                    throw new IllegalStateException(String.format("Parse error: Unknown directive '%s' at line %d", type, l));
+                    out.error("Parse error: Unknown directive '%s' at line %d", type, l);
             }
         }
 
@@ -308,8 +315,7 @@ public class Animator implements BiConsumer<Throwable, String> {
         int n = NUMBER.apply(type);
         boolean optional = OPTIONAL.apply(type);
         if ((optional && args != 0) && args != n) {
-            String message = String.format("Parse error: Directive '%s' requires %d arguments, found %d at line %d", type, n, args, l);
-            throw new IllegalStateException(message);
+            out.error("Parse error: Directive '%s' requires %d arguments, found %d at line %d", type, n, args, l);
         }
     }
 
@@ -317,6 +323,8 @@ public class Animator implements BiConsumer<Throwable, String> {
      * Generate the set of animation frames.
      */
     public void start() throws Exception {
+        out.timestamp("Started");
+
         // Update config
         if (config.isIterationsUnlimited()) {
             config.setIterationsUnimited(false);
@@ -329,13 +337,23 @@ public class Animator implements BiConsumer<Throwable, String> {
         // Initialize iterator
         Iterator iterator = new Iterator(this, config, size);
 
+        long total = segments.stream()
+                .map(s -> s.frames)
+                .reduce(Long::sum)
+                .orElse(0l);
+        out.print("Generating %d frames", total);
+
         // Run the animation segments
         long frame = 0;
+        int id = 0;
         for (Segment segment : segments) {
             long length = segment.frames;
+            id++;
 
             // Config for this segment
             config.putAll(segment.config);
+            out.print("Segment %d", id);
+            out.print(iterator.getInfo());
 
             // Frame sequence for a segment
             for (int i = 0; i < length; i++) {
@@ -345,7 +363,7 @@ public class Animator implements BiConsumer<Throwable, String> {
                 for (Change change : segment.changes) {
                     Transform transform = ifs.getTransforms().get(change.transform);
                     if (transform.isMatrix()) {
-                        throw new UnsupportedOperationException("Cannot animate matrix transforms currently");
+                        out.error("Cannot animate matrix transforms currently");
                     }
                     double delta = (change.end - change.start) * fraction;
                     switch (change.field) {
@@ -367,14 +385,15 @@ public class Animator implements BiConsumer<Throwable, String> {
                 while (iterator.getCount() <= limit) {
                     Utils.sleep(100, TimeUnit.MILLISECONDS);
                     String countText = String.format("%,dK", Math.min(iterator.getCount(), limit)).replaceAll("[^0-9K+]", " ");
-                    System.out.printf("\r%s%s", Utils.PAUSE, countText);
+                    out.pause(countText);
                 }
                 iterator.stop();
+                out.blank();
 
                 // Save the image
                 String image = String.format("%04d.png", frame++);
                 saveImage(iterator.getImage(), output.resolve(image).toFile());
-                System.out.printf("\r%sSaved %s\n", Utils.STACK, image);
+                out.stack("Saved %s", image);
             }
         }
 
@@ -383,8 +402,7 @@ public class Animator implements BiConsumer<Throwable, String> {
 
     @Override
     public void accept(Throwable t, String message) {
-        System.err.printf("%s%s: %s\n", Utils.ERROR, message, t);
-        System.exit(1);
+        out.accept(t, message);
     }
 
     /**
