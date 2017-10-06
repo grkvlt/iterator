@@ -86,6 +86,10 @@ public class Utils {
         return v -> clamp().apply(UNITY, v);
     }
 
+    public static IntFunction<Integer> octet() {
+        return v -> clamp(0, 255).apply(v);
+    }
+
     public static BiFunction<Range<Double>, Double, Double> clamp() {
         return (r,v) -> Math.min(r.upperEndpoint(), Math.max(r.lowerEndpoint(), v));
     }
