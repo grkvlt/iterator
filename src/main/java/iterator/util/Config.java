@@ -356,12 +356,12 @@ public class Config extends ForwardingSortedMap<String, String> {
             Color start = getRender().isInverse() ? Color.WHITE : Color.BLACK;
             Color end = getGradientColour();
             float startHSB[] = new float[3], endHSB[] = new float[3], deltaHSB[] = new float[3];
-            Color.RGBtoHSB(start.getRed(), start.getBlue(), start.getGreen(), startHSB);
-            Color.RGBtoHSB(end.getRed(), end.getBlue(), end.getGreen(), startHSB);
+            Color.RGBtoHSB(start.getRed(), start.getGreen(), start.getBlue(), startHSB);
+            Color.RGBtoHSB(end.getRed(), end.getGreen(), end.getBlue(), endHSB);
             deltaHSB[0] = (endHSB[0] - startHSB[0]) / (float) getPaletteSize();
             deltaHSB[1] = (endHSB[1] - startHSB[1]) / (float) getPaletteSize();
             deltaHSB[2] = (endHSB[2] - startHSB[2]) / (float) getPaletteSize();
-            for (int i = 0; i < getPaletteSize(); i++) {
+            for (float i = 0; i < getPaletteSize(); i++) {
                 Color c = Color.getHSBColor(startHSB[0] + i * deltaHSB[0], startHSB[1] + i * deltaHSB[1], startHSB[2] + i * deltaHSB[2]);
                 colours.add(c);
             }

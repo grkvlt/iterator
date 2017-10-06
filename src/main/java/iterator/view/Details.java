@@ -142,7 +142,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                 Color c = Color.WHITE;
                 if (config.getMode().isColour()) {
                     if (config.getMode().isPalette()) {
-                        c = Iterables.get(config.getColours(), f % config.getPaletteSize());
+                        c = Iterables.get(config.getColours(), f % config.getColours().size());
                     } else {
                         c = Color.getHSBColor((float) f / (float) ifs.size(), 0.8f, 0.8f);
                     }
@@ -192,7 +192,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                     Color c = Color.WHITE;
                     if (config.getMode().isColour()) {
                         if (config.getMode().isPalette()) {
-                            c = Iterables.get(config.getColours(), f % config.getPaletteSize());
+                            c = Iterables.get(config.getColours(), f % config.getColours().size());
                         } else {
                             c = Color.getHSBColor((float) f / (float) ifs.size(), 0.8f, 0.8f);
                         }

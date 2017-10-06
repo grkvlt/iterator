@@ -257,9 +257,9 @@ public class Iterator implements Runnable, ThreadFactory {
                                 color = getPixel(config.getSourceImage(), size, old.getX(), old.getY());
                             } else {
                                 if (render == Render.TOP) {
-                                    color = Iterables.get(config.getColours(), top[p] % config.getPaletteSize());
+                                    color = Iterables.get(config.getColours(), top[p] % config.getColours().size());
                                 } else {
-                                    color = Iterables.get(config.getColours(), j % config.getPaletteSize());
+                                    color = Iterables.get(config.getColours(), j % config.getColours().size());
                                 }
                             }
                         } else {
