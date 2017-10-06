@@ -453,8 +453,7 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
             /** @see WindowListener#windowClosed(WindowEvent) */
             @Override
             public void windowClosing(WindowEvent e) {
-                out.print("Exiting");
-                System.exit(0);
+                quit();
             }
         });
 
@@ -563,6 +562,12 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
         if (current.equals(VIEWER) && viewerStopped) {
             viewer.start();
         }
+    }
+
+    public void quit() {
+        dispose();
+        out.print("Exiting");
+        System.exit(0);
     }
 
     public void show(String name) {
@@ -721,6 +726,9 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
                         show(EDITOR);
                     }
                 }
+                break;
+            case KeyEvent.VK_Q:
+                quit();
                 break;
             case KeyEvent.VK_S:
                 long seed = config.getSeed();
