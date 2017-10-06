@@ -55,6 +55,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import iterator.model.IFS;
+import iterator.model.Reflection;
 import iterator.model.Transform;
 import iterator.util.Config;
 import iterator.util.Output;
@@ -87,6 +88,7 @@ public class Animator implements BiConsumer<Throwable, String> {
     public static final String SOURCE = "source";
     public static final String FRAMES = "frames";
     public static final String TRANSFORM = "transform";
+    public static final String REFLECTION = "reflection";
     public static final String CONFIG = "config";
     public static final String END = "end";
 
@@ -106,6 +108,7 @@ public class Animator implements BiConsumer<Throwable, String> {
             .put(SOURCE, 1)
             .put(FRAMES, 1)
             .put(TRANSFORM, 4)
+            .put(REFLECTION, 4)
             .put(SEGMENT, 1)
             .put(CONFIG, 2)
             .build();
@@ -113,14 +116,18 @@ public class Animator implements BiConsumer<Throwable, String> {
     public static final Function<String, Boolean> OPTIONAL = Functions.forMap(OPTIONAL_ARGUMENTS, false);
     public static final Function<String, Integer> NUMBER = Functions.forMap(NUMBER_ARGUMENTS, 0);
 
-    public static final List<String> FIELDS = Arrays.asList(X, Y, W, H, R, SHX, SHY);
+    public static final Map<String, List<String>> FIELDS = ImmutableMap.<String, List<String>>builder()
+            .put(TRANSFORM, Arrays.asList(X, Y, W, H, R, SHX, SHY))
+            .put(REFLECTION, Arrays.asList(X, Y, R))
+            .build();
 
     /**
      * Data objects holding the changes made to a {@link Transform} during a segment.
      */
 
     public static class Change {
-        public int transform;
+        public String type;
+        public int function;
         public double start, end;
         public String field;
     }
@@ -223,6 +230,7 @@ public class Animator implements BiConsumer<Throwable, String> {
      * segment frames
      *     config key value
      *     transform id field start finish
+     *     reflection id field start finish
      * end}
      * </pre>
      *
@@ -253,13 +261,15 @@ public class Animator implements BiConsumer<Throwable, String> {
                     frames = Long.valueOf(tokens.get(1));
                     break;
                 case TRANSFORM: // id field start finish
+                case REFLECTION:
                     Change change = new Change();
-                    change.transform = Integer.valueOf(tokens.get(1));
+                    change.type = tokens.get(0);
+                    change.function = Integer.valueOf(tokens.get(1));
                     String f = tokens.get(2).toLowerCase(Locale.UK);
-                    if (FIELDS.contains(f)) {
+                    if (FIELDS.get(change.type).contains(f)) {
                         change.field = f;
                     } else {
-                        out.error("Parse error: Invalid 'transform' field %s at line %d", f, l);
+                        out.error("Parse error: Invalid function field %s at line %d", f, l);
                     }
                     change.start = Double.valueOf(tokens.get(3));
                     change.end = Double.valueOf(tokens.get(4));
@@ -361,19 +371,31 @@ public class Animator implements BiConsumer<Throwable, String> {
 
                 // Set of changes for a single frame
                 for (Change change : segment.changes) {
-                    Transform transform = ifs.getTransforms().get(change.transform);
-                    if (transform.isMatrix()) {
-                        out.error("Cannot animate matrix transforms currently");
-                    }
                     double delta = (change.end - change.start) * fraction;
-                    switch (change.field) {
-                        case X: transform.x = (int) (change.start + delta); break;
-                        case Y: transform.y = (int) (change.start + delta); break;
-                        case W: transform.w = change.start + delta; break;
-                        case H: transform.h = change.start + delta; break;
-                        case R: transform.r = Math.toRadians(change.start + delta); break;
-                        case SHX: transform.shx = change.start + delta; break;
-                        case SHY: transform.shy = change.start + delta; break;
+                    switch (change.type) {
+                        case REFLECTION:
+                            Reflection reflection = ifs.getReflections().get(change.function);
+                            switch (change.field) {
+                                case X: reflection.x = (int) (change.start + delta); break;
+                                case Y: reflection.y = (int) (change.start + delta); break;
+                                case R: reflection.r = Math.toRadians(change.start + delta); break;
+                            }
+                            break;
+                        case TRANSFORM:
+                            Transform transform = ifs.getTransforms().get(change.function);
+                            if (transform.isMatrix()) {
+                                out.error("Cannot modify transform %d (matrix)", change.function);
+                            }
+                            switch (change.field) {
+                                case X: transform.x = (int) (change.start + delta); break;
+                                case Y: transform.y = (int) (change.start + delta); break;
+                                case W: transform.w = change.start + delta; break;
+                                case H: transform.h = change.start + delta; break;
+                                case R: transform.r = Math.toRadians(change.start + delta); break;
+                                case SHX: transform.shx = change.start + delta; break;
+                                case SHY: transform.shy = change.start + delta; break;
+                            }
+                            break;
                     }
                 }
 
