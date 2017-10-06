@@ -27,6 +27,7 @@ See <http://grkvlt.github.io/iterator/> for further documentation.
   - HTML rendering and printing
 - Save and load as XML
 - Animated changes to IFS
+- Headless IFS image rendering
 
 ## Program Requirements
 
@@ -48,16 +49,14 @@ See <http://grkvlt.github.io/iterator/> for further documentation.
 - Animator enhancements
   - Document usage
   - JSON configuration file parser
-  - Headless operation
   - Add camera movements (zoom and pan)
   - Graphical sequence editor
-  - Include reflection segments
   - Scripted MPEG generation
 
 Alongside these enhancements and new features, some of which are
 currently work-in-progress, both performance and UX improvements
 are always on-going.
 
-----
+---
 Copyright 2012-2017 by [Andrew Donald Kennedy](mailto:andrew.international+iterator@gmail.com) and
 Licensed under the [Apache Software License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
