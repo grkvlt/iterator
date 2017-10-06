@@ -30,6 +30,7 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -199,6 +200,33 @@ public abstract class AbstractPropertyDialog<T extends AbstractPropertyDialog<T>
         addComponent(field);
 
         return Property.attach(field);
+    }
+
+    protected Property<Color> addColorPicker(String string) {
+        addLabel(string);
+
+        JButton field = new JButton();
+        field.setOpaque(true);
+        field.setAction(Utils.action("", e -> {
+            Color selected = JColorChooser.showDialog(this, string, field.getBackground());
+            field.setBackground(selected);
+        }));
+        field.setBorder(BorderFactory.createLoweredSoftBevelBorder());
+        field.addKeyListener(this);
+
+        setConstraints(field, 1, GridBagConstraints.REMAINDER);
+        add(field);
+
+        return new Property<Color>() {
+            @Override
+            public Color get() {
+                return field.getBackground();
+            }
+            @Override
+            public void set(Color value) {
+                field.setBackground(value);
+            }
+        };
     }
 
     private void addComponent(JComponent field) {

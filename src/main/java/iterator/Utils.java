@@ -48,6 +48,7 @@ import java.util.function.LongFunction;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 
@@ -220,6 +221,10 @@ public class Utils {
                 action.accept(e);
             }
         };
+    }
+
+    public static JButton button(String text, Consumer<ActionEvent> handler) {
+        return new JButton(action(text, handler));
     }
 
     public static JMenuItem menuItem(String text, Consumer<ActionEvent> handler) {

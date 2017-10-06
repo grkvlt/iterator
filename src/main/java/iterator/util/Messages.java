@@ -93,6 +93,7 @@ public class Messages {
     public static final String DIALOG_PREFERENCES_MODE = "explorer.dialog.preferences.mode";
     public static final String DIALOG_PREFERENCES_RENDER = "explorer.dialog.preferences.render";
     public static final String DIALOG_PREFERENCES_TRANSFORM = "explorer.dialog.preferences.transform";
+    public static final String DIALOG_PREFERENCES_GRADIENT_COLOUR = "explorer.dialog.preferences.gradient.colour";
     public static final String DIALOG_PREFERENCES_PALETTE_FILE = "explorer.dialog.preferences.palette.file";
     public static final String DIALOG_PREFERENCES_PALETTE_SIZE = "explorer.dialog.preferences.palette.size";
     public static final String DIALOG_PREFERENCES_PALETTE_SEED = "explorer.dialog.preferences.palette.seed";

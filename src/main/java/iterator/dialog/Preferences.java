@@ -20,6 +20,7 @@ import static iterator.util.Messages.DIALOG_PREFERENCES_BUTTON_CANCEL;
 import static iterator.util.Messages.DIALOG_PREFERENCES_BUTTON_UPDATE;
 import static iterator.util.Messages.DIALOG_PREFERENCES_DEBUG;
 import static iterator.util.Messages.DIALOG_PREFERENCES_GAMMA;
+import static iterator.util.Messages.DIALOG_PREFERENCES_GRADIENT_COLOUR;
 import static iterator.util.Messages.DIALOG_PREFERENCES_ITERATIONS_LIMIT;
 import static iterator.util.Messages.DIALOG_PREFERENCES_MODE;
 import static iterator.util.Messages.DIALOG_PREFERENCES_PALETTE_FILE;
@@ -30,6 +31,8 @@ import static iterator.util.Messages.DIALOG_PREFERENCES_THREADS;
 import static iterator.util.Messages.DIALOG_PREFERENCES_TITLE;
 import static iterator.util.Messages.DIALOG_PREFERENCES_TRANSFORM;
 import static iterator.util.Messages.DIALOG_PREFERENCES_VIBRANCY;
+
+import java.awt.Color;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Range;
@@ -53,6 +56,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
     private final Property<Render> render;
     private final Property<CoordinateTransform.Type> transform;
     private final Property<String> paletteFile;
+    private final Property<Color> gradientColour;
     private final Property<Integer> paletteSize, threads, blurKernel;
     private final Property<Long> seed;
     private final OptionalProperty<Long> limit;
@@ -73,6 +77,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
         mode = addDropDown(messages.getText(DIALOG_PREFERENCES_MODE), Mode.values());
         render = addDropDown(messages.getText(DIALOG_PREFERENCES_RENDER), Render.values());
         transform = addDropDown(messages.getText(DIALOG_PREFERENCES_TRANSFORM), CoordinateTransform.Type.ordered());
+        gradientColour = addColorPicker(messages.getText(DIALOG_PREFERENCES_GRADIENT_COLOUR));
         paletteFile = addDropDown(messages.getText(DIALOG_PREFERENCES_PALETTE_FILE), Config.PALETTE_FILES);
         paletteSize = addSpinner(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), Config.MIN_PALETTE_SIZE, Config.MAX_PALETTE_SIZE);
         seed = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SEED), Formatter.longs());
@@ -97,6 +102,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
         mode.set(config.getMode());
         render.set(config.getRender());
         transform.set(config.getCoordinateTransformType());
+        gradientColour.set(config.getGradientColour());
         paletteFile.set(config.getPaletteFile());
         paletteSize.set(config.getPaletteSize());
         seed.set(config.getSeed());
@@ -115,6 +121,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
         config.setMode(mode.get());
         config.setRender(render.get());
         config.setCoordinateTransformType(transform.get());
+        config.setGradientColour(gradientColour.get());
         config.setPaletteFile(paletteFile.get());
         config.setPaletteSize(paletteSize.get());
         config.setSeed(seed.get());

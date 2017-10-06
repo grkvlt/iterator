@@ -102,6 +102,8 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String GAMMA_PROPERTY = EXPLORER_PROPERTY + ".gamma";
     public static final String VIBRANCY_PROPERTY = EXPLORER_PROPERTY + ".vibrancy";
     public static final String BLUR_KERNEL_PROPERTY = EXPLORER_PROPERTY + ".blur";
+    public static final String GRADIENT_PROPERTY = EXPLORER_PROPERTY + ".gradient";
+    public static final String GRADIENT_COLOUR_PROPERTY = GRADIENT_PROPERTY + ".colour";
     public static final String PALETTE_PROPERTY = EXPLORER_PROPERTY + ".palette";
     public static final String PALETTE_SEED_PROPERTY = PALETTE_PROPERTY + ".seed";
     public static final String PALETTE_FILE_PROPERTY = PALETTE_PROPERTY + ".file";
@@ -129,6 +131,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final CoordinateTransform.Type DEFAULT_TRANSFORM = CoordinateTransform.Type.IDENTITY;
     public static final Float DEFAULT_GAMMA = 1.8f;
     public static final Float DEFAULT_VIBRANCY = 0.9f;
+    public static final Color DEFAULT_GRADIENT_COLOUR = Color.RED;
     public static final Integer DEFAULT_BLUR_KERNEL = 4;
     public static final String[] PALETTE_FILES = { "abstract", "autumn", "car", "car2", "forest", "lego", "night", "trees", "wave" };
     public static final String DEFAULT_PALETTE_FILE = "abstract";
@@ -159,6 +162,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static enum Mode {
         COLOUR(true, false, false, false),
         PALETTE(true, true, false, false),
+        GRADIENT(true, true, false, false),
         STEALING(true, true, true, false),
         IFS_COLOUR(true, false, false, true),
         GRAY(false, false, false, false);
@@ -347,23 +351,38 @@ public class Config extends ForwardingSortedMap<String, String> {
     public BufferedImage getSourceImage() { return source; }
 
     public void loadColours() {
-        try {
-            String file = getPaletteFile();
-            if (file.contains(".")) {
-                source = loadImage(URI.create(file).toURL());
-            } else {
-                source = loadImage(Resources.getResource("palette/" + file + ".png"));
-            }
-        } catch (MalformedURLException | RuntimeException e) {
-            throw new IllegalStateException(String.format("Cannot load colour palette %s", getPaletteFile()));
-        }
         colours = Sets.newHashSet();
-        Random random = new Random(getSeed());
-        while (colours.size() < getPaletteSize()) {
-            int x = random.nextInt(source.getWidth());
-            int y = random.nextInt(source.getHeight());
-            Color c = new Color(source.getRGB(x, y));
-            colours.add(c);
+        if (getMode() == Mode.GRADIENT) {
+            Color start = getRender().isInverse() ? Color.WHITE : Color.BLACK;
+            Color end = getGradientColour();
+            float startHSB[] = new float[3], endHSB[] = new float[3], deltaHSB[] = new float[3];
+            Color.RGBtoHSB(start.getRed(), start.getBlue(), start.getGreen(), startHSB);
+            Color.RGBtoHSB(end.getRed(), end.getBlue(), end.getGreen(), startHSB);
+            deltaHSB[0] = (endHSB[0] - startHSB[0]) / (float) getPaletteSize();
+            deltaHSB[1] = (endHSB[1] - startHSB[1]) / (float) getPaletteSize();
+            deltaHSB[2] = (endHSB[2] - startHSB[2]) / (float) getPaletteSize();
+            for (int i = 0; i < getPaletteSize(); i++) {
+                Color c = Color.getHSBColor(startHSB[0] + i * deltaHSB[0], startHSB[1] + i * deltaHSB[1], startHSB[2] + i * deltaHSB[2]);
+                colours.add(c);
+            }
+        } else {
+            try {
+                String file = getPaletteFile();
+                if (file.contains(".")) {
+                    source = loadImage(URI.create(file).toURL());
+                } else {
+                    source = loadImage(Resources.getResource("palette/" + file + ".png"));
+                }
+            } catch (MalformedURLException | RuntimeException e) {
+                throw new IllegalStateException(String.format("Cannot load colour palette %s", getPaletteFile()));
+            }
+            Random random = new Random(getSeed());
+            while (colours.size() < getPaletteSize()) {
+                int x = random.nextInt(source.getWidth());
+                int y = random.nextInt(source.getHeight());
+                Color c = new Color(source.getRGB(x, y));
+                colours.add(c);
+            }
         }
     }
 
@@ -404,6 +423,8 @@ public class Config extends ForwardingSortedMap<String, String> {
             return (T) Boolean.valueOf(value);
         } else if (String.class == type) {
             return (T) value;
+        } else if (Color.class == type) {
+            return (T) Color.decode(value);
         } else if (Enum.class.isAssignableFrom(type)) {
             return (T) Enum.valueOf((Class<Enum>) type, CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_UNDERSCORE, value));
         } else {
@@ -452,6 +473,10 @@ public class Config extends ForwardingSortedMap<String, String> {
     public void setVibrancy(float value) { set(VIBRANCY_PROPERTY, value); }
 
     public float getVibrancy() { return get(VIBRANCY_PROPERTY, DEFAULT_VIBRANCY); }
+
+    public void setGradientColour(Color value) { set(GRADIENT_COLOUR_PROPERTY, value.getRGB()); }
+
+    public Color getGradientColour() { return get(GRADIENT_COLOUR_PROPERTY, DEFAULT_GRADIENT_COLOUR); }
 
     public void setBlurKernel(int value) { set(BLUR_KERNEL_PROPERTY, value); }
 
