@@ -252,6 +252,8 @@ public class Iterator implements Runnable, ThreadFactory {
                     if (mode.isColour()) {
                         if (mode.isIFSColour()) {
                             color = Color.getHSBColor((float) (old.getX() / size.getWidth()), (float) (old.getY() / size.getHeight()), vibrancy);
+                        } else if (mode == Mode.GRADIENT) {
+                            color = getPixel(config.getGradientImage(), size, old.getX(), old.getY());
                         } else if (mode.isPalette()) {
                             if (mode.isStealing()) {
                                 color = getPixel(config.getSourceImage(), size, old.getX(), old.getY());
@@ -270,11 +272,7 @@ public class Iterator implements Runnable, ThreadFactory {
                             }
                         }
                         if (render.isDensity()) {
-                            if (mode.isIFSColour()) {
-                                colour[p] = (double) (color.getRGB() & RGB24) / (double) RGB24;
-                            } else {
-                                colour[p] = (colour[p] + (double) (color.getRGB() & RGB24) / (double) RGB24) / 2d;
-                            }
+                            colour[p] = (double) (color.getRGB() & RGB24) / (double) RGB24;
                         }
                     }
 

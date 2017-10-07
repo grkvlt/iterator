@@ -247,6 +247,12 @@ public class Utils {
         };
     }
 
+    public static BiConsumer<Throwable, String> throwError() {
+        return (t, m) -> {
+            throw new RuntimeException(m, t);
+        };
+    }
+
     public static Point2D copyPoint(Point2D source) {
         return new Point2D.Double(source.getX(), source.getY());
     }

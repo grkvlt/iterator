@@ -91,7 +91,6 @@ import iterator.model.Reflection;
 import iterator.model.Transform;
 import iterator.model.functions.CoordinateTransform;
 import iterator.util.Config;
-import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Dialog;
 import iterator.util.Formatter;
@@ -318,7 +317,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             resetImage();
             iterator.reset(getSize());
             iterator.iterate(image, 2, k, 1.0f, new Point2D.Double(getWidth() / 2d, getHeight() / 2d),
-                    Render.STANDARD, Mode.GRAY, functions, config.getCoordinateTransform());
+                    Render.STANDARD, config.getMode(), functions, config.getCoordinateTransform());
             repaint();
         }
     }
