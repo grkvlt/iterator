@@ -87,7 +87,7 @@
           GitHub</a> as either <code>.tar.gz</code> or <code>.zip</code> archives. Then run the relevant
           script for your operating system.
         </p>
-        <pre style="margin-left: 25px; width: 505px;"><code><b>$</b> ./bin/explorer.sh [-f] [-c <i>config</i>] [-p <i>palette</i>] [<i>ifs.xml</i>]
+        <pre style="width: 505px;"><code><b>$</b> ./bin/explorer.sh [-f] [-c <i>config</i>] [-p <i>palette</i>] [<i>ifs.xml</i>]
 <b>%</b> ./bin/explorer.command [-f] [-c <i>config</i>] [-p <i>palette</i>] [<i>ifs.xml</i>]
 <b>C&gt;</b> .\bin\explorer.cmd [-f] [-c <i>config</i>] [-p <i>palette</i>] [<i>ifs.xml</i>]</code></pre>
         <p>
@@ -95,7 +95,7 @@
           can be downloaded and executed directly, with the <code>java -jar</code> command.
           This will execute using the default Java Swing platform look and feel.
         </p>
-        <pre style="margin-left: 25px; width: 505px;"><code><b>$</b> java -jar iterator-1.5.0-jar-with-dependencies.jar
+        <pre style="width: 505px;"><code><b>$</b> java -jar iterator-1.5.0-jar-with-dependencies.jar
 <b>   ___ _____ ____    _____            _
   |_ _|  ___/ ___|  | ____|_  ___ __ | | ___  _ __ ___ _ __
    | || |_  \___ \  |  _| \ \/ / '_ \| |/ _ \| '__/ _ \ '__|
@@ -164,13 +164,13 @@
           the file specified on the command line using the <code>--config <em>config.properties</em></code>
           option.
         </p>
-        <pre style="margin-left: 25px; width: 505px;"><code><b>$</b> ./bin/explorer.sh --config debug.properties ./data/koch.xml</code></pre>
+        <pre style="width: 505px;"><code><b>$</b> ./bin/explorer.sh --config debug.properties ./data/koch.xml</code></pre>
         <p>
           It is also possible to set individual configuration options as system properties,
           using the <strong><code>JAVA_OPTS</code></strong> environment variable. JVM memory options should
           be configured separately, using the <strong><code>JAVA_MEM</code></strong> variable.
         </p>
-        <pre style="margin-left: 25px; width: 505px;"><code><b>$</b> export JAVA_OPTS="-Dexplorer.palette.seed=1234"
+        <pre style="width: 505px;"><code><b>$</b> export JAVA_OPTS="-Dexplorer.palette.seed=1234"
 <b>$</b> export JAVA_MEM="-Xms1g -Xmx2g"
 <b>$</b> ./bin/explorer.sh --palette wave ./data/spikes.xml</code></pre>
         <div style="page-break-inside: avoid;">
@@ -196,7 +196,7 @@
           initial configuration file or by changes made using the <strong>Preferences</strong> dialog.
         </p>
         <div style="page-break-inside: avoid;">
-          <pre style="margin-left: 25px; margin-bottom: 10px; width: 505px;"><code><b>explorer.gamma</b> = <i>0.5</i>
+          <pre style="margin-bottom: 10px; width: 505px;"><code><b>explorer.gamma</b> = <i>0.5</i>
 <b>explorer.mode</b> = <i>ifs-colour</i>
 <b>explorer.render</b> = <i>log-density-flame-inverse</i>
 <b>explorer.window.height</b> = <i>2000</i>
@@ -459,7 +459,7 @@
           example provided in <code>data/leaf.animation</code>, which is rendered
           as follows.
         </p>
-        <pre style="margin-left: 25px; width: 505px;"><code><b>$</b> ./bin/animator.sh --config ./data/leaf.properties \
+        <pre style="width: 505px;"><code><b>$</b> ./bin/animator.sh --config ./data/leaf.properties \
 --output ./leaf ./data/leaf.animation
 <b>   ___ _____ ____       _          _                 _
   |_ _|  ___/ ___|     / \   _ __ (_)_ __ ___   __ _| |_ ___  _ __
@@ -485,7 +485,7 @@
           Using a utility such as <em>ffmpeg</em>, the generated images
           can then be combined into an <em><code>.avi</code></em> MPEG video file.
         </p>
-        <pre style="margin-left: 25px; width: 505px;"><code><b>$</b> ffmpeg -f image2 -framerate 12 -i leaf/%04d.png \
+        <pre style="width: 505px;"><code><b>$</b> ffmpeg -f image2 -framerate 12 -i leaf/%04d.png \
 -s 1000x1000 leaf.avi</code></pre>
         <blockquote>
           <strong>TODO</strong> <em>Further documentation on the <code>.animation</code> file format.</em>
@@ -501,7 +501,7 @@
           <em><code>.properties</code></em> configuration file as the explorer, and will
           render in headless mode for a fixed number of iterations.
         </p>
-        <pre style="margin-left: 25px; width: 505px;"><code><b>$</b> ./bin/renderer.sh --config render.properties \
+        <pre style="width: 505px;"><code><b>$</b> ./bin/renderer.sh --config render.properties \
 fern.xml fern.png
 <b>   ___ _____ ____    ____                _
   |_ _|  ___/ ___|  |  _ \ ___ _ __   __| | ___ _ __ ___ _ __
@@ -548,7 +548,7 @@ fern.xml fern.png
           <em><code>.png</code></em> files in the same directory.
         </p>
         <div style="page-break-inside: avoid;">
-          <pre style="margin-left: 25px; width: 505px; margin-bottom: 10px;"><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot;?&gt;
+          <pre style="width: 505px; margin-bottom: 10px;"><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot;?&gt;
 &lt;<b>IFS</b> name=&quot;example&quot;&gt;
     &lt;<b>Transforms</b>&gt;
         &lt;<b>Transform</b> id=&quot;1&quot; zIndex=&quot;0&quot; x=&quot;100&quot; y=&quot;100&quot;
