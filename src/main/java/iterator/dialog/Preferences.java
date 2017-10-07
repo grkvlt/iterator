@@ -44,6 +44,7 @@ import iterator.util.Config;
 import iterator.util.Config.Mode;
 import iterator.util.Config.Render;
 import iterator.util.Formatter;
+import iterator.util.Pair;
 import iterator.util.Property;
 import iterator.util.Property.OptionalProperty;
 
@@ -56,7 +57,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
     private final Property<Render> render;
     private final Property<CoordinateTransform.Type> transform;
     private final Property<String> paletteFile;
-    private final Property<Color> gradientColour;
+    private final Property<Pair<Color>> gradientColour;
     private final Property<Integer> paletteSize, threads, blurKernel;
     private final Property<Long> seed;
     private final OptionalProperty<Long> limit;
@@ -77,7 +78,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
         mode = addDropDown(messages.getText(DIALOG_PREFERENCES_MODE), Mode.values());
         render = addDropDown(messages.getText(DIALOG_PREFERENCES_RENDER), Render.values());
         transform = addDropDown(messages.getText(DIALOG_PREFERENCES_TRANSFORM), CoordinateTransform.Type.ordered());
-        gradientColour = addColorPicker(messages.getText(DIALOG_PREFERENCES_GRADIENT_COLOUR));
+        gradientColour = addGradientPicker(messages.getText(DIALOG_PREFERENCES_GRADIENT_COLOUR));
         paletteFile = addDropDown(messages.getText(DIALOG_PREFERENCES_PALETTE_FILE), Config.PALETTE_FILES);
         paletteSize = addSpinner(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), Config.MIN_PALETTE_SIZE, Config.MAX_PALETTE_SIZE);
         seed = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SEED), Formatter.longs());
@@ -102,7 +103,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
         mode.set(config.getMode());
         render.set(config.getRender());
         transform.set(config.getCoordinateTransformType());
-        gradientColour.set(config.getGradientColour());
+        gradientColour.set(Pair.of(config.getGradientStart(), config.getGradientEnd()));
         paletteFile.set(config.getPaletteFile());
         paletteSize.set(config.getPaletteSize());
         seed.set(config.getSeed());
@@ -121,7 +122,8 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
         config.setMode(mode.get());
         config.setRender(render.get());
         config.setCoordinateTransformType(transform.get());
-        config.setGradientColour(gradientColour.get());
+        config.setGradientStart(gradientColour.get().getLeft());
+        config.setGradientEnd(gradientColour.get().getRight());
         config.setPaletteFile(paletteFile.get());
         config.setPaletteSize(paletteSize.get());
         config.setSeed(seed.get());
