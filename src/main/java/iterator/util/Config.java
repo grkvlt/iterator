@@ -16,6 +16,7 @@
 package iterator.util;
 
 import static iterator.Utils.NEWLINE;
+import static iterator.Utils.RGB24;
 import static iterator.Utils.clamp;
 import static iterator.Utils.context;
 import static iterator.Utils.initFileSystem;
@@ -423,7 +424,7 @@ public class Config extends ForwardingSortedMap<String, String> {
         } else if (String.class == type) {
             return (T) value;
         } else if (Color.class == type) {
-            return (T) Color.decode(value);
+            return (T) Color.decode(Integer.toString(Integer.parseUnsignedInt(value, 16) & RGB24));
         } else if (Enum.class.isAssignableFrom(type)) {
             return (T) Enum.valueOf((Class<Enum>) type, CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_UNDERSCORE, value));
         } else {
@@ -473,11 +474,11 @@ public class Config extends ForwardingSortedMap<String, String> {
 
     public float getVibrancy() { return get(VIBRANCY_PROPERTY, DEFAULT_VIBRANCY); }
 
-    public void setGradientStart(Color value) { set(GRADIENT_START_PROPERTY, value.getRGB()); }
+    public void setGradientStart(Color value) { set(GRADIENT_START_PROPERTY, String.format("%06x", value.getRGB() & RGB24)); }
 
     public Color getGradientStart() { return get(GRADIENT_START_PROPERTY, DEFAULT_GRADIENT_START); }
 
-    public void setGradientEnd(Color value) { set(GRADIENT_END_PROPERTY, value.getRGB()); }
+    public void setGradientEnd(Color value) { set(GRADIENT_END_PROPERTY, String.format("%06x", value.getRGB() & RGB24)); }
 
     public Color getGradientEnd() { return get(GRADIENT_END_PROPERTY, DEFAULT_GRADIENT_END); }
 
