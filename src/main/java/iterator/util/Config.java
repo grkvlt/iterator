@@ -19,6 +19,7 @@ import static iterator.Utils.NEWLINE;
 import static iterator.Utils.clamp;
 import static iterator.Utils.initFileSystem;
 import static iterator.Utils.loadImage;
+import static iterator.Utils.octet;
 import static iterator.Utils.threads;
 
 import java.awt.Color;
@@ -74,13 +75,8 @@ import iterator.model.functions.CoordinateTransform;
  * properties, using the values here as defaults. The configuration can also
  * be saved to a {@code .properties} file containing all the non-default
  * values that have been set during program operation.
- * <p>
- * The {@link Explorer controller} mediates access to the configuration
- * data, and it should not accessed directly.
  *
- * @see Explorer#start()
  * @see Preferences
- * @see Preferences#onSuccess()
  */
 public class Config extends ForwardingSortedMap<String, String> {
 
@@ -131,7 +127,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final CoordinateTransform.Type DEFAULT_TRANSFORM = CoordinateTransform.Type.IDENTITY;
     public static final Float DEFAULT_GAMMA = 1.8f;
     public static final Float DEFAULT_VIBRANCY = 0.9f;
-    public static final Color DEFAULT_GRADIENT_COLOUR = Color.RED;
+    public static final Color DEFAULT_GRADIENT_COLOUR = Color.GRAY;
     public static final Integer DEFAULT_BLUR_KERNEL = 4;
     public static final String[] PALETTE_FILES = { "abstract", "autumn", "car", "car2", "forest", "lego", "night", "trees", "wave" };
     public static final String DEFAULT_PALETTE_FILE = "abstract";
@@ -353,16 +349,15 @@ public class Config extends ForwardingSortedMap<String, String> {
     public void loadColours() {
         colours = Sets.newHashSet();
         if (getMode() == Mode.GRADIENT) {
+            Color gradient = getGradientColour();
             Color start = getRender().isInverse() ? Color.WHITE : Color.BLACK;
-            Color end = getGradientColour();
-            float startHSB[] = new float[3], endHSB[] = new float[3], deltaHSB[] = new float[3];
-            Color.RGBtoHSB(start.getRed(), start.getGreen(), start.getBlue(), startHSB);
-            Color.RGBtoHSB(end.getRed(), end.getGreen(), end.getBlue(), endHSB);
-            deltaHSB[0] = (endHSB[0] - startHSB[0]) / (float) getPaletteSize();
-            deltaHSB[1] = (endHSB[1] - startHSB[1]) / (float) getPaletteSize();
-            deltaHSB[2] = (endHSB[2] - startHSB[2]) / (float) getPaletteSize();
+            float r = (gradient.getRed() - start.getRed()) / (float) getPaletteSize();
+            float g = (gradient.getGreen() - start.getGreen()) / (float) getPaletteSize();
+            float b = (gradient.getBlue() - start.getBlue()) / (float) getPaletteSize();
             for (float i = 0; i < getPaletteSize(); i++) {
-                Color c = Color.getHSBColor(startHSB[0] + i * deltaHSB[0], startHSB[1] + i * deltaHSB[1], startHSB[2] + i * deltaHSB[2]);
+                Color c = new Color(octet().apply((int) (start.getRed() + i * r)),
+                        octet().apply((int) (start.getGreen() + i * g)),
+                        octet().apply((int) (start.getBlue() + i * b)));
                 colours.add(c);
             }
         } else {
