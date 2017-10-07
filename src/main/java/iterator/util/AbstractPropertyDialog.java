@@ -17,6 +17,8 @@ package iterator.util;
 
 import static iterator.Utils.context;
 import static iterator.Utils.throwError;
+import static iterator.util.Config.GRADIENT_END_PROPERTY;
+import static iterator.util.Config.GRADIENT_START_PROPERTY;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -33,6 +35,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
+import java.util.Locale;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -44,6 +48,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
@@ -210,9 +215,6 @@ public abstract class AbstractPropertyDialog<T extends AbstractPropertyDialog<T>
         return Property.attach(field);
     }
 
-    private static final String GRADIENT_LEFT = "gradient.left";
-    private static final String GRADIENT_RIGHT = "gradient.right";
-
     protected Property<Pair<Color>> addGradientPicker(String string) {
         addLabel(string);
 
@@ -221,12 +223,13 @@ public abstract class AbstractPropertyDialog<T extends AbstractPropertyDialog<T>
             public void paint(Graphics graphics) {
                 super.paint(graphics);
 
-                Color left = (Color) getClientProperty(GRADIENT_LEFT);
-                Color right = (Color) getClientProperty(GRADIENT_RIGHT);
-                GradientPaint fill = new GradientPaint(5f, 0f, left, getWidth() - 5, 0, right);
+                // Draw the gradient fill inside the border
                 context(throwError(), graphics, g -> {
+                    Color start = (Color) getClientProperty(GRADIENT_START_PROPERTY);
+                    Color end = (Color) getClientProperty(GRADIENT_END_PROPERTY);
+                    GradientPaint fill = new GradientPaint(20f, 0f, start, getWidth() - 20, 0, end);
                     g.setPaint(fill);
-                    g.fill(new Rectangle(5, 2, getWidth() - 10, getHeight() - 4));
+                    g.fill(new Rectangle(7, 2, getWidth() - 14, getHeight() - 4));
                 });
             }
         };
@@ -234,34 +237,46 @@ public abstract class AbstractPropertyDialog<T extends AbstractPropertyDialog<T>
         Property<Pair<Color>> property = new Property<Pair<Color>>() {
             @Override
             public Pair<Color> get() {
-                Color left = (Color) field.getClientProperty(GRADIENT_LEFT);
-                Color right = (Color) field.getClientProperty(GRADIENT_RIGHT);
+                Color left = (Color) field.getClientProperty(GRADIENT_START_PROPERTY);
+                Color right = (Color) field.getClientProperty(GRADIENT_END_PROPERTY);
                 return Pair.of(left, right);
             }
             @Override
             public void set(Pair<Color> value) {
-                field.putClientProperty(GRADIENT_LEFT, value.getLeft());
-                field.putClientProperty(GRADIENT_RIGHT, value.getRight());
+                field.putClientProperty(GRADIENT_START_PROPERTY, value.getLeft());
+                field.putClientProperty(GRADIENT_END_PROPERTY, value.getRight());
             }
         };
 
+        // Show custom colour picker depending on side clicked
         field.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                boolean left = (e.getX() < field.getWidth() / 2);
+            public void mouseClicked(MouseEvent me) {
+                boolean left = (me.getX() < field.getWidth() / 2);
                 Pair<Color> gradient = property.get();
-                Color selected = JColorChooser.showDialog(field, string, left ? gradient.getLeft() : gradient.getRight());
-                if (left) {
-                    gradient.setLeft(selected);
-                } else {
-                    gradient.setRight(selected);
-                }
-                property.set(gradient);
+                JColorChooser chooser = new JColorChooser(left ? gradient.getLeft() : gradient.getRight());
+                chooser.setPreviewPanel(new JPanel());
+                Arrays.asList(chooser.getChooserPanels()).stream()
+                        .filter(c -> c.getDisplayName().toLowerCase(Locale.UK).contains("swatch"))
+                        .findFirst()
+                        .ifPresent(c -> {
+                            chooser.removeChooserPanel(c);
+                        });;
+                JDialog dialog = JColorChooser.createDialog(field, string, true, chooser, e -> {
+                    if (left) {
+                        gradient.setLeft(chooser.getColor());
+                    } else {
+                        gradient.setRight(chooser.getColor());
+                    }
+                    property.set(gradient);
+                }, null);
+                dialog.setVisible(true);
             }
         });
 
         field.setOpaque(true);
-        field.setBorder(BorderFactory.createLoweredSoftBevelBorder());
+        field.setBackground(Color.WHITE);
+        field.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5), BorderFactory.createLoweredSoftBevelBorder()));
         field.addKeyListener(this);
 
         setConstraints(field, 1, GridBagConstraints.REMAINDER);
