@@ -639,7 +639,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         Transform clickTransform = getTransformAt(e.getPoint());
         Reflection clickReflection = getReflectionAt(e.getPoint());
 
-        if (SwingUtilities.isLeftMouseButton(e)) {
+        if (!isContextMenu(e) && SwingUtilities.isLeftMouseButton(e)) {
             if (clickReflection != null) {
                 selected = null;
                 clickTransform = null;
@@ -697,30 +697,14 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                 }
             }
             end = new Point(start.x, start.y);
-        } else if (SwingUtilities.isRightMouseButton(e)) {
-            if (clickTransform != null) {
-                selected = clickTransform;
-                properties.setEnabled(!selected.isMatrix());
-                transformMenu.show(e.getComponent(), e.getX(), e.getY());
-            } else if (clickReflection != null) {
-                reflection = clickReflection;
-                reflectionMenu.show(e.getComponent(), e.getX(), e.getY());
-            } else  {
-                editor.show(e.getComponent(), e.getX(), e.getY());
-            }
+            repaint();
         }
-        repaint();
-    }
-
-    private Point snap(Point point) {
-        int grid = config.getSnapGrid();
-        return new Point(grid * (point.x / grid), grid * (point.y / grid));
     }
 
     /** @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent) */
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (SwingUtilities.isLeftMouseButton(e)) {
+        if (!isContextMenu(e) && SwingUtilities.isLeftMouseButton(e)) {
             if (selected == null && start != null && end != null) {
                 int x = Math.min(start.x, end.x);
                 int y = Math.min(start.y, end.y);
@@ -762,6 +746,32 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                 bus.post(ifs);
             }
         }
+    }
+
+    public boolean isContextMenu(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            Transform clickTransform = getTransformAt(e.getPoint());
+            Reflection clickReflection = getReflectionAt(e.getPoint());
+
+            if (clickTransform != null) {
+                selected = clickTransform;
+                properties.setEnabled(!selected.isMatrix());
+                transformMenu.show(e.getComponent(), e.getX(), e.getY());
+            } else if (clickReflection != null) {
+                reflection = clickReflection;
+                reflectionMenu.show(e.getComponent(), e.getX(), e.getY());
+            } else  {
+                editor.show(e.getComponent(), e.getX(), e.getY());
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private Point snap(Point point) {
+        int grid = config.getSnapGrid();
+        return new Point(grid * (point.x / grid), grid * (point.y / grid));
     }
 
     /** @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent) */

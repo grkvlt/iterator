@@ -31,9 +31,10 @@ import static iterator.util.Config.FULLSCREEN_OPTION_LONG;
 import static iterator.util.Config.MIN_WINDOW_SIZE;
 import static iterator.util.Config.PALETTE_OPTION;
 import static iterator.util.Config.PALETTE_OPTION_LONG;
-import static iterator.util.Messages.DIALOG_FILES_PNG;
-import static iterator.util.Messages.DIALOG_FILES_PROPERTIES;
-import static iterator.util.Messages.DIALOG_FILES_XML;
+import static iterator.util.Messages.DIALOG_LOAD_IFS;
+import static iterator.util.Messages.DIALOG_SAVE_IFS;
+import static iterator.util.Messages.DIALOG_SAVE_IMAGE;
+import static iterator.util.Messages.DIALOG_SAVE_PREFERENCES;
 import static iterator.util.Messages.MENU_DISPLAY;
 import static iterator.util.Messages.MENU_DISPLAY_DETAILS;
 import static iterator.util.Messages.MENU_DISPLAY_EDITOR;
@@ -53,11 +54,13 @@ import static iterator.util.Messages.MENU_FILE_SAVE_AS;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
+import java.awt.FileDialog;
 import java.awt.Insets;
 import java.awt.SplashScreen;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
@@ -68,6 +71,7 @@ import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -84,7 +88,6 @@ import java.util.stream.Collectors;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -96,7 +99,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
@@ -330,13 +332,14 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
         newIfs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         file.add(newIfs);
         JMenuItem open = menuItem(messages.getText(MENU_FILE_OPEN), e -> {
-            FileNameExtensionFilter filter = new FileNameExtensionFilter(messages.getText(DIALOG_FILES_XML), "xml");
-            JFileChooser chooser = new JFileChooser();
-            chooser.setCurrentDirectory(cwd);
-            chooser.setFileFilter(filter);
-            int result = chooser.showOpenDialog(null);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                IFS loaded = load(chooser.getSelectedFile());
+            FilenameFilter filter = (d, n) -> n.endsWith(".xml");
+            FileDialog dialog = new FileDialog(this, messages.getText(DIALOG_LOAD_IFS), FileDialog.LOAD);
+            dialog.setFilenameFilter(filter);
+            dialog.setDirectory(cwd.getAbsolutePath());
+            dialog.setVisible(true);
+            String result = dialog.getFile();
+            if (result != null) {
+                IFS loaded = load(new File(dialog.getDirectory(), result));
                 loaded.setSize(size);
                 show(EDITOR);
                 bus.post(loaded);
@@ -358,18 +361,19 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
         file.add(save);
         saveAs = menuItem(messages.getText(MENU_FILE_SAVE_AS), e -> {
             File target = new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".xml");
-            saveDialog(target, DIALOG_FILES_XML, "xml", f -> {
+            saveDialog(target, DIALOG_SAVE_IFS, "xml", f -> {
                 String name = f.getName().replace(".xml", "");
                 ifs.setName(name);
                 save(f);
                 updateName(name);
             });
         });
+        saveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, (InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
         saveAs.setEnabled(false);
         file.add(saveAs);
         export = menuItem(messages.getText(MENU_FILE_EXPORT), e -> {
             File target = new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".png");
-            saveDialog(target, DIALOG_FILES_PNG, "png", f -> {
+            saveDialog(target, DIALOG_SAVE_IMAGE, "png", f -> {
                 out.print("Saving PNG image %s", f.getName());
                 saveImage(viewer.getImage(), f);
             });
@@ -414,7 +418,7 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
         }
         file.add(menuItem(messages.getText(MENU_FILE_PREFERENCES_SAVE), e -> {
             File target = Optional.fromNullable(override).or(Paths.get(Config.PROPERTIES_FILE)).toFile();
-            saveDialog(target, DIALOG_FILES_PROPERTIES, "properties", f -> {
+            saveDialog(target, DIALOG_SAVE_PREFERENCES, "properties", f -> {
                 config.save(f);
             });
         }));
@@ -532,16 +536,17 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
         setVisible(true);
     }
 
-    public void saveDialog(File file, String filterText, String extension, Consumer<File> action) {
+    public void saveDialog(File file, String title, String extension, Consumer<File> action) {
         pauseViewer(() -> {
-            FileNameExtensionFilter filter = new FileNameExtensionFilter(messages.getText(filterText), extension);
-            JFileChooser chooser = new JFileChooser();
-            chooser.setCurrentDirectory(cwd);
-            chooser.setFileFilter(filter);
-            chooser.setSelectedFile(file);
-            int result = chooser.showSaveDialog(null);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                File selected = chooser.getSelectedFile();
+            FilenameFilter filter = (d, n) -> n.endsWith(".xml");
+            FileDialog dialog = new FileDialog(this, messages.getText(title), FileDialog.SAVE);
+            dialog.setFilenameFilter(filter);
+            dialog.setDirectory(cwd.getAbsolutePath());
+            dialog.setFile(file.getName());
+            dialog.setVisible(true);
+            String result = dialog.getFile();
+            if (result != null) {
+                File selected = new File(dialog.getDirectory(), result);
                 String name = selected.getName();
                 if (!name.toLowerCase().endsWith("." + extension)) {
                     selected = new File(selected.getParent(), name + "." + extension);

@@ -512,11 +512,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     /** @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent) */
     @Override
     public void mousePressed(MouseEvent e) {
-        if (SwingUtilities.isLeftMouseButton(e)) {
+        if (!isContextMenu(e) && SwingUtilities.isLeftMouseButton(e)) {
             zoom = new Rectangle(e.getX(), e.getY(), 0, 0);
             repaint();
-        } else if (SwingUtilities.isRightMouseButton(e)) {
-            viewer.show(e.getComponent(), e.getX(), e.getY());
         }
     }
 
@@ -540,7 +538,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     /** @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent) */
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (SwingUtilities.isLeftMouseButton(e)) {
+        if (!isContextMenu(e) && SwingUtilities.isLeftMouseButton(e)) {
             if (zoom != null) {
                 stop();
 
@@ -565,6 +563,15 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 reset();
                 start();
             }
+        }
+    }
+
+    public boolean isContextMenu(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            viewer.show(e.getComponent(), e.getX(), e.getY());
+            return true;
+        } else {
+            return false;
         }
     }
 
