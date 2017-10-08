@@ -68,9 +68,10 @@ public class Messages {
     public static final String MENU_VIEWER_OVERLAY = "explorer.menu.viewer.overlay";
     public static final String MENU_VIEWER_INFO = "explorer.menu.viewer.info";
 
-    public static final String DIALOG_FILES_XML = "explorer.dialog.files.xml";
-    public static final String DIALOG_FILES_PNG = "explorer.dialog.files.png";
-    public static final String DIALOG_FILES_PROPERTIES = "explorer.dialog.files.properties";
+    public static final String DIALOG_LOAD_IFS = "explorer.dialog.load.ifs";
+    public static final String DIALOG_SAVE_IFS = "explorer.dialog.save.ifs";
+    public static final String DIALOG_SAVE_IMAGE = "explorer.dialog.save.image";
+    public static final String DIALOG_SAVE_PREFERENCES = "explorer.dialog.save.preferences";
 
     public static final String DIALOG_PROPERTIES_TITLE = "explorer.dialog.properties.title";
     public static final String DIALOG_PROPERTIES_X = "explorer.dialog.properties.x";
