@@ -15,11 +15,15 @@
  */
 package iterator;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static iterator.Utils.NEWLINE;
 import static iterator.Utils.version;
 import static iterator.util.Config.CONFIG_OPTION;
 import static iterator.util.Config.CONFIG_OPTION_LONG;
 import static iterator.util.Config.MIN_WINDOW_SIZE;
+import static iterator.util.Config.OUTPUT_OPTION;
+import static iterator.util.Config.OUTPUT_OPTION_LONG;
 import static iterator.util.Config.PALETTE_OPTION;
 import static iterator.util.Config.PALETTE_OPTION_LONG;
 
@@ -61,17 +65,16 @@ public class Renderer implements BiConsumer<Throwable, String> {
 
     private Config config;
     private Output out = new Output();
-    private Path override;
+    private Path override, picture;
     private String paletteFile;
     private Iterator iterator;
     private IFS ifs;
     private Dimension size;
-    private Path picture;
 
     public Renderer(String...argv) {
         // Parse arguments
-        if (argv.length < 2) {
-            out.error("Must have at least two arguments");
+        if (argv.length < 1) {
+            out.error("Must have at least one argument");
         }
         for (int i = 0; i < argv.length - 2; i++) {
             // Argument is a program option
@@ -93,6 +96,13 @@ public class Renderer implements BiConsumer<Throwable, String> {
                     } else {
                         out.error("Configuration file argument not provided");
                     }
+                } else if (argv[i].equalsIgnoreCase(OUTPUT_OPTION) ||
+                        argv[i].equalsIgnoreCase(OUTPUT_OPTION_LONG)) {
+                    if (argv.length >= i + 1) {
+                        picture = Paths.get(argv[++i]);
+                    } else {
+                        out.error("Output picture file argument not provided");
+                    }
                 } else {
                     out.error("Cannot parse option: %s", argv[i]);
                 }
@@ -107,12 +117,8 @@ public class Renderer implements BiConsumer<Throwable, String> {
             out.error("Cannot load XML data file: %s", file.getFileName());
         }
 
-        // Picture file name
-        String pictureFile = argv[argv.length - 1];
-        if (!pictureFile.endsWith(".png")) {
-            pictureFile += ".png";
-        }
-        picture = Paths.get(pictureFile);
+        // Verify output location
+        checkNotNull(picture, "Output picture file must be set");
 
         // Load configuration
         config = Config.loadProperties(override);
