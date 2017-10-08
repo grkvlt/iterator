@@ -15,8 +15,6 @@
  */
 package iterator;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static iterator.Utils.NEWLINE;
 import static iterator.Utils.version;
 import static iterator.util.Config.CONFIG_OPTION;
@@ -110,15 +108,17 @@ public class Renderer implements BiConsumer<Throwable, String> {
         }
 
         // IFS file argument
-        Path file = Paths.get(argv[argv.length - 2]);
+        Path file = Paths.get(argv[argv.length - 1]);
         if (Files.isReadable(file)) {
             ifs = IFS.load(file.toFile());
         } else {
-            out.error("Cannot load XML data file: %s", file.getFileName());
+            out.error("Cannot load IFS data file: %s", file.getFileName());
         }
 
-        // Verify output location
-        checkNotNull(picture, "Output picture file must be set");
+        // Check output setting
+        if (picture == null) {
+            out.error("Output picture file must be set");
+        }
 
         // Load configuration
         config = Config.loadProperties(override);

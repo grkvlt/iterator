@@ -15,9 +15,6 @@
  */
 package iterator;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static iterator.Utils.NEWLINE;
 import static iterator.Utils.saveImage;
 import static iterator.Utils.version;
@@ -188,11 +185,16 @@ public class Animator implements BiConsumer<Throwable, String> {
         }
 
         // Verify output location
-        checkNotNull(output, "Output location must be set");
-        if (Files.exists(output)) {
-            checkState(Files.isDirectory(output), "Output location '%s' not a direcotry", output);
+        if (output == null) {
+            out.error("Output location must be set");
         } else {
-            Files.createDirectories(output);
+            if (Files.exists(output)) {
+                if (!Files.isDirectory(output)) {
+                    out.error("Output location '%s' not a direcotry", output);
+                }
+            } else {
+                Files.createDirectories(output);
+            }
         }
 
         // Load configuration
@@ -211,12 +213,19 @@ public class Animator implements BiConsumer<Throwable, String> {
 
         // Animation file argument
         Path animation = Paths.get(argv[argv.length - 1]);
-        checkArgument(Files.exists(animation), "Animation file '%s' not found", animation);
+        if (!Files.exists(animation)) {
+            out.error("Animation file '%s' not found", animation);
+        }
         parse(animation);
 
-        // Check input and output settings
-        checkNotNull(input, "IFS input file must be set");
-        checkState(Files.exists(input), "IFS input file '%s' not found", input);
+        // Check input file settings
+        if (input == null) {
+            out.error("IFS input file must be set");
+        } else {
+            if (!Files.exists(input)) {
+                out.error("IFS input file '%s' not found", input);
+            }
+        }
     }
 
     /**
