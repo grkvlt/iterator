@@ -88,7 +88,7 @@ public class IFS extends ForwardingList<Function> {
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             marshaller.marshal(ifs, writer);
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -99,7 +99,7 @@ public class IFS extends ForwardingList<Function> {
             IFS ifs = (IFS) unmarshaller.unmarshal(reader);
             return ifs;
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
