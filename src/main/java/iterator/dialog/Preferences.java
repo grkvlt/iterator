@@ -82,8 +82,8 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
         paletteFile = addDropDown(messages.getText(DIALOG_PREFERENCES_PALETTE_FILE), Config.PALETTE_FILES);
         paletteSize = addSpinner(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), Config.MIN_PALETTE_SIZE, Config.MAX_PALETTE_SIZE);
         seed = addProperty(messages.getText(DIALOG_PREFERENCES_PALETTE_SEED), Formatter.longs());
-        gamma = addProperty(messages.getText(DIALOG_PREFERENCES_GAMMA), Formatter.range(Range.openClosed(0f, 5f), Formatter.floats(2)));
-        vibrancy = addProperty(messages.getText(DIALOG_PREFERENCES_VIBRANCY), Formatter.range(Range.openClosed(0f, 1f), Formatter.floats(2)));
+        gamma = addProperty(messages.getText(DIALOG_PREFERENCES_GAMMA), Formatter.range(Range.open(0f, 5f), Formatter.floats(2)));
+        vibrancy = addProperty(messages.getText(DIALOG_PREFERENCES_VIBRANCY), Formatter.range(Range.open(0f, 2f), Formatter.floats(2)));
         blurKernel = addProperty(messages.getText(DIALOG_PREFERENCES_BLUR), Formatter.integers(1, 256));
         limit = addOptionalProperty(messages.getText(DIALOG_PREFERENCES_ITERATIONS_LIMIT), Formatter.optional(Formatter.longs()));
         threads = addSpinner(messages.getText(DIALOG_PREFERENCES_THREADS), Config.MIN_THREADS, Runtime.getRuntime().availableProcessors());
