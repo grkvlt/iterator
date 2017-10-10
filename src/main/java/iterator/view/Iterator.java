@@ -22,6 +22,7 @@ import static iterator.Utils.alpha;
 import static iterator.Utils.context;
 import static iterator.Utils.getPixel;
 import static iterator.Utils.locked;
+import static iterator.Utils.octet;
 import static iterator.Utils.unity;
 import static iterator.Utils.weight;
 
@@ -85,7 +86,7 @@ public class Iterator implements Runnable, ThreadFactory {
     private long density[];
     private long blur[];
     private double colour[];
-    private float vibrancy;
+    private float vibrancy, vibrancyMax;
     private int kernel;
     private long max;
     private AtomicBoolean latch = new AtomicBoolean(true);
@@ -151,6 +152,7 @@ public class Iterator implements Runnable, ThreadFactory {
         points.set(1, new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
 
         vibrancy = config.getVibrancy();
+        vibrancyMax = unity().apply(vibrancy).floatValue();
         kernel = config.getBlurKernel();
         top = new int[size.width * size.height];
         density = new long[size.width * size.height];
@@ -182,7 +184,7 @@ public class Iterator implements Runnable, ThreadFactory {
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
             g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
             g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, vibrancy));
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
 
             if (functions.isEmpty()) return;
 
@@ -251,7 +253,7 @@ public class Iterator implements Runnable, ThreadFactory {
                     Color color = Color.BLACK;
                     if (mode.isColour()) {
                         if (mode.isIFSColour()) {
-                            color = Color.getHSBColor((float) (old.getX() / size.getWidth()), (float) (old.getY() / size.getHeight()), vibrancy);
+                            color = Color.getHSBColor((float) (old.getX() / size.getWidth()), (float) (old.getY() / size.getHeight()), vibrancyMax);
                         } else if (mode == Mode.GRADIENT) {
                             color = getPixel(config.getGradientImage(), size, old.getX(), old.getY());
                         } else if (mode.isPalette()) {
@@ -266,9 +268,9 @@ public class Iterator implements Runnable, ThreadFactory {
                             }
                         } else {
                             if (render == Render.TOP) {
-                                color = Color.getHSBColor((float) top[p] / (float) functions.size(), vibrancy, vibrancy);
+                                color = Color.getHSBColor((float) top[p] / (float) functions.size(), vibrancyMax, vibrancyMax);
                             } else {
-                                color = Color.getHSBColor((float) j / (float) functions.size(), vibrancy, vibrancy);
+                                color = Color.getHSBColor((float) j / (float) functions.size(), vibrancyMax, vibrancyMax);
                             }
                         }
                         if (render.isDensity()) {
@@ -297,7 +299,8 @@ public class Iterator implements Runnable, ThreadFactory {
                     if (!render.isDensity()) {
                         // Apply controller gamma correction
                         Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
-                        g.setPaint(alpha(Color.HSBtoRGB(hsb[0], hsb[1] * vibrancy, (float) Math.pow(hsb[2], config.getGamma())), color.getAlpha()));
+                        g.setPaint(alpha(Color.HSBtoRGB(hsb[0], unity().apply(hsb[1] * vibrancy).floatValue(), unity().apply(Math.pow(hsb[2], config.getGamma()) * vibrancy).floatValue()),
+                                octet().apply((int) (color.getAlpha() * vibrancy))));
                         rect.setLocation(x, y);
                         g.fill(rect);
                     }
@@ -342,7 +345,8 @@ public class Iterator implements Runnable, ThreadFactory {
                                 rgb[2] *= gray;
                             }
                             Color.RGBtoHSB(rgb[0], rgb[1], rgb[2], hsb);
-                            g.setPaint(alpha(Color.HSBtoRGB(hsb[0], hsb[1], gray * vibrancy), (int) (ratio * 255 * vibrancy)));
+                            g.setPaint(alpha(Color.HSBtoRGB(hsb[0], unity().apply(hsb[1] * vibrancy).floatValue(), unity().apply(gray * vibrancy).floatValue()),
+                                    octet().apply((int) (ratio * 255 * vibrancy))));
                         } else {
                             g.setPaint(new Color(gray, gray, gray, (float) ratio));
                         }
