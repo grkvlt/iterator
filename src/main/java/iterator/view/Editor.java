@@ -689,7 +689,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     start = snap(e.getPoint());
                     selected = null;
                     setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-                    if (e.isControlDown() && reflection == null) {
+                    if (e.isMetaDown() && reflection == null) {
                         reflection = Reflection.create(getSize());
                         reflection.x = start.x;
                         reflection.y = start.y;
@@ -724,7 +724,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                 }
 
                 if (reflection != null) {
-                    if (e.isControlDown()) {
+                    if (e.isMetaDown()) {
                         reflection.r = Math.atan2(dx, dy);
                     }
                     ifs.add(reflection);
@@ -788,7 +788,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         if (start != null) {
             end = snap(e.getPoint());
             if (reflection != null) {
-                if (e.isControlDown()) {
+                if (e.isMetaDown()) {
                     int dx = end.x - start.x;
                     int dy = end.y - start.y;
                     reflection.r = Math.IEEEremainder(Math.atan2(dx, dy), Math.PI * 2d);
@@ -823,8 +823,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     try {
                         reverse.inverseTransform(inverseX, inverseX);
                         reverse.inverseTransform(inverseY, inverseY);
-                    } catch (NoninvertibleTransformException e1) {
-                        Throwables.propagate(e1);
+                    } catch (NoninvertibleTransformException nte) {
+                        throw new RuntimeException(nte);
                     }
 
                     int x = resize.x;
