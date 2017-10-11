@@ -101,6 +101,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String TRANSFORM_PROPERTY = EXPLORER_PROPERTY + ".transform";
     public static final String GAMMA_PROPERTY = EXPLORER_PROPERTY + ".gamma";
     public static final String VIBRANCY_PROPERTY = EXPLORER_PROPERTY + ".vibrancy";
+    public static final String VIBRANCY_LIMIT_PROPERTY = VIBRANCY_PROPERTY + ".limit";
     public static final String BLUR_KERNEL_PROPERTY = EXPLORER_PROPERTY + ".blur";
     public static final String GRADIENT_PROPERTY = EXPLORER_PROPERTY + ".gradient";
     public static final String GRADIENT_START_PROPERTY = GRADIENT_PROPERTY + ".start";
@@ -132,13 +133,14 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final CoordinateTransform.Type DEFAULT_TRANSFORM = CoordinateTransform.Type.IDENTITY;
     public static final Float DEFAULT_GAMMA = 1.8f;
     public static final Float DEFAULT_VIBRANCY = 0.9f;
+    public static final Float DEFAULT_VIBRANCY_LIMIT = 0.9f;
     public static final Color DEFAULT_GRADIENT_START = Color.BLUE;
     public static final Color DEFAULT_GRADIENT_END = Color.GREEN;
     public static final Integer DEFAULT_BLUR_KERNEL = 4;
     public static final String[] PALETTE_FILES = { "abstract", "autumn", "car", "car2", "forest", "lego", "night", "trees", "wave" };
     public static final String DEFAULT_PALETTE_FILE = "abstract";
     public static final Integer DEFAULT_PALETTE_SIZE = 64;
-    public static final Integer MIN_PALETTE_SIZE = 16;
+    public static final Integer MIN_PALETTE_SIZE = 4;
     public static final Integer MAX_PALETTE_SIZE = 255;
     public static final Long DEFAULT_PALETTE_SEED = 0l;
     public static final Integer DEFAULT_GRID_MIN = 10;
@@ -473,6 +475,10 @@ public class Config extends ForwardingSortedMap<String, String> {
     public void setVibrancy(float value) { set(VIBRANCY_PROPERTY, value); }
 
     public float getVibrancy() { return get(VIBRANCY_PROPERTY, DEFAULT_VIBRANCY); }
+
+    public void setVibrancyLimit(float value) { set(VIBRANCY_LIMIT_PROPERTY, value); }
+
+    public float getVibrancyLimit() { return get(VIBRANCY_LIMIT_PROPERTY, DEFAULT_VIBRANCY_LIMIT); }
 
     public void setGradientStart(Color value) { set(GRADIENT_START_PROPERTY, String.format("%06x", value.getRGB() & RGB24)); }
 
