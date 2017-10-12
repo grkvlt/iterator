@@ -17,27 +17,26 @@ package iterator.util;
 
 import java.util.Locale;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 
 /**
  * Runtime platform enumeration.
  */
 public enum Platform {
-
     LINUX,
-    MAC_OS_X,
+    MAC,
     WINDOWS,
     UNKNOWN;
 
-    public static final String OS_NAME_PROPERTY = "os.name";
-
     public static Platform getPlatform() {
-        String osName = Strings.nullToEmpty(System.getProperty(OS_NAME_PROPERTY)).toUpperCase(Locale.UK).replace(' ', '_');
+        String os = Strings.nullToEmpty(StandardSystemProperty.OS_NAME.value()).toUpperCase(Locale.ROOT);
+        String name = Iterables.getFirst(Splitter.on(' ').split(os), "UNKNOWN");
         try {
-            // TODO Check behaviour on Windows variants
-            return Platform.valueOf(osName);
+            return Platform.valueOf(name);
         } catch (IllegalArgumentException iee) {
-            // TODO Add other operating systems
             return UNKNOWN;
         }
     }

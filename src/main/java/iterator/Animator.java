@@ -256,7 +256,7 @@ public class Animator implements BiConsumer<Throwable, String> {
             String line = lines.get(l);
             List<String> tokens = Splitter.on(' ').omitEmptyStrings().trimResults().splitToList(line);
             if (tokens.isEmpty()) continue;
-            String type = tokens.get(0).toLowerCase(Locale.UK);
+            String type = tokens.get(0).toLowerCase(Locale.ROOT);
             int args = tokens.size() - 1;
             if (type.startsWith("#")) {
                 continue; // comment
@@ -274,7 +274,7 @@ public class Animator implements BiConsumer<Throwable, String> {
                     Change change = new Change();
                     change.type = tokens.get(0);
                     change.function = Integer.valueOf(tokens.get(1));
-                    String f = tokens.get(2).toLowerCase(Locale.UK);
+                    String f = tokens.get(2).toLowerCase(Locale.ROOT);
                     if (FIELDS.get(change.type).contains(f)) {
                         change.field = f;
                     } else {
