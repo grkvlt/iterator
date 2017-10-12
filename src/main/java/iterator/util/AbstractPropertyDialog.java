@@ -257,7 +257,7 @@ public abstract class AbstractPropertyDialog<T extends AbstractPropertyDialog<T>
                 JColorChooser chooser = new JColorChooser(left ? gradient.getLeft() : gradient.getRight());
                 chooser.setPreviewPanel(new JPanel());
                 Arrays.asList(chooser.getChooserPanels()).stream()
-                        .filter(c -> c.getDisplayName().toLowerCase(Locale.UK).contains("swatch"))
+                        .filter(c -> c.getDisplayName().toLowerCase(Locale.ROOT).contains("swatch"))
                         .findFirst()
                         .ifPresent(c -> {
                             chooser.removeChooserPanel(c);

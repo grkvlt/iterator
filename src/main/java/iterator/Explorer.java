@@ -153,6 +153,7 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
             "",
             "      tab/shift-tab: Cycle between screens",
             "      s/S: Change palette random seed",
+            "      q: Exit the application",
             "",
             "    Editor",
             "      up/down/left/right: Move selcted transform",
@@ -318,7 +319,7 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
 
         menuBar = new JMenuBar();
         JMenu file = new JMenu(messages.getText(MENU_FILE));
-        if (platform != Platform.MAC_OS_X) {
+        if (platform != Platform.MAC) {
             file.add(menuItem(messages.getText(MENU_FILE_ABOUT), e -> {
                 Dialog.show(this::getAbout, this);
             }));
@@ -411,7 +412,7 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
         print.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         print.setEnabled(false);
         file.add(print);
-        if (platform != Platform.MAC_OS_X) {
+        if (platform != Platform.MAC) {
             file.add(menuItem(messages.getText(MENU_FILE_PREFERENCES), e -> {
                 Dialog.show(this::getPreferences, this);
             }));
@@ -422,7 +423,7 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
                 config.save(f);
             });
         }));
-        if (platform != Platform.MAC_OS_X) {
+        if (platform != Platform.MAC) {
             JMenuItem quit = menuItem(messages.getText(MENU_FILE_QUIT), e -> {
                 System.exit(0);
             });
@@ -511,7 +512,7 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
 
         // Platform specifics
         // TODO Windows specific UI configuration
-        if (platform == Platform.MAC_OS_X) {
+        if (platform == Platform.MAC) {
             try {
                 Class<?> support = Class.forName("iterator.AppleSupport");
                 Constructor<?> ctor = support.getConstructor(Explorer.class);
@@ -638,9 +639,9 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
     public void updateName(String updated) {
         String name = Splitter.onPattern("[^a-z0-9]")
                 .omitEmptyStrings()
-                .splitToList(updated.toLowerCase(Locale.UK))
+                .splitToList(updated.toLowerCase(Locale.ROOT))
                 .stream()
-                .map(s -> s.substring(0, 1).toUpperCase(Locale.UK) + s.substring(1))
+                .map(s -> s.substring(0, 1).toUpperCase(Locale.ROOT) + s.substring(1))
                 .collect(Collectors.joining(" "));
         setTitle(name);
         repaint();
