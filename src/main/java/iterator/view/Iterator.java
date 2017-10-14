@@ -29,6 +29,7 @@ import static iterator.Utils.weight;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
@@ -179,12 +180,7 @@ public class Iterator implements Runnable, ThreadFactory {
 
     public void iterate(BufferedImage targetImage, int s, long k, float scale, Point2D centre, Render render, Mode mode, List<Function> functions, Function function) {
         context(exceptionHandler, targetImage.getGraphics(), g -> {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-            g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
-            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, vibrancyLimit));
+            renderingHints(g);
 
             if (functions.isEmpty()) return;
 
@@ -313,6 +309,8 @@ public class Iterator implements Runnable, ThreadFactory {
 
     public void plotDensity(BufferedImage targetImage, int r, Render render, Mode mode) {
         context(exceptionHandler, targetImage.getGraphics(), g -> {
+            renderingHints(g);
+
             boolean log = render.isLog();
             boolean invert = render.isInverse();
             float hsb[] = new float[3];
@@ -364,6 +362,15 @@ public class Iterator implements Runnable, ThreadFactory {
                 }
             }
         });
+    }
+
+    private void renderingHints(Graphics2D g) {
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+        g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+        g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, vibrancyLimit));
     }
 
     public BufferedImage newImage() {
