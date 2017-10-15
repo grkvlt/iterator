@@ -5,7 +5,9 @@ Iterated Function System Explorer.
 
 ![viewer](http://grkvlt.github.io/iterator/images/viewer-overlay-grid.png)
 
-See <http://grkvlt.github.io/iterator/> for further documentation.
+See the [Exploring Iterated Function Systems](https://medium.com/@grkvlt/exploring-iterated-function-systems-671b7e99d360)
+article and the [HTML documentation](http://grkvlt.github.io/iterator/) - also available as a
+[PDF](https://github.com/grkvlt/iterator/releases/download/v1.5.0/IFS.Explorer.1.5.0.pdf) - for more details.
 
 ## Features
 
@@ -23,7 +25,7 @@ See <http://grkvlt.github.io/iterator/> for further documentation.
   - Printing and export to PNG
   - Multi-threaded rendering
 - IFS details view
-  - Transform matrix and reflection co-ordinates
+  - Transform matrix and reflection coordinates
   - HTML rendering and printing
 - Save and load as XML
 - Animated changes to IFS
@@ -37,13 +39,16 @@ See <http://grkvlt.github.io/iterator/> for further documentation.
 
 ## TODO
 
-- Help and improved documentation
+- Documentation
+  - JavaDoc for whole codebase
+  - Online HTML help
+  - Illustrate rendering modes
 - Improved full-screen mode
 - IFS enhancements
   - Allow non-square aspect ratio
   - Use unit vectors as basis
 - Platform support
-  - Embedded applet
+  - Web application and REST API
   - Android application
   - Windows platform integration
 - Animator enhancements
