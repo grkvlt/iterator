@@ -35,7 +35,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ForwardingList;
@@ -62,24 +61,14 @@ public class IFS extends ForwardingList<Function> {
 
     public static final String UNTITLED = "untitled";
 
-    public static final Comparator<Transform> Z_ORDER = new Comparator<Transform>() {
-        @Override
-        public int compare(Transform left, Transform right) {
-            return ComparisonChain.start()
+    public static final Comparator<Function> IDENTITY = (left, right) ->
+            Integer.compare(left.getId(), right.getId());
+
+    public static final Comparator<Transform> Z_ORDER = (left, right) ->
+            ComparisonChain.start()
                     .compare(left.getZIndex(), right.getZIndex())
                     .compare(left, right, IDENTITY)
                     .result();
-        }
-    };
-
-    public static final Comparator<Function> IDENTITY = new Comparator<Function>() {
-        @Override
-        public int compare(Function left, Function right) {
-            return ComparisonChain.start()
-                    .compare(left.getId(), right.getId())
-                    .result();
-        }
-    };
 
     public static void save(IFS ifs, File file) {
         try (FileWriter writer = new FileWriter(file)) {
