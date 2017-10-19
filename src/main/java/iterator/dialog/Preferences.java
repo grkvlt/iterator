@@ -31,6 +31,7 @@ import static iterator.util.Messages.DIALOG_PREFERENCES_PALETTE_FILE;
 import static iterator.util.Messages.DIALOG_PREFERENCES_PALETTE_SEED;
 import static iterator.util.Messages.DIALOG_PREFERENCES_PALETTE_SIZE;
 import static iterator.util.Messages.DIALOG_PREFERENCES_RENDER;
+import static iterator.util.Messages.DIALOG_PREFERENCES_REVERSE;
 import static iterator.util.Messages.DIALOG_PREFERENCES_THREADS;
 import static iterator.util.Messages.DIALOG_PREFERENCES_TITLE;
 import static iterator.util.Messages.DIALOG_PREFERENCES_TRANSFORM;
@@ -59,6 +60,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
     private final Property<Mode> mode;
     private final Property<Render> render;
     private final Property<CoordinateTransform.Type> transform;
+    private final Property<Boolean> reverse;
     private final Property<String> paletteFile;
     private final Property<Pair<Color>> gradientColour;
     private final Property<Integer> paletteSize, threads, blurKernel;
@@ -81,6 +83,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
         mode = addDropDown(messages.getText(DIALOG_PREFERENCES_MODE), Mode.values());
         render = addDropDown(messages.getText(DIALOG_PREFERENCES_RENDER), Render.values());
         transform = addDropDown(messages.getText(DIALOG_PREFERENCES_TRANSFORM), CoordinateTransform.Type.ordered());
+        reverse = addCheckBox(messages.getText(DIALOG_PREFERENCES_REVERSE));
         gradientColour = addGradientPicker(messages.getText(DIALOG_PREFERENCES_GRADIENT_COLOUR));
         paletteFile = addDropDown(messages.getText(DIALOG_PREFERENCES_PALETTE_FILE), PALETTE_FILES);
         paletteSize = addSpinner(messages.getText(DIALOG_PREFERENCES_PALETTE_SIZE), MIN_PALETTE_SIZE, MAX_PALETTE_SIZE);
@@ -106,6 +109,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
         mode.set(config.getMode());
         render.set(config.getRender());
         transform.set(config.getCoordinateTransformType());
+        reverse.set(config.isReverseOrder());
         gradientColour.set(Pair.of(config.getGradientStart(), config.getGradientEnd()));
         paletteFile.set(config.getPaletteFile());
         paletteSize.set(config.getPaletteSize());
@@ -125,6 +129,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
         config.setMode(mode.get());
         config.setRender(render.get());
         config.setCoordinateTransformType(transform.get());
+        config.setReverseOrder(reverse.get());
         config.setGradientStart(gradientColour.get().getLeft());
         config.setGradientEnd(gradientColour.get().getRight());
         config.setPaletteFile(paletteFile.get());

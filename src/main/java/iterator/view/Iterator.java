@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.BiConsumer;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import com.google.common.base.CaseFormat;
@@ -61,6 +62,7 @@ import com.google.common.util.concurrent.Atomics;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.sun.org.apache.xpath.internal.operations.UnaryOperation;
 
 import iterator.model.Function;
 import iterator.model.Transform;
@@ -204,9 +206,12 @@ public class Iterator implements Runnable, ThreadFactory {
                     continue;
                 }
 
+                // Apply the functions in the correct order depending on configuration
+                UnaryOperator<Point2D> evaluate = config.isReverseOrder() ? p -> f.apply(function.apply(p)) : p -> function.apply(f.apply(p));
+
                 // Evaluate the function twice, first for (x,y) position and then for hue/saturation color space
-                current = points.updateAndGet(0, p -> function.apply(f.apply(p)));
-                old = points.getAndUpdate(1, p -> function.apply(f.apply(p)));
+                current = points.updateAndGet(0, evaluate);
+                old = points.getAndUpdate(1, evaluate);
 
                 // Discard first 10K points
                 if (count.get() < 10) {

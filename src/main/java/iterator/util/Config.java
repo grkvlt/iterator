@@ -99,6 +99,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final String MODE_PROPERTY = EXPLORER_PROPERTY + ".mode";
     public static final String RENDER_PROPERTY = EXPLORER_PROPERTY + ".render";
     public static final String TRANSFORM_PROPERTY = EXPLORER_PROPERTY + ".transform";
+    public static final String REVERSE_ORDER_PROPERTY = EXPLORER_PROPERTY + ".reverse";
     public static final String GAMMA_PROPERTY = EXPLORER_PROPERTY + ".gamma";
     public static final String VIBRANCY_PROPERTY = EXPLORER_PROPERTY + ".vibrancy";
     public static final String VIBRANCY_LIMIT_PROPERTY = VIBRANCY_PROPERTY + ".limit";
@@ -156,6 +157,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Integer MIN_THREADS = 2;
     public static final Boolean DEFAULT_DEBUG = false;
     public static final Boolean DEFAULT_ITERATIONS_UNLIMITED = true;
+    public static final Boolean DEFAULT_REVERSE_ORDER = false;
 
     public static final List<String> FOOTER = Arrays.asList(
             "#",
@@ -467,6 +469,10 @@ public class Config extends ForwardingSortedMap<String, String> {
     public CoordinateTransform.Type getCoordinateTransformType() { return get(TRANSFORM_PROPERTY, DEFAULT_TRANSFORM); }
 
     public CoordinateTransform getCoordinateTransform() { return getCoordinateTransformType().getFunction(); }
+
+    public void setReverseOrder(boolean value) { set(REVERSE_ORDER_PROPERTY, value); }
+
+    public boolean isReverseOrder() { return get(REVERSE_ORDER_PROPERTY, DEFAULT_REVERSE_ORDER); }
 
     public void setGamma(float value) { set(GAMMA_PROPERTY, value); }
 
