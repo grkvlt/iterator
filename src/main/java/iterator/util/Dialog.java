@@ -27,21 +27,21 @@ import com.google.common.base.Supplier;
  */
 public interface Dialog<T extends Dialog<T>> extends AutoCloseable, Supplier<T> {
 
-    Font CALIBRI_PLAIN_14 = calibri(Font.PLAIN, 14);
-    Font CALIBRI_ITALIC_14 = calibri(Font.ITALIC, 14);
-    Font CALIBRI_BOLD_14 = calibri(Font.BOLD, 14);
-    Font CALIBRI_BOLD_ITALIC_14 = calibri(Font.BOLD | Font.ITALIC, 14);
-    Font CALIBRI_BOLD_16 = calibri(Font.BOLD, 16);
+    public static final Font CALIBRI_PLAIN_14 = calibri(Font.PLAIN, 14);
+    public static final Font CALIBRI_ITALIC_14 = calibri(Font.ITALIC, 14);
+    public static final Font CALIBRI_BOLD_14 = calibri(Font.BOLD, 14);
+    public static final Font CALIBRI_BOLD_ITALIC_14 = calibri(Font.BOLD | Font.ITALIC, 14);
+    public static final Font CALIBRI_BOLD_16 = calibri(Font.BOLD, 16);
 
     /** Method to display the dialog box. */
-    void showDialog();
+    public void showDialog();
 
     @Override
-    default T get() {
+    public default T get() {
         return (T) this;
     }
 
-    static <T extends Dialog<T>> void show(Supplier<T> supplier, BiConsumer<Throwable, String>...exceptionHandlers) {
+    public static <T extends Dialog<T>> void show(Supplier<T> supplier, BiConsumer<Throwable, String>...exceptionHandlers) {
         try (Dialog dialog = supplier.get()) {
             dialog.showDialog();
         } catch (Throwable t) {

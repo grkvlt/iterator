@@ -30,22 +30,22 @@ import com.google.common.base.Supplier;
  */
 public interface Property<T> extends Supplier<T> {
 
-    /** Method to set the property. */
-    void set(T value);
+    /** Set the property. */
+    public void set(T value);
 
-    interface OptionalProperty<T> extends Property<Optional<T>> {
+    public static interface OptionalProperty<T> extends Property<Optional<T>> {
 
-        /** Method to check if the value is present. */
-        default boolean isPresent() {
+        /** Check if the value is present. */
+        public default boolean isPresent() {
             return get().isPresent();
         }
 
         /** Return either the value or {@literal null}. */
-        default T getNullable() {
+        public default T getNullable() {
             return get().orNull();
         }
 
-        static <T> OptionalProperty<T> attach(JFormattedTextField field) {
+        public static <T> OptionalProperty<T> attach(JFormattedTextField field) {
             return new OptionalProperty<T>() {
                 @SuppressWarnings("unchecked")
                 @Override
@@ -60,7 +60,7 @@ public interface Property<T> extends Supplier<T> {
         }
     }
 
-    static <T> Property<T> attach(JFormattedTextField field) {
+    public static <T> Property<T> attach(JFormattedTextField field) {
         return new Property<T>() {
             @SuppressWarnings("unchecked")
             @Override
@@ -74,7 +74,7 @@ public interface Property<T> extends Supplier<T> {
         };
     }
 
-    static <T> Property<T> attach(JComboBox<T> field) {
+    public static <T> Property<T> attach(JComboBox<T> field) {
         return new Property<T>() {
             @SuppressWarnings("unchecked")
             @Override
@@ -88,7 +88,7 @@ public interface Property<T> extends Supplier<T> {
         };
     }
 
-    static Property<Integer> attach(JSpinner field) {
+    public static Property<Integer> attach(JSpinner field) {
         return new Property<Integer>() {
             @SuppressWarnings("unchecked")
             @Override
@@ -102,7 +102,7 @@ public interface Property<T> extends Supplier<T> {
         };
     }
 
-    static Property<Boolean> attach(JCheckBox field) {
+    public static Property<Boolean> attach(JCheckBox field) {
         return new Property<Boolean>() {
             @Override
             public Boolean get() {
