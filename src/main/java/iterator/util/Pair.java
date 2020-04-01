@@ -26,7 +26,7 @@ public class Pair<T> {
     private T left, right;
 
     public static <T> Pair<T> of(T left, T right) {
-        return new Pair(left, right);
+        return new Pair<>(left, right);
     }
 
     public static <T> Pair<T> of() {
@@ -57,7 +57,7 @@ public class Pair<T> {
     public void setRight(T right) { this.right = right; }
 
     public Map.Entry<T,T> asEntry() {
-        return new AbstractMap.SimpleEntry(left, right);
+        return new AbstractMap.SimpleEntry<>(left, right);
     }
 
     @Override

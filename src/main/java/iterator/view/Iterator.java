@@ -51,6 +51,8 @@ import java.util.function.BiConsumer;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -62,7 +64,6 @@ import com.google.common.util.concurrent.Atomics;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.sun.org.apache.xpath.internal.operations.UnaryOperation;
 
 import iterator.model.Function;
 import iterator.model.Transform;
@@ -78,34 +79,34 @@ import iterator.util.Formatter.FloatFormatter;
  */
 public class Iterator implements Runnable, ThreadFactory {
 
-    public static enum Task { ITERATE, PLOT_DENSITY }
+    public enum Task { ITERATE, PLOT_DENSITY }
 
     private final Config config;
     private final BiConsumer<Throwable, String> exceptionHandler;
 
     private List<Function> transforms;
     private AtomicReference<BufferedImage> image = Atomics.newReference();
-    private int top[];
-    private long density[];
-    private long blur[];
-    private double colour[];
+    private int[] top;
+    private long[] density;
+    private long[] blur;
+    private double[] colour;
     private float vibrancy, vibrancyLimit;
     private int kernel;
     private long max;
     private AtomicBoolean latch = new AtomicBoolean(true);
     private Object mutex = new Object[0];
     private AtomicReferenceArray<Point2D> points = Atomics.newReferenceArray(2);
-    private AtomicLong count = new AtomicLong(0l);
+    private AtomicLong count = new AtomicLong(0L);
     private AtomicInteger task = new AtomicInteger(0);
     private AtomicBoolean running = new AtomicBoolean(false);
-    private AtomicLong token = new AtomicLong(0l);
+    private AtomicLong token = new AtomicLong(0L);
     private Random random = new Random();
     private float scale = 1.0f;
     private Point2D centre;
     private Dimension size;
     private ThreadGroup group = new ThreadGroup("iterator");
     private ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool(this));
-    private Multimap<Task, Future<?>> tasks = Multimaps.synchronizedListMultimap(Multimaps.newListMultimap(Maps.newHashMap(), Lists::newArrayList));
+    private final Multimap<Task, Future<?>> tasks = Multimaps.synchronizedListMultimap(Multimaps.newListMultimap(Maps.newHashMap(), Lists::newArrayList));
     private ConcurrentMap<Future<?>, AtomicBoolean> state = Maps.newConcurrentMap();
 
     // Listener task to clean up task state collections
@@ -113,7 +114,7 @@ public class Iterator implements Runnable, ThreadFactory {
             synchronized (tasks) {
                 List<Future<?>> done = tasks.values()
                         .stream()
-                        .filter(f -> f.isDone())
+                        .filter(Future::isDone)
                         .collect(Collectors.toList());
                 tasks.values().removeAll(done);
                 state.keySet().removeAll(done);
@@ -151,8 +152,8 @@ public class Iterator implements Runnable, ThreadFactory {
 
         image.set(newImage());
 
-        points.set(0, new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
-        points.set(1, new Point2D.Double((double) random.nextInt(size.width), (double) random.nextInt(size.height)));
+        points.set(0, new Point2D.Double(random.nextInt(size.width), random.nextInt(size.height)));
+        points.set(1, new Point2D.Double(random.nextInt(size.width), random.nextInt(size.height)));
 
         vibrancy = config.getVibrancy();
         vibrancyLimit = config.getVibrancyLimit();
@@ -163,13 +164,13 @@ public class Iterator implements Runnable, ThreadFactory {
         colour = new double[size.width * size.height];
         max = 1;
 
-        count.set(0l);
+        count.set(0L);
     }
 
     public String getInfo() {
         FloatFormatter one = Formatter.floats(1);
         DoubleFormatter four = Formatter.doubles(4);
-        String text = String.format("%sx (%s,%s) %s/%s %s %s() y%s",
+        String info = String.format("%sx (%s,%s) %s/%s %s %s() y%s",
                 one.toString(config.getDisplayScale()),
                 four.toString(config.getDisplayCentreX()),
                 four.toString(config.getDisplayCentreY()),
@@ -177,7 +178,7 @@ public class Iterator implements Runnable, ThreadFactory {
                 config.getMode().isPalette() ? config.getPaletteFile() : (config.getMode().isColour() ? "hsb" : "black"),
                 config.getCoordinateTransformType().getShortName(),
                 one.toString(config.getGamma()));
-        return text;
+        return info;
     }
 
     public void iterate(BufferedImage targetImage, int s, long k, float scale, Point2D centre, Render render, Mode mode, List<Function> functions, Function function) {
@@ -189,13 +190,13 @@ public class Iterator implements Runnable, ThreadFactory {
             int n = functions.size();
             List<Transform> transforms = Lists.newArrayList(Iterables.filter(functions, Transform.class));
             double weight = weight(transforms);
-            float hsb[] = new float[3];
+            float[] hsb = new float[3];
             Rectangle rect = new Rectangle(0, 0, s, s);
             function.setSize(size);
             Point2D old, current;
 
-            for (long i = 0l; i < k; i++) {
-                if (i % 1000l == 0l) {
+            for (long i = 0L; i < k; i++) {
+                if (i % 1000L == 0L) {
                     count.incrementAndGet();
                 }
 
@@ -230,7 +231,7 @@ public class Iterator implements Runnable, ThreadFactory {
                     // Density estimation histogram
                     if (render.isDensity()) {
                         try {
-                            density[p] = LongMath.checkedAdd(density[p], 1l);
+                            density[p] = LongMath.checkedAdd(density[p], 1L);
                             switch (render) {
                                 case LOG_DENSITY_BLUR:
                                 case LOG_DENSITY_BLUR_INVERSE:
@@ -318,8 +319,8 @@ public class Iterator implements Runnable, ThreadFactory {
 
             boolean log = render.isLog();
             boolean invert = render.isInverse();
-            float hsb[] = new float[3];
-            int rgb[] = new int[3];
+            float[] hsb = new float[3];
+            int[] rgb = new int[3];
             float gamma = config.getGamma();
             Rectangle rect = new Rectangle(0, 0, r, r);
             for (int x = 0; x < size.width; x++) {
@@ -394,7 +395,7 @@ public class Iterator implements Runnable, ThreadFactory {
      */
     @Override
     public void run() {
-        if (config.isIterationsUnlimited() || (count.get() * 1000l) <= config.getIterationsLimit()) {
+        if (config.isIterationsUnlimited() || (count.get() * 1000L) <= config.getIterationsLimit()) {
             iterate(image.get(), 1, config.getIterations(), scale, centre,
                     config.getRender(), config.getMode(), transforms, config.getCoordinateTransform());
         } else {
@@ -424,7 +425,7 @@ public class Iterator implements Runnable, ThreadFactory {
 
     /** @see java.util.concurrent.ThreadFactory#newThread(Runnable) */
     @Override
-    public Thread newThread(Runnable r) {
+    public Thread newThread(@Nonnull Runnable r) {
         Thread t = new Thread(group, r);
         t.setName("iterator-" + task.incrementAndGet());
         t.setPriority(Thread.MIN_PRIORITY);
@@ -460,10 +461,9 @@ public class Iterator implements Runnable, ThreadFactory {
                 dump.add(String.format("%s - %s", thread.getName(), stack));
             }
         }
-        String output = dump.stream()
+        return dump.stream()
                 .map(STACK::concat)
                 .collect(Collectors.joining(NEWLINE));
-        return output;
     }
 
     public void updateTasks() {

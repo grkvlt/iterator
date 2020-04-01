@@ -19,7 +19,7 @@ import java.awt.geom.Point2D;
 
 /**
  * Polar Co-ordinate Transform.
- * <p>
+ *
  * Variation 5.
  */
 public class Polar extends CoordinateTransform {

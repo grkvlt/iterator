@@ -39,7 +39,7 @@ public class Version implements Supplier<String> {
         version = readVersion(resource);
     }
 
-    public static final Version instance() {
+    public static Version instance() {
         return INSTANCE;
     }
 

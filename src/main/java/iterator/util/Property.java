@@ -15,12 +15,13 @@
  */
 package iterator.util;
 
+import java.util.Optional;
+
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JSpinner;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 
 /**
@@ -31,21 +32,21 @@ import com.google.common.base.Supplier;
 public interface Property<T> extends Supplier<T> {
 
     /** Set the property. */
-    public void set(T value);
+    void set(T value);
 
-    public static interface OptionalProperty<T> extends Property<Optional<T>> {
+    interface OptionalProperty<T> extends Property<Optional<T>> {
 
         /** Check if the value is present. */
-        public default boolean isPresent() {
+        default boolean isPresent() {
             return get().isPresent();
         }
 
         /** Return either the value or {@literal null}. */
-        public default T getNullable() {
-            return get().orNull();
+        default T getNullable() {
+            return get().orElse(null);
         }
 
-        public static <T> OptionalProperty<T> attach(JFormattedTextField field) {
+        static <T> OptionalProperty<T> attach(JFormattedTextField field) {
             return new OptionalProperty<T>() {
                 @SuppressWarnings("unchecked")
                 @Override
@@ -60,7 +61,7 @@ public interface Property<T> extends Supplier<T> {
         }
     }
 
-    public static <T> Property<T> attach(JFormattedTextField field) {
+    static <T> Property<T> attach(JFormattedTextField field) {
         return new Property<T>() {
             @SuppressWarnings("unchecked")
             @Override
@@ -74,7 +75,7 @@ public interface Property<T> extends Supplier<T> {
         };
     }
 
-    public static <T> Property<T> attach(JComboBox<T> field) {
+    static <T> Property<T> attach(JComboBox<T> field) {
         return new Property<T>() {
             @SuppressWarnings("unchecked")
             @Override
@@ -88,9 +89,8 @@ public interface Property<T> extends Supplier<T> {
         };
     }
 
-    public static Property<Integer> attach(JSpinner field) {
+    static Property<Integer> attach(JSpinner field) {
         return new Property<Integer>() {
-            @SuppressWarnings("unchecked")
             @Override
             public Integer get() {
                 return (Integer) field.getValue();
@@ -102,7 +102,7 @@ public interface Property<T> extends Supplier<T> {
         };
     }
 
-    public static Property<Boolean> attach(JCheckBox field) {
+    static Property<Boolean> attach(JCheckBox field) {
         return new Property<Boolean>() {
             @Override
             public Boolean get() {

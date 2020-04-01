@@ -19,7 +19,7 @@ import java.awt.geom.Point2D;
 
 /**
  * Bubble Co-ordinate Transform.
- * <p>
+ *
  * Variation 28.
  */
 public class Bubble extends CoordinateTransform {

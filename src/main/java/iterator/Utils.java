@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 by Andrew Kennedy.
+ * Copyright 2012-2019 by Andrew Kennedy.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import java.nio.file.FileSystems;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
@@ -45,6 +46,7 @@ import java.util.function.DoubleFunction;
 import java.util.function.IntFunction;
 import java.util.function.LongFunction;
 
+import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -66,11 +68,12 @@ import iterator.util.Version;
  */
 public class Utils {
 
-    public static final String version() {
+    public static String version() {
         return Version.instance().get();
     }
 
-    public static final String NEWLINE = StandardSystemProperty.LINE_SEPARATOR.value();
+    @Nonnull
+    public static final String NEWLINE = Objects.requireNonNull(StandardSystemProperty.LINE_SEPARATOR.value());
 
     public static final String DEBUG = "[?] ";
     public static final String PRINT = "[-] ";
@@ -173,17 +176,18 @@ public class Utils {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException ie) {
-            Thread.interrupted();
+            Thread.currentThread().interrupt();  // set interrupt flag
         }
     }
 
-    /** Critical secion with a {@link Semaphore}. */
+    /** Critical section with a {@link Semaphore}. */
+    @SafeVarargs
     public static void critical(Semaphore semaphore, Runnable action, BiConsumer<Throwable, String>...exceptionHandlers) {
         try {
             semaphore.acquire();
             action.run();
         } catch (InterruptedException ie) {
-            Thread.interrupted();
+            Thread.currentThread().interrupt();  // set interrupt flag
         } catch (Throwable t) {
             for (BiConsumer<Throwable, String> h : exceptionHandlers) {
                 h.accept(t, "Error executing critical section");
@@ -193,8 +197,9 @@ public class Utils {
         }
     }
 
-    /** Critical secion with a {@code synchronized} block. */
-    public static void locked(Object mutex, Runnable action, BiConsumer<Throwable, String>...exceptionHandlers) {
+    /** Critical section with a {@code synchronized} block. */
+    @SafeVarargs
+    public static void locked(@Nonnull Object mutex, Runnable action, BiConsumer<Throwable, String>...exceptionHandlers) {
         synchronized (mutex) {
             try {
                 action.run();
@@ -268,7 +273,7 @@ public class Utils {
         return new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
     }
 
-    /** @see alpha(Color, int) */
+    /** @see #alpha(Color, int) */
     public static Color alpha(int rgb, int alpha) {
         int rgba = (rgb & RGB24) | ((alpha & 0xff) << 24);
         return new Color(rgba, true);
@@ -290,7 +295,7 @@ public class Utils {
     /**
      * Loads an image from a {@link URL} into a {@link BufferedImage}.
      *
-     * @param url
+     * @param url the URL of the image to load
      * @return the loaded image
      */
     public static BufferedImage loadImage(URL url) {
@@ -304,8 +309,8 @@ public class Utils {
     /**
      * Saves a {@link BufferedImage} to a {@link File} as a {@literal PNG}.
      *
-     * @param url
-     * @return the loaded image
+     * @param source the image data
+     * @param file the target image file location
      */
     public static void saveImage(BufferedImage source, File file) {
         try {

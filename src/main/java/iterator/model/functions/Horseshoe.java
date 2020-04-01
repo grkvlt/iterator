@@ -19,7 +19,7 @@ import java.awt.geom.Point2D;
 
 /**
  * Horseshoe Co-ordinate Transform.
- * <p>
+ *
  * Variation 4.
  */
 public class Horseshoe extends CoordinateTransform {

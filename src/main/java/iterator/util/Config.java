@@ -49,17 +49,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.collect.ForwardingSortedMap;
@@ -143,7 +143,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Integer DEFAULT_PALETTE_SIZE = 64;
     public static final Integer MIN_PALETTE_SIZE = 4;
     public static final Integer MAX_PALETTE_SIZE = 255;
-    public static final Long DEFAULT_PALETTE_SEED = 0l;
+    public static final Long DEFAULT_PALETTE_SEED = 0L;
     public static final Integer DEFAULT_GRID_MIN = 10;
     public static final Integer DEFAULT_GRID_MAX = 50;
     public static final Integer DEFAULT_GRID_SNAP = 5;
@@ -151,8 +151,8 @@ public class Config extends ForwardingSortedMap<String, String> {
     public static final Float DEFAULT_DISPLAY_SCALE = 1f;
     public static final Double DEFAULT_DISPLAY_CENTRE_X = 0.5d;
     public static final Double DEFAULT_DISPLAY_CENTRE_Y = 0.5d;
-    public static final Long DEFAULT_ITERATIONS = 10_000l;
-    public static final Long DEFAULT_ITERATIONS_LIMIT = 10_000_000l;
+    public static final Long DEFAULT_ITERATIONS = 10_000L;
+    public static final Long DEFAULT_ITERATIONS_LIMIT = 10_000_000L;
     public static final Integer MIN_WINDOW_SIZE = 400; // Details view requires 350px
     public static final Integer MIN_THREADS = 2;
     public static final Boolean DEFAULT_DEBUG = false;
@@ -165,7 +165,7 @@ public class Config extends ForwardingSortedMap<String, String> {
             "##",
             "");
 
-    public static enum Mode {
+    public enum Mode {
         COLOUR(true, false, false, false),
         PALETTE(true, true, false, false),
         GRADIENT(true, true, false, false),
@@ -183,7 +183,7 @@ public class Config extends ForwardingSortedMap<String, String> {
 
         public boolean isIFSColour() { return ifscolour; }
 
-        private Mode(boolean colour, boolean palette, boolean stealing, boolean ifscolour) {
+        Mode(boolean colour, boolean palette, boolean stealing, boolean ifscolour) {
             this.colour = colour;
             this.palette = palette;
             this.stealing = stealing;
@@ -196,7 +196,7 @@ public class Config extends ForwardingSortedMap<String, String> {
         }
     }
 
-    public static enum Render {
+    public enum Render {
         STANDARD(false, false, false),
         TOP(false, false, false),
         MEASURE(true, false, false),
@@ -226,7 +226,7 @@ public class Config extends ForwardingSortedMap<String, String> {
 
         public boolean isLog() { return log; }
 
-        private Render(boolean inverse, boolean density, boolean log) {
+        Render(boolean inverse, boolean density, boolean log) {
             this.inverse = inverse;
             this.density = density;
             this.log = log;
@@ -247,7 +247,7 @@ public class Config extends ForwardingSortedMap<String, String> {
     private Set<Color> colours;
 
     private Config(Path override) {
-        this.override = Optional.fromNullable(override);
+        this.override = Optional.ofNullable(override);
         this.config = Maps.newTreeMap();
     }
 
@@ -265,15 +265,13 @@ public class Config extends ForwardingSortedMap<String, String> {
         clear();
 
         // Configuration from home directory
-        load(Paths.get(StandardSystemProperty.USER_HOME.value(), "." + PROPERTIES_FILE));
+        load(Paths.get(Objects.requireNonNull(StandardSystemProperty.USER_HOME.value()), "." + PROPERTIES_FILE));
 
         // Configuration from current directory
         load(Paths.get(PROPERTIES_FILE));
 
         // Override file from command line
-        if (override.isPresent()) {
-            load(override.get());
-        }
+        override.ifPresent(this::load);
 
         // Finally load system properties (JAVA_OPTS)
         load(System.getProperties());
@@ -314,7 +312,9 @@ public class Config extends ForwardingSortedMap<String, String> {
     }
 
     public void load(Map<String, String> data) {
-        putAll(Maps.filterKeys(data, EXPLORER_KEYS));
+        Map<String, String> explorer = Maps.newHashMap(data);
+        explorer.keySet().removeIf(EXPLORER_KEYS.negate());
+        putAll(explorer);
     }
 
     public void save(OutputStream stream) {

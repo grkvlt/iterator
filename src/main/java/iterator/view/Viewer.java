@@ -59,7 +59,6 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
-import java.awt.print.PrinterException;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
@@ -89,13 +88,11 @@ import iterator.util.Subscriber;
 public class Viewer extends JPanel implements ActionListener, KeyListener, MouseInputListener, Printable, Subscriber {
 
     private final Explorer controller;
-    private final Messages messages;
     private final Config config;
     private final Output out;
     private final Iterator iterator;
 
     private IFS ifs;
-    private Timer timer;
     private float scale;
     private Point2D centre;
     private Dimension size;
@@ -110,12 +107,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         super();
 
         this.controller = controller;
-        this.messages = controller.getMessages();
+        Messages messages = controller.getMessages();
         this.config = controller.getConfig();
         this.out = controller.getOutput();
         this.iterator = controller.getIterator();
 
-        timer = new Timer(50, this);
+        Timer timer = new Timer(50, this);
         timer.setCoalesce(true);
         timer.start();
 
@@ -123,31 +120,19 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
         properties = Zoom.dialog(controller);
         viewer = new JPopupMenu();
-        viewer.add(menuItem(messages.getText(MENU_VIEWER_ZOOM), e -> {
-            Dialog.show(properties, controller);
-        }));
-        pause = menuItem(messages.getText(MENU_VIEWER_PAUSE), e -> {
-            stop();
-        });
+        viewer.add(menuItem(messages.getText(MENU_VIEWER_ZOOM), e -> Dialog.show(properties, controller)));
+        pause = menuItem(messages.getText(MENU_VIEWER_PAUSE), e -> stop());
         viewer.add(pause);
-        resume = menuItem(messages.getText(MENU_VIEWER_RESUME), e -> {
-            start();
-        });
+        resume = menuItem(messages.getText(MENU_VIEWER_RESUME), e -> start());
         viewer.add(resume);
         JMenuItem separator = new JMenuItem("-");
         separator.setEnabled(false);
         viewer.add(separator);
-        showGrid = checkBoxItem(messages.getText(MENU_VIEWER_GRID), e -> {
-            setGrid(!grid);
-        });
+        showGrid = checkBoxItem(messages.getText(MENU_VIEWER_GRID), e -> setGrid(!grid));
         viewer.add(showGrid);
-        showOverlay = checkBoxItem(messages.getText(MENU_VIEWER_OVERLAY), e -> {
-            setOverlay(!overlay);
-        });
+        showOverlay = checkBoxItem(messages.getText(MENU_VIEWER_OVERLAY), e -> setOverlay(!overlay));
         viewer.add(showOverlay);
-        showInfo = checkBoxItem(messages.getText(MENU_VIEWER_INFO), e -> {
-            setInfo(!info);
-        });
+        showInfo = checkBoxItem(messages.getText(MENU_VIEWER_INFO), e -> setInfo(!info));
         viewer.add(showInfo);
         add(viewer);
 
@@ -311,7 +296,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 } else {
                     g.setPaint(alpha(config.getRender().getForeground(), 64));
                 }
-                double pts[] = { x, y1, x, y1 + n * spacing };
+                double[] pts = { x, y1, x, y1 + n * spacing };
                 view.transform(pts, 0, pts, 0, 2);
                 if (pts[0] > 0d && pts[0] < size.getWidth()) {
                     Line2D line = new Line2D.Double(pts[0], pts[1], pts[2], pts[3]);
@@ -325,7 +310,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
                 } else {
                     g.setPaint(alpha(config.getRender().getForeground(), 64));
                 }
-                double pts[] = { x1, y, x1 + n * spacing, y };
+                double[] pts = { x1, y, x1 + n * spacing, y };
                 view.transform(pts, 0, pts, 0, 2);
                 if (pts[1] > 0d && pts[1] < size.getWidth()) {
                     Line2D line = new Line2D.Double(pts[0], pts[1], pts[2], pts[3]);
@@ -355,9 +340,9 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     }
 
     public String getInfoText() {
-        String text = String.format("%s [%s/%d]",
+        String info = String.format("%s [%s/%d]",
                 iterator.getInfo(), iterator.getTaskSet().isEmpty() ? "-" : Integer.toString(iterator.getTaskSet().size()), config.getThreads());
-        return text;
+        return info;
     }
 
     public BufferedImage getImage() {
@@ -366,7 +351,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
 
     /** @see java.awt.print.Printable#print(Graphics, PageFormat, int) */
     @Override
-    public int print(Graphics graphics, PageFormat pf, int page) throws PrinterException {
+    public int print(Graphics graphics, PageFormat pf, int page) {
         if (page > 0) return NO_SUCH_PAGE;
 
         context(controller, graphics, g -> {
@@ -512,7 +497,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     /** @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent) */
     @Override
     public void mousePressed(MouseEvent e) {
-        if (!isContextMenu(e) && SwingUtilities.isLeftMouseButton(e)) {
+        if (notContextMenu(e) && SwingUtilities.isLeftMouseButton(e)) {
             zoom = new Rectangle(e.getX(), e.getY(), 0, 0);
             repaint();
         }
@@ -538,7 +523,7 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
     /** @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent) */
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (!isContextMenu(e) && SwingUtilities.isLeftMouseButton(e)) {
+        if (notContextMenu(e) && SwingUtilities.isLeftMouseButton(e)) {
             if (zoom != null) {
                 stop();
 
@@ -566,12 +551,12 @@ public class Viewer extends JPanel implements ActionListener, KeyListener, Mouse
         }
     }
 
-    public boolean isContextMenu(MouseEvent e) {
+    public boolean notContextMenu(MouseEvent e) {
         if (e.isPopupTrigger()) {
             viewer.show(e.getComponent(), e.getX(), e.getY());
-            return true;
-        } else {
             return false;
+        } else {
+            return true;
         }
     }
 

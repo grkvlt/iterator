@@ -19,7 +19,7 @@ import java.awt.geom.Point2D;
 
 /**
  * Tangent Co-ordinate Transform.
- * <p>
+ *
  * Variation 42.
  */
 public class Tangent extends CoordinateTransform {

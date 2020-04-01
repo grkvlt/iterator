@@ -14,7 +14,7 @@ import iterator.model.Function;
 
 public abstract class CoordinateTransform implements Function {
 
-    public static enum Type {
+    public enum Type {
 
         IDENTITY("id", Identity.create()),
         SPHERICAL("sph", Spherical.create()),
@@ -33,7 +33,7 @@ public abstract class CoordinateTransform implements Function {
         private final String name;
         private final CoordinateTransform function;
 
-        private Type(String name, CoordinateTransform function) {
+        Type(String name, CoordinateTransform function) {
             this.name = name;
             this.function = function;
         }

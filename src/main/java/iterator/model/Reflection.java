@@ -34,17 +34,17 @@ import com.google.common.base.Objects;
 @XmlRootElement(name = "Reflection")
 public class Reflection implements Function {
 
-    @XmlAttribute
+    @XmlAttribute(required = true)
     private int id;
-    @XmlAttribute(required = false)
+    @XmlAttribute
     public Integer x;
-    @XmlAttribute(required = false)
+    @XmlAttribute
     public Integer y;
-    @XmlAttribute(required = false)
+    @XmlAttribute
     public Double r;
-    @XmlAttribute
+    @XmlAttribute(required = true)
     private int sw;
-    @XmlAttribute
+    @XmlAttribute(required = true)
     private int sh;
 
     private Reflection() {

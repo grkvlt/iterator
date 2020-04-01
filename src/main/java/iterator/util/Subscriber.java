@@ -30,9 +30,9 @@ import iterator.model.IFS;
 public interface Subscriber {
 
     /** Callback for the IFS changes. */
-    public void updated(IFS ifs);
+    void updated(IFS ifs);
 
     /** Callback for display size changes. */
-    public void resized(Dimension size);
+    void resized(Dimension size);
 
 }

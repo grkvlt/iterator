@@ -19,7 +19,7 @@ import java.awt.geom.Point2D;
 
 /**
  * Swirl Co-ordinate Transform.
- * <p>
+ *
  * Variation 3.
  */
 public class Swirl extends CoordinateTransform {

@@ -38,8 +38,8 @@ import static iterator.util.Messages.DIALOG_PREFERENCES_TRANSFORM;
 import static iterator.util.Messages.DIALOG_PREFERENCES_VIBRANCY;
 
 import java.awt.Color;
+import java.util.Optional;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Range;
 
 import iterator.Explorer;
@@ -117,7 +117,7 @@ public class Preferences extends AbstractPropertyDialog<Preferences> {
         gamma.set(config.getGamma());
         vibrancy.set(config.getVibrancy());
         blurKernel.set(config.getBlurKernel());
-        limit.set(config.isIterationsUnlimited() ? Optional.absent() : Optional.of(config.getIterationsLimit()));
+        limit.set(config.isIterationsUnlimited() ? Optional.empty() : Optional.of(config.getIterationsLimit()));
         threads.set(config.getThreads());
         debug.set(config.isDebug());
 

@@ -36,12 +36,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.StandardSystemProperty;
@@ -110,8 +110,8 @@ public class Animator implements BiConsumer<Throwable, String> {
             .put(CONFIG, 2)
             .build();
 
-    public static final Function<String, Boolean> OPTIONAL = Functions.forMap(OPTIONAL_ARGUMENTS, false);
-    public static final Function<String, Integer> NUMBER = Functions.forMap(NUMBER_ARGUMENTS, 0);
+    public static final Function<String, Boolean> OPTIONAL = s -> OPTIONAL_ARGUMENTS.getOrDefault(s, false);
+    public static final Function<String, Integer> NUMBER = s -> NUMBER_ARGUMENTS.getOrDefault(s, 0);
 
     public static final Map<String, List<String>> FIELDS = ImmutableMap.<String, List<String>>builder()
             .put(TRANSFORM, Arrays.asList(X, Y, W, H, R, SHX, SHY))
@@ -135,9 +135,8 @@ public class Animator implements BiConsumer<Throwable, String> {
         public long frames;
     }
 
-    private static final long DEFAULT_FRAMES = 1000l;
-    
-    private IFS ifs;
+    private static final long DEFAULT_FRAMES = 1000L;
+
     private Config config;
     private Output out = new Output();
     private Dimension size;
@@ -243,9 +242,9 @@ public class Animator implements BiConsumer<Throwable, String> {
      * end}
      * </pre>
      *
-     * @throws IOException
-     * @throws IllegalStateException
-     * @throws NumberFormatException
+     * @throws IOException on IO errors
+     * @throws IllegalStateException on unknown state
+     * @throws NumberFormatException on incorrect number format
      */
     public void parse(Path animation) throws IOException {
         List<Change> changes = Lists.newArrayList();
@@ -264,24 +263,24 @@ public class Animator implements BiConsumer<Throwable, String> {
             checkArgs(type, args, l);
             switch (type) {
                 case SOURCE: // file
-                    input = Paths.get(tokens.get(1).replace("~", StandardSystemProperty.USER_HOME.value()));
+                    input = Paths.get(tokens.get(1).replace("~", Objects.requireNonNull(StandardSystemProperty.USER_HOME.value())));
                     break;
                 case FRAMES: // count
-                    frames = Long.valueOf(tokens.get(1));
+                    frames = Long.parseLong(tokens.get(1));
                     break;
                 case TRANSFORM: // id field start finish
                 case REFLECTION:
                     Change change = new Change();
                     change.type = tokens.get(0);
-                    change.function = Integer.valueOf(tokens.get(1));
+                    change.function = Integer.parseInt(tokens.get(1));
                     String f = tokens.get(2).toLowerCase(Locale.ROOT);
                     if (FIELDS.get(change.type).contains(f)) {
                         change.field = f;
                     } else {
                         out.error("Parse error: Invalid function field %s at line %d", f, l);
                     }
-                    change.start = Double.valueOf(tokens.get(3));
-                    change.end = Double.valueOf(tokens.get(4));
+                    change.start = Double.parseDouble(tokens.get(3));
+                    change.end = Double.parseDouble(tokens.get(4));
                     changes.add(change);
                     break;
                 case CONFIG: // key value
@@ -297,7 +296,7 @@ public class Animator implements BiConsumer<Throwable, String> {
                         out.error("Parse error: Segments cannot be nested at line %d", l);
                     }
                     if (args == 1) {
-                        length = Long.valueOf(tokens.get(1));
+                        length = Long.parseLong(tokens.get(1));
                     } else {
                         length = frames;
                     }
@@ -341,7 +340,7 @@ public class Animator implements BiConsumer<Throwable, String> {
     /**
      * Generate the set of animation frames.
      */
-    public void start() throws Exception {
+    public void start() {
         out.timestamp("Started");
 
         // Update config
@@ -350,7 +349,7 @@ public class Animator implements BiConsumer<Throwable, String> {
         }
 
         // Load the IFS
-        ifs = IFS.load(input.toFile());
+        IFS ifs = IFS.load(input.toFile());
         ifs.setSize(size);
 
         // Initialize iterator
@@ -359,7 +358,7 @@ public class Animator implements BiConsumer<Throwable, String> {
         long total = segments.stream()
                 .map(s -> s.frames)
                 .reduce(Long::sum)
-                .orElse(0l);
+                .orElse(0L);
         out.print("Generating %d frames", total);
 
         // Run the animation segments
@@ -409,7 +408,7 @@ public class Animator implements BiConsumer<Throwable, String> {
                 }
 
                 // Render for required iterations
-                long limit = config.getIterationsLimit() / 1000l;
+                long limit = config.getIterationsLimit() / 1000L;
                 iterator.reset(size);
                 iterator.setTransforms(ifs);
                 iterator.start();

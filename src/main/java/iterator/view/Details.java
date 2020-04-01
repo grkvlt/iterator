@@ -23,9 +23,9 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
-import java.awt.print.PrinterException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import javax.swing.JTextPane;
 import javax.swing.text.html.HTMLEditorKit;
@@ -33,7 +33,6 @@ import javax.swing.text.html.StyleSheet;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import com.google.common.eventbus.Subscribe;
@@ -115,7 +114,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
 
     public void setDetails() {
         StringBuilder html = new StringBuilder("<html>");
-        String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
+        String name = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, Optional.ofNullable(ifs.getName()).orElse(IFS.UNTITLED));
         String words = CharMatcher.javaLetterOrDigit().negate().replaceFrom(name, ' ');
         html.append("<a name=\"top\"></a>")
             .append(String.format("<h1 id=\"title\">IFS %s</h1>", words));
@@ -211,7 +210,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
                             r.getId(),
                             config.getMode().isColour() ? "black" : "white",
                             c.getRed(), c.getGreen(), c.getBlue(),
-                            Integer.toString(r.x), Integer.toString(r.y), one.toString(Math.toDegrees(r.r)));
+                            r.x, r.y, one.toString(Math.toDegrees(r.r)));
                     html.append(reflection)
                         .append("</table>")
                         .append("</td>");
@@ -233,7 +232,7 @@ public class Details extends JTextPane implements Printable, Subscriber {
 
     /** @see java.awt.print.Printable#print(Graphics, PageFormat, int) */
     @Override
-    public int print(Graphics graphics, PageFormat pf, int page) throws PrinterException {
+    public int print(Graphics graphics, PageFormat pf, int page) {
         if (page > 0) return NO_SUCH_PAGE;
 
         context(controller, graphics, g -> {

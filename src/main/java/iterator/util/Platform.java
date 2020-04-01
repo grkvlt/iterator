@@ -17,6 +17,7 @@ package iterator.util;
 
 import java.util.Locale;
 
+import com.google.common.base.CaseFormat;
 import com.google.common.base.Splitter;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
@@ -30,6 +31,10 @@ public enum Platform {
     MAC,
     WINDOWS,
     UNKNOWN;
+
+    public String getName() {
+        return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name());
+    }
 
     public static Platform getPlatform() {
         String os = Strings.nullToEmpty(StandardSystemProperty.OS_NAME.value()).toUpperCase(Locale.ROOT);

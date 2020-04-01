@@ -64,7 +64,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,7 +74,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import com.google.common.eventbus.EventBus;
@@ -105,7 +103,6 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
     private final EventBus bus;
     private final Explorer controller;
-    private final Messages messages;
     private final Config config;
     private final Iterator iterator;
 
@@ -126,7 +123,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
         this.controller = controller;
         this.bus = controller.getEventBus();
-        this.messages = controller.getMessages();
+        Messages messages = controller.getMessages();
         this.config = controller.getConfig();
         this.iterator = controller.getIterator();
 
@@ -134,13 +131,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         timer.setCoalesce(true);
 
         transformMenu = new JPopupMenu();
-        properties = menuItem(messages.getText(MENU_TRANSFORM_PROPERTIES), e -> {
-            Dialog.show(Properties.dialog(controller, selected, ifs), controller);
-        });
+        properties = menuItem(messages.getText(MENU_TRANSFORM_PROPERTIES),
+                e -> Dialog.show(Properties.dialog(controller, selected, ifs), controller));
         transformMenu.add(properties);
-        transformMenu.add(menuItem(messages.getText(MENU_TRANSFORM_MATRIX), e -> {
-            Dialog.show(Matrix.dialog(controller, selected, ifs), controller);
-        }));
+        transformMenu.add(menuItem(messages.getText(MENU_TRANSFORM_MATRIX),
+                e -> Dialog.show(Matrix.dialog(controller, selected, ifs), controller)));
         transformMenu.add(menuItem(messages.getText(MENU_TRANSFORM_DELETE), e -> {
             ifs.getTransforms().remove(selected);
             selected = null;
@@ -185,9 +180,8 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         add(transformMenu);
 
         reflectionMenu = new JPopupMenu();
-        reflectionMenu.add(menuItem(messages.getText(MENU_REFLECTION_PROPERTIES), e -> {
-            Dialog.show(Properties.dialog(controller, reflection, ifs), controller);
-        }));
+        reflectionMenu.add(menuItem(messages.getText(MENU_REFLECTION_PROPERTIES),
+                e -> Dialog.show(Properties.dialog(controller, reflection, ifs), controller)));
         reflectionMenu.add(menuItem(messages.getText(MENU_REFLECTION_DELETE), e -> {
             ifs.getReflections().remove(reflection);
             reflection = null;
@@ -264,7 +258,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
     public List<Transform> getTransforms() {
         List<Transform> transforms = concatenate(ifs.getTransforms(), selected, getAnts());
-        Collections.sort(transforms, IFS.IDENTITY);
+        transforms.sort(IFS.IDENTITY);
         return transforms;
     }
 
@@ -378,7 +372,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                 if (ants != null) {
                     g.setPaint(Color.BLACK);
                     g.setStroke(DOTTED_LINE_2);
-                    g.draw(new Rectangle(ants.x.intValue(), ants.y.intValue(), ants.w.intValue(), ants.h.intValue()));
+                    g.draw(new Rectangle(ants.x, ants.y, ants.w.intValue(), ants.h.intValue()));
                 }
             }
         });
@@ -486,11 +480,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     (r.getId() == -1 ? "--" : String.format("%02d", r.getId())),
                     highlight ? String.format("(%s)", one.toString(Math.toDegrees(r.r))) : "");
             g.setFont(calibri(Font.BOLD, 25));
-            g.drawString(id, (int) (r.x + 10), (int) (r.y + 10));
+            g.drawString(id, r.x + 10, r.y + 10);
 
             // Add the select handle
             g.setStroke(SOLID_LINE_2);
-            Rectangle handle = new Rectangle((int) (r.x - 4), (int) (r.y - 4), 8, 8);
+            Rectangle handle = new Rectangle(r.x - 4, r.y - 4, 8, 8);
             g.fill(handle);
         });
     }
@@ -538,7 +532,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
 
     public Reflection getReflectionAt(Point point) {
         for (Reflection r : ifs.getReflections()) {
-            Shape box = new Rectangle((int) (r.x - 5), (int) (r.y - 5), 10, 10);
+            Shape box = new Rectangle(r.x - 5, r.y - 5, 10, 10);
             if (box.contains(point)) {
                 return r;
             }
@@ -558,7 +552,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         return getCorner(t, point) != null;
     }
 
-    public static enum Corner {
+    public enum Corner {
         NW(Cursor.NW_RESIZE_CURSOR, 0, 0),
         SW(Cursor.SW_RESIZE_CURSOR, 0, 1),
         SE(Cursor.SE_RESIZE_CURSOR, 1, 1),
@@ -567,7 +561,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         private final Cursor cursor;
         private final int x, y;
 
-        private Corner(int cursor, int x, int y) {
+        Corner(int cursor, int x, int y) {
             this.cursor = new Cursor(cursor);
             this.x = x;
             this.y = y;
@@ -602,7 +596,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         Corner c = getCorner(t, point);
 
         List<Corner> we = Arrays.asList(Corner.values());
-        Collections.sort(we, (a, b) -> {
+        we.sort((a, b) -> {
             Point pa = a.getPoint(unit());
             Point pb = b.getPoint(unit());
             t.getTransform().transform(pa, pa);
@@ -612,7 +606,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         boolean west = (we.get(0) == c || we.get(1) == c);
 
         List<Corner> ns = west ? Arrays.asList(we.get(0), we.get(1)) : Arrays.asList(we.get(2), we.get(3));
-        Collections.sort(ns, (a, b) -> {
+        ns.sort((a, b) -> {
             Point pa = a.getPoint(unit());
             Point pb = b.getPoint(unit());
             t.getTransform().transform(pa, pa);
@@ -639,13 +633,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
         Transform clickTransform = getTransformAt(e.getPoint());
         Reflection clickReflection = getReflectionAt(e.getPoint());
 
-        if (!isContextMenu(e) && SwingUtilities.isLeftMouseButton(e)) {
+        if (notContextMenu(e) && SwingUtilities.isLeftMouseButton(e)) {
             if (clickReflection != null) {
                 selected = null;
-                clickTransform = null;
                 if (e.isAltDown()) {
-                    Reflection copy = Reflection.copy(clickReflection);
-                    reflection = copy;
+                    reflection = Reflection.copy(clickReflection);
                 } else {
                     reflection = clickReflection;
                 }
@@ -656,7 +648,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                 ifs.getTransforms().stream()
                         .filter(t -> !t.isMatrix() && isResizeHandle(t, e.getPoint()))
                         .findFirst()
-                        .ifPresent(t -> { resize = t; });
+                        .ifPresent(t -> resize = t);
                 if (resize != null) {
                     corner = getCorner(resize, e.getPoint());
                     if (corner != null) {
@@ -677,8 +669,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                     } else {
                         selected = clickTransform;
                         if (e.isAltDown()) {
-                            Transform copy = Transform.copy(selected);
-                            selected = copy;
+                            selected = Transform.copy(selected);
                         }
                         move = selected;
                         setCursor(new Cursor(Cursor.MOVE_CURSOR));
@@ -704,7 +695,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
     /** @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent) */
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (!isContextMenu(e) && SwingUtilities.isLeftMouseButton(e)) {
+        if (notContextMenu(e) && SwingUtilities.isLeftMouseButton(e)) {
             if (selected == null && start != null && end != null) {
                 int x = Math.min(start.x, end.x);
                 int y = Math.min(start.y, end.y);
@@ -741,14 +732,11 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             } else if (selected != null  && start != null && end != null) {
                 ifs.add(selected);
                 bus.post(ifs);
-            } else if (reflection != null  && start != null && end != null) {
-                ifs.add(reflection);
-                bus.post(ifs);
             }
         }
     }
 
-    public boolean isContextMenu(MouseEvent e) {
+    public boolean notContextMenu(MouseEvent e) {
         if (e.isPopupTrigger()) {
             Transform clickTransform = getTransformAt(e.getPoint());
             Reflection clickReflection = getReflectionAt(e.getPoint());
@@ -763,9 +751,9 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
             } else  {
                 editor.show(e.getComponent(), e.getX(), e.getY());
             }
-            return true;
-        } else {
             return false;
+        } else {
+            return true;
         }
     }
 
@@ -803,107 +791,109 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                         int dy = end.y - start.y;
                         end.y = start.y + (int) Math.copySign(dx, dy);
                     }
-                } else if (selected != null && resize != null) {
-                    double w = resize.w;
-                    double h = resize.h;
-                    int dx = end.x - start.x;
-                    int dy = end.y - start.y;
+                } else {
+                    if (resize != null) {
+                        double w = resize.w;
+                        double h = resize.h;
+                        int dx = end.x - start.x;
+                        int dy = end.y - start.y;
 
-                    Point delta = new Point(dx, dy);
-                    AffineTransform reverse = new AffineTransform();
-                    reverse.rotate(-resize.r);
-                    reverse.shear(-resize.shx, -resize.shy);
-                    reverse.transform(delta, delta);
+                        Point delta = new Point(dx, dy);
+                        AffineTransform reverse = new AffineTransform();
+                        reverse.rotate(-resize.r);
+                        reverse.shear(-resize.shx, -resize.shy);
+                        reverse.transform(delta, delta);
 
-                    if (e.isShiftDown()) {
-                        delta.x = (int) (delta.y * (w / h));
-                    }
-                    Point inverseX = new Point(delta.x, 0);
-                    Point inverseY = new Point(0, delta.y);
-                    try {
-                        reverse.inverseTransform(inverseX, inverseX);
-                        reverse.inverseTransform(inverseY, inverseY);
-                    } catch (NoninvertibleTransformException nte) {
-                        throw new RuntimeException(nte);
-                    }
+                        if (e.isShiftDown()) {
+                            delta.x = (int) (delta.y * (w / h));
+                        }
+                        Point inverseX = new Point(delta.x, 0);
+                        Point inverseY = new Point(0, delta.y);
+                        try {
+                            reverse.inverseTransform(inverseX, inverseX);
+                            reverse.inverseTransform(inverseY, inverseY);
+                        } catch (NoninvertibleTransformException nte) {
+                            throw new RuntimeException(nte);
+                        }
 
-                    int x = resize.x;
-                    int y = resize.y;
+                        int x = resize.x;
+                        int y = resize.y;
 
-                    switch (corner) {
-                        case NW:
-                            x += (inverseX.x + inverseY.x);
-                            y += (inverseX.y + inverseY.y);
-                            w -= delta.x;
-                            h -= delta.y;
-                            break;
-                        case NE:
-                            x += inverseY.x;
-                            y += inverseY.y;
-                            if (e.isShiftDown()) {
+                        switch (corner) {
+                            case NW:
+                                x += (inverseX.x + inverseY.x);
+                                y += (inverseX.y + inverseY.y);
                                 w -= delta.x;
-                            } else {
+                                h -= delta.y;
+                                break;
+                            case NE:
+                                x += inverseY.x;
+                                y += inverseY.y;
+                                if (e.isShiftDown()) {
+                                    w -= delta.x;
+                                } else {
+                                    w += delta.x;
+                                }
+                                h -= delta.y;
+                                break;
+                            case SW:
+                                if (e.isShiftDown()) {
+                                    x -= inverseX.x;
+                                    y -= inverseX.y;
+                                    w += delta.x;
+                                } else {
+                                    x += inverseX.x;
+                                    y += inverseX.y;
+                                    w -= delta.x;
+                                }
+                                h += delta.y;
+                                break;
+                            case SE:
                                 w += delta.x;
-                            }
-                            h -= delta.y;
-                            break;
-                        case SW:
-                            if (e.isShiftDown()) {
-                                x -= inverseX.x;
-                                y -= inverseX.y;
-                                w += delta.x;
-                            } else {
-                                x += inverseX.x;
-                                y += inverseX.y;
-                                w -= delta.x;
-                            }
-                            h += delta.y;
-                            break;
-                        case SE:
-                            w += delta.x;
-                            h += delta.y;
-                            break;
-                    }
+                                h += delta.y;
+                                break;
+                        }
 
-                    int grid = config.getSnapGrid();
-                    w = Math.max(grid, w);
-                    h = Math.max(grid, h);
+                        int grid = config.getSnapGrid();
+                        w = Math.max(grid, w);
+                        h = Math.max(grid, h);
 
-                    selected = Transform.clone(selected);
-                    selected.duplicate(resize);
-                    selected.x = x;
-                    selected.y = y;
-                    selected.w = w;
-                    selected.h = h;
-                } else if (selected != null && move != null) {
-                    int dx = end.x - start.x;
-                    int dy = end.y - start.y;
-
-                    selected = Transform.clone(selected);
-                    if (move.isMatrix()) {
-                        AffineTransform moved = AffineTransform.getTranslateInstance(dx, dy);
-                        moved.concatenate(move.getTransform());
-                        double matrix[] = new double[6];
-                        moved.getMatrix(matrix);
-                        selected.setMatrix(matrix);
-                    } else {
-                        int x = move.x + dx;
-                        int y = move.y + dy;
-
-                        selected.duplicate(move);
+                        selected = Transform.clone(selected);
+                        selected.duplicate(resize);
                         selected.x = x;
                         selected.y = y;
-                    }
-                } else if (selected != null && rotate != null) {
-                    Point origin = new Point();
-                    rotate.getTransform().transform(new Point(0, 0), origin);
-                    int dx = end.x - origin.x;
-                    int dy = end.y - origin.y;
-                    double r = Math.atan2(dy - (selected.shy * dx), dx - (selected.shx * dy));
+                        selected.w = w;
+                        selected.h = h;
+                    } else if (move != null) {
+                        int dx = end.x - start.x;
+                        int dy = end.y - start.y;
 
-                    selected = Transform.clone(selected);
-                    selected.duplicate(rotate);
-                    selected.r = r;
+                        selected = Transform.clone(selected);
+                        if (move.isMatrix()) {
+                            AffineTransform moved = AffineTransform.getTranslateInstance(dx, dy);
+                            moved.concatenate(move.getTransform());
+                            double[] matrix = new double[6];
+                            moved.getMatrix(matrix);
+                            selected.setMatrix(matrix);
+                        } else {
+                            int x = move.x + dx;
+                            int y = move.y + dy;
+
+                            selected.duplicate(move);
+                            selected.x = x;
+                            selected.y = y;
+                        }
+                    } else if (rotate != null) {
+                        Point origin = new Point();
+                        rotate.getTransform().transform(new Point(0, 0), origin);
+                        int dx = end.x - origin.x;
+                        int dy = end.y - origin.y;
+                        double r = Math.atan2(dy - (selected.shy * dx), dx - (selected.shx * dy));
+
+                        selected = Transform.clone(selected);
+                        selected.duplicate(rotate);
+                        selected.r = r;
+                    }
                 }
             }
             repaint();
@@ -952,7 +942,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                         if (selected.isMatrix()) {
                             AffineTransform t = selected.getTransform();
                             t.concatenate(AffineTransform.getQuadrantRotateInstance(e.getKeyCode() == KeyEvent.VK_EQUALS ? 1 : -1));
-                            double matrix[] = new double[6];
+                            double[] matrix = new double[6];
                             t.getMatrix(matrix);
                             selected.setMatrix(matrix);
                         } else {
@@ -983,7 +973,7 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                         if (selected.isMatrix()) {
                             AffineTransform t = AffineTransform.getTranslateInstance(dx, dy);
                             t.concatenate(selected.getTransform());
-                            double matrix[] = new double[6];
+                            double[] matrix = new double[6];
                             t.getMatrix(matrix);
                             selected.setMatrix(matrix);
                         } else {
@@ -994,17 +984,15 @@ public class Editor extends JPanel implements MouseInputListener, KeyListener, A
                         break;
                 }
             } else {
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_ESCAPE:
-                        if (start != null && end != null) {
-                            start = null;
-                            end = null;
-                        }
-                        if (reflection != null) {
-                            reflection = null;
-                        }
-                        repaint();
-                        break;
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    if (start != null && end != null) {
+                        start = null;
+                        end = null;
+                    }
+                    if (reflection != null) {
+                        reflection = null;
+                    }
+                    repaint();
                 }
             }
         }

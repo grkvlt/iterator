@@ -58,7 +58,6 @@ import iterator.view.Details;
 public class Matrix extends JDialog implements Dialog<Matrix>, KeyListener, ComponentListener {
 
     private final Property<Double> c0, c1, c2, c3, c4, c5;
-    private final Messages messages;
     private final Transform transform;
     private final EventBus bus;
 
@@ -73,7 +72,7 @@ public class Matrix extends JDialog implements Dialog<Matrix>, KeyListener, Comp
         super(controller, null, ModalityType.APPLICATION_MODAL);
 
         this.transform = transform;
-        this.messages = controller.getMessages();
+        Messages messages = controller.getMessages();
         this.bus = controller.getEventBus();
 
         addKeyListener(this);
@@ -142,7 +141,7 @@ public class Matrix extends JDialog implements Dialog<Matrix>, KeyListener, Comp
         add(buttons, BorderLayout.SOUTH);
 
         Action success = Utils.action(messages.getText(DIALOG_MATRIX_BUTTON_UPDATE), e -> {
-            double m[] = new double[6];
+            double[] m = new double[6];
 
             m[0] = c0.get(); m[2] = c1.get(); m[4] = c2.get();
             m[1] = c3.get(); m[3] = c4.get(); m[5] = c5.get();
@@ -156,9 +155,7 @@ public class Matrix extends JDialog implements Dialog<Matrix>, KeyListener, Comp
         update.addKeyListener(this);
         buttons.add(update);
 
-        Action failure = Utils.action(messages.getText(DIALOG_MATRIX_BUTTON_CANCEL), e -> {
-            setVisible(false);
-        });
+        Action failure = Utils.action(messages.getText(DIALOG_MATRIX_BUTTON_CANCEL), e -> setVisible(false));
         cancel = new JButton(failure);
         cancel.setFont(CALIBRI_BOLD_ITALIC_14);
         cancel.addKeyListener(this);
@@ -190,8 +187,8 @@ public class Matrix extends JDialog implements Dialog<Matrix>, KeyListener, Comp
     /** @see iterator.util.Dialog#showDialog() */
     @Override
     public void showDialog() {
-        double m[] = new double[6];
-        transform.getTransform().getMatrix(m);;
+        double[] m = new double[6];
+        transform.getTransform().getMatrix(m);
 
         c0.set(m[0]); c1.set(m[2]); c2.set(m[4]);
         c3.set(m[1]); c4.set(m[3]); c5.set(m[5]);
@@ -226,7 +223,7 @@ public class Matrix extends JDialog implements Dialog<Matrix>, KeyListener, Comp
 
     /** @see java.lang.AutoCloseable#close() */
     @Override
-    public void close() throws Exception {
+    public void close() {
         dispose();
     }
 

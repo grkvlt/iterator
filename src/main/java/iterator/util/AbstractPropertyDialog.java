@@ -37,6 +37,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -54,7 +55,6 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.Border;
 
-import com.google.common.base.Optional;
 import com.google.common.eventbus.EventBus;
 
 import iterator.Explorer;
@@ -167,16 +167,17 @@ public abstract class AbstractPropertyDialog<T extends AbstractPropertyDialog<T>
         addComponent(field);
 
         if (optional) {
-            return (P) OptionalProperty.attach(field);
+            return (P) OptionalProperty.<V>attach(field);
         } else {
-            return (P) Property.attach(field);
+            return (P) Property.<V>attach(field);
         }
     }
 
-    protected <V> Property<V> addDropDown(String string, V...items) {
+    @SafeVarargs
+    protected final <V> Property<V> addDropDown(String string, V... items) {
         addLabel(string);
 
-        JComboBox<V> field = new JComboBox<V>(items);
+        JComboBox<V> field = new JComboBox<>(items);
         field.setBorder(BorderFactory.createEmptyBorder());
         field.setEditable(false);
         field.setFont(CALIBRI_ITALIC_14);
@@ -256,12 +257,10 @@ public abstract class AbstractPropertyDialog<T extends AbstractPropertyDialog<T>
                 Pair<Color> gradient = property.get();
                 JColorChooser chooser = new JColorChooser(left ? gradient.getLeft() : gradient.getRight());
                 chooser.setPreviewPanel(new JPanel());
-                Arrays.asList(chooser.getChooserPanels()).stream()
+                Arrays.stream(chooser.getChooserPanels())
                         .filter(c -> c.getDisplayName().toLowerCase(Locale.ROOT).contains("swatch"))
                         .findFirst()
-                        .ifPresent(c -> {
-                            chooser.removeChooserPanel(c);
-                        });;
+                        .ifPresent(chooser::removeChooserPanel);
                 JDialog dialog = JColorChooser.createDialog(field, string, true, chooser, e -> {
                     if (left) {
                         gradient.setLeft(chooser.getColor());
@@ -365,7 +364,7 @@ public abstract class AbstractPropertyDialog<T extends AbstractPropertyDialog<T>
 
     /** @see java.lang.AutoCloseable#close() */
     @Override
-    public void close() throws Exception {
+    public void close() {
         dispose();
     }
 

@@ -29,8 +29,7 @@ import static iterator.util.Messages.DIALOG_PROPERTIES_X;
 import static iterator.util.Messages.DIALOG_PROPERTIES_Y;
 
 import java.text.MessageFormat;
-
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import iterator.Explorer;
 import iterator.model.Function;
@@ -107,7 +106,7 @@ public class Properties extends AbstractPropertyDialog<Properties> {
             shx.set(transform.shx);
             shy.set(transform.shy);
             det.set(transform.getDeterminant());
-            weight.set(Optional.fromNullable(transform.weight));
+            weight.set(Optional.ofNullable(transform.weight));
         }
         if (reflection != null) {
             x.set(reflection.x);

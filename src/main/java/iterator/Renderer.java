@@ -65,7 +65,6 @@ public class Renderer implements BiConsumer<Throwable, String> {
     private Output out = new Output();
     private Path override, picture;
     private String paletteFile;
-    private Iterator iterator;
     private IFS ifs;
     private Dimension size;
 
@@ -142,10 +141,10 @@ public class Renderer implements BiConsumer<Throwable, String> {
         if (config.isIterationsUnlimited()) {
             config.setIterationsUnimited(false);
         }
-        long limit = config.getIterationsLimit() / 1000l;
+        long limit = config.getIterationsLimit() / 1000L;
 
         // Create iterator
-        iterator = new Iterator(this, config, size);
+        Iterator iterator = new Iterator(this, config, size);
         iterator.reset(size);
         iterator.setTransforms(ifs);
 
@@ -180,7 +179,7 @@ public class Renderer implements BiConsumer<Throwable, String> {
     /**
      * Renderer.
      */
-    public static void main(final String...argv) throws Exception {
+    public static void main(final String...argv) {
         String banner = Joiner.on(NEWLINE).join(BANNER);
         System.out.printf(banner, version());
         System.out.println();

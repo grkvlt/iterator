@@ -22,6 +22,8 @@ import java.io.FileWriter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -36,15 +38,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ForwardingList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
 /**
  * IFS Model.
- * <p>
+ *
  * The system consists of {@link Function functions}, which can be either
  * {@link Transform transforms} or {@link Reflection reflections}. The
  * IFS can be used as a {@link List list} of both, or they can be
@@ -61,8 +61,7 @@ public class IFS extends ForwardingList<Function> {
 
     public static final String UNTITLED = "untitled";
 
-    public static final Comparator<Function> IDENTITY = (left, right) ->
-            Integer.compare(left.getId(), right.getId());
+    public static final Comparator<Function> IDENTITY = Comparator.comparingInt(Function::getId);
 
     public static final Comparator<Transform> Z_ORDER = (left, right) ->
             ComparisonChain.start()
@@ -85,14 +84,13 @@ public class IFS extends ForwardingList<Function> {
         try (FileReader reader = new FileReader(file)) {
             JAXBContext context = JAXBContext.newInstance(IFS.class);
             Unmarshaller unmarshaller = context.createUnmarshaller();
-            IFS ifs = (IFS) unmarshaller.unmarshal(reader);
-            return ifs;
+            return (IFS) unmarshaller.unmarshal(reader);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    @XmlAttribute
+    @XmlAttribute(required = true)
     private String name;
     @XmlElementWrapper(name = "Transforms")
     @XmlElement(name = "Transform")
@@ -156,7 +154,7 @@ public class IFS extends ForwardingList<Function> {
 
     @Override
     protected List<Function> delegate() {
-        return FluentIterable.from(Iterables.concat(transforms, reflections)).toList();
+        return Stream.concat(transforms.stream(), reflections.stream()).collect(Collectors.toList());
     }
 
     @Override

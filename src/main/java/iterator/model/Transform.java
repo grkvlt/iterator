@@ -35,32 +35,32 @@ import com.google.common.base.Objects;
 @XmlRootElement(name = "Transform")
 public class Transform implements Function {
 
-    @XmlAttribute
+    @XmlAttribute(required = true)
     private int id;
-    @XmlAttribute
+    @XmlAttribute(required = true)
     private int zIndex;
-    @XmlAttribute(required = false)
+    @XmlAttribute
     public Integer x;
-    @XmlAttribute(required = false)
+    @XmlAttribute
     public Integer y;
-    @XmlAttribute(required = false)
+    @XmlAttribute
     public Double w;
-    @XmlAttribute(required = false)
+    @XmlAttribute
     public Double h;
-    @XmlAttribute(required = false)
+    @XmlAttribute
     public Double r;
-    @XmlAttribute(required = false)
+    @XmlAttribute
     public Double shx = 0d;
-    @XmlAttribute(required = false)
+    @XmlAttribute
     public Double shy = 0d;
-    @XmlAttribute(required = false)
+    @XmlAttribute
     public Double weight;
-    @XmlAttribute
+    @XmlAttribute(required = true)
     private int sw;
-    @XmlAttribute
+    @XmlAttribute(required = true)
     private int sh;
-    @XmlAttribute(required = false)
-    private double matrix[] = null;
+    @XmlAttribute
+    private double[] matrix = null;
 
     private Transform() {
         // JAXB
@@ -176,7 +176,7 @@ public class Transform implements Function {
             transform.translate(-tx, -ty);
             transform.scale(scale.getX(), scale.getY());
             transform.translate(tx * scale.getX(), ty * scale.getY());
-            double scaled[] = new double[6];
+            double[] scaled = new double[6];
             transform.getMatrix(scaled);
             matrix = scaled;
         } else {

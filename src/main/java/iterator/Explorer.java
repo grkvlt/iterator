@@ -81,10 +81,12 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -101,7 +103,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.eventbus.EventBus;
@@ -196,7 +197,6 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
     private Messages messages;
     private EventBus bus;
 
-    private JMenuBar menuBar;
     private Editor editor;
     private Viewer viewer;
     private Details details;
@@ -317,12 +317,10 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
 
         JPanel content = new JPanel(new BorderLayout());
 
-        menuBar = new JMenuBar();
+        JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu(messages.getText(MENU_FILE));
         if (platform != Platform.MAC) {
-            file.add(menuItem(messages.getText(MENU_FILE_ABOUT), e -> {
-                Dialog.show(this::getAbout, this);
-            }));
+            file.add(menuItem(messages.getText(MENU_FILE_ABOUT), e -> Dialog.show(this::getAbout, this)));
         }
         JMenuItem newIfs = menuItem(messages.getText(MENU_FILE_NEW), e -> {
             IFS untitled = new IFS();
@@ -361,7 +359,7 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
         save.setEnabled(false);
         file.add(save);
         saveAs = menuItem(messages.getText(MENU_FILE_SAVE_AS), e -> {
-            File target = new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".xml");
+            File target = new File(Optional.ofNullable(ifs.getName()).orElse(IFS.UNTITLED) + ".xml");
             saveDialog(target, DIALOG_SAVE_IFS, "xml", f -> {
                 String name = f.getName().replace(".xml", "");
                 ifs.setName(name);
@@ -373,7 +371,7 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
         saveAs.setEnabled(false);
         file.add(saveAs);
         export = menuItem(messages.getText(MENU_FILE_EXPORT), e -> {
-            File target = new File(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED) + ".png");
+            File target = new File(Optional.ofNullable(ifs.getName()).orElse(IFS.UNTITLED) + ".png");
             saveDialog(target, DIALOG_SAVE_IMAGE, "png", f -> {
                 out.print("Saving PNG image %s", f.getName());
                 saveImage(viewer.getImage(), f);
@@ -381,52 +379,44 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
         });
         export.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         file.add(export);
-        print = menuItem(messages.getText(MENU_FILE_PRINT), e -> {
-            pauseViewer(() -> {
-                PrinterJob job = PrinterJob.getPrinterJob();
-                job.setJobName(Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED));
-                PageFormat pf = job.defaultPage();
-                if (getWidth() > getHeight()) {
-                    pf.setOrientation(PageFormat.LANDSCAPE);
-                } else {
-                    pf.setOrientation(PageFormat.PORTRAIT);
+        print = menuItem(messages.getText(MENU_FILE_PRINT), e -> pauseViewer(() -> {
+            PrinterJob job = PrinterJob.getPrinterJob();
+            job.setJobName(Optional.ofNullable(ifs.getName()).orElse(IFS.UNTITLED));
+            PageFormat pf = job.defaultPage();
+            if (getWidth() > getHeight()) {
+                pf.setOrientation(PageFormat.LANDSCAPE);
+            } else {
+                pf.setOrientation(PageFormat.PORTRAIT);
+            }
+            switch (current) {
+                case VIEWER:
+                    job.setPrintable(viewer, pf);
+                    break;
+                case DETAILS:
+                    job.setPrintable(details, pf);
+                    break;
+            }
+            boolean ok = job.printDialog();
+            if (ok) {
+                try {
+                    job.print();
+                } catch (PrinterException pe) {
+                    throw new RuntimeException(pe);
                 }
-                switch (current) {
-                    case VIEWER:
-                        job.setPrintable(viewer, pf);
-                        break;
-                    case DETAILS:
-                        job.setPrintable(details, pf);
-                        break;
-                }
-                boolean ok = job.printDialog();
-                if (ok) {
-                    try {
-                        job.print();
-                    } catch (PrinterException pe) {
-                        throw new RuntimeException(pe);
-                    }
-                }
-            });
-        });
+            }
+        }));
         print.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         print.setEnabled(false);
         file.add(print);
         if (platform != Platform.MAC) {
-            file.add(menuItem(messages.getText(MENU_FILE_PREFERENCES), e -> {
-                Dialog.show(this::getPreferences, this);
-            }));
+            file.add(menuItem(messages.getText(MENU_FILE_PREFERENCES), e -> Dialog.show(this::getPreferences, this)));
         }
         file.add(menuItem(messages.getText(MENU_FILE_PREFERENCES_SAVE), e -> {
-            File target = Optional.fromNullable(override).or(Paths.get(Config.PROPERTIES_FILE)).toFile();
-            saveDialog(target, DIALOG_SAVE_PREFERENCES, "properties", f -> {
-                config.save(f);
-            });
+            File target = Optional.ofNullable(override).orElse(Paths.get(Config.PROPERTIES_FILE)).toFile();
+            saveDialog(target, DIALOG_SAVE_PREFERENCES, "properties", f -> config.save(f));
         }));
         if (platform != Platform.MAC) {
-            JMenuItem quit = menuItem(messages.getText(MENU_FILE_QUIT), e -> {
-                System.exit(0);
-            });
+            JMenuItem quit = menuItem(messages.getText(MENU_FILE_QUIT), e -> System.exit(0));
             quit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
             file.add(quit);
         }
@@ -434,19 +424,13 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
 
         JMenu system = new JMenu(messages.getText(MENU_DISPLAY));
         ButtonGroup displayGroup = new ButtonGroup();
-        showEditor = checkBoxItem(messages.getText(MENU_DISPLAY_EDITOR), e -> {
-            show(EDITOR);
-        });
+        showEditor = checkBoxItem(messages.getText(MENU_DISPLAY_EDITOR), e -> show(EDITOR));
         system.add(showEditor);
         displayGroup.add(showEditor);
-        showViewer = checkBoxItem(messages.getText(MENU_DISPLAY_VIEWER), e -> {
-            show(VIEWER);
-        });
+        showViewer = checkBoxItem(messages.getText(MENU_DISPLAY_VIEWER), e -> show(VIEWER));
         system.add(showViewer);
         displayGroup.add(showViewer);
-        showDetails = checkBoxItem(messages.getText(MENU_DISPLAY_DETAILS), e -> {
-            show(DETAILS);
-        });
+        showDetails = checkBoxItem(messages.getText(MENU_DISPLAY_DETAILS), e -> show(DETAILS));
         system.add(showDetails);
         displayGroup.add(showDetails);
         menuBar.add(system);
@@ -627,7 +611,7 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
     @Subscribe
     public void updated(IFS updated) {
         ifs = updated;
-        String name = Optional.fromNullable(ifs.getName()).or(IFS.UNTITLED);
+        String name = Optional.ofNullable(ifs.getName()).orElse(IFS.UNTITLED);
         updateName(name);
         if (config.isDebug()) {
             out.debug("Updated: %s", ifs);
@@ -715,26 +699,34 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
         switch (e.getKeyCode()) {
             case KeyEvent.VK_TAB:
                 if (e.isShiftDown()) {
-                    if (current.equals(EDITOR)) {
-                        showDetails.setSelected(true);
-                        show(DETAILS);
-                    } else if (current.equals(DETAILS)) {
-                        showViewer.setSelected(true);
-                        show(VIEWER);
-                    } else if (current.equals(VIEWER)) {
-                        showEditor.setSelected(true);
-                        show(EDITOR);
+                    switch (current) {
+                        case EDITOR:
+                            showDetails.setSelected(true);
+                            show(DETAILS);
+                            break;
+                        case DETAILS:
+                            showViewer.setSelected(true);
+                            show(VIEWER);
+                            break;
+                        case VIEWER:
+                            showEditor.setSelected(true);
+                            show(EDITOR);
+                            break;
                     }
                 } else {
-                    if (current.equals(EDITOR)) {
-                        showViewer.setSelected(true);
-                        show(VIEWER);
-                    } else if (current.equals(VIEWER)) {
-                        showDetails.setSelected(true);
-                        show(DETAILS);
-                    } else if (current.equals(DETAILS)) {
-                        showEditor.setSelected(true);
-                        show(EDITOR);
+                    switch (current) {
+                        case EDITOR:
+                            showViewer.setSelected(true);
+                            show(VIEWER);
+                            break;
+                        case VIEWER:
+                            showDetails.setSelected(true);
+                            show(DETAILS);
+                            break;
+                        case DETAILS:
+                            showEditor.setSelected(true);
+                            show(EDITOR);
+                            break;
                     }
                 }
                 break;
@@ -777,14 +769,14 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
     }
 
     @Override
-    public void handleException(Throwable exception, SubscriberExceptionContext context) {
+    public void handleException(@Nonnull Throwable exception, SubscriberExceptionContext context) {
         accept(exception, "Subscription error handling " + context.getEvent());
     }
 
     /**
      * Explorer application launch.
      */
-    public static void main(final String...argv) throws Exception {
+    public static void main(final String...argv) {
         // Print text banner
         String banner = Joiner.on(NEWLINE).join(BANNER);
         System.out.printf(banner, version());

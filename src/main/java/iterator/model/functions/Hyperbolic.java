@@ -19,7 +19,7 @@ import java.awt.geom.Point2D;
 
 /**
  * Hyperbolic Co-ordinate Transform.
- * <p>
+ *
  * Variation 10.
  */
 public class Hyperbolic extends CoordinateTransform {

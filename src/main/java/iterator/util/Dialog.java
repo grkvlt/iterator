@@ -19,30 +19,30 @@ import static iterator.Utils.calibri;
 
 import java.awt.Font;
 import java.util.function.BiConsumer;
-
-import com.google.common.base.Supplier;
+import java.util.function.Supplier;
 
 /**
  * Dialog box interface.
  */
 public interface Dialog<T extends Dialog<T>> extends AutoCloseable, Supplier<T> {
 
-    public static final Font CALIBRI_PLAIN_14 = calibri(Font.PLAIN, 14);
-    public static final Font CALIBRI_ITALIC_14 = calibri(Font.ITALIC, 14);
-    public static final Font CALIBRI_BOLD_14 = calibri(Font.BOLD, 14);
-    public static final Font CALIBRI_BOLD_ITALIC_14 = calibri(Font.BOLD | Font.ITALIC, 14);
-    public static final Font CALIBRI_BOLD_16 = calibri(Font.BOLD, 16);
+    Font CALIBRI_PLAIN_14 = calibri(Font.PLAIN, 14);
+    Font CALIBRI_ITALIC_14 = calibri(Font.ITALIC, 14);
+    Font CALIBRI_BOLD_14 = calibri(Font.BOLD, 14);
+    Font CALIBRI_BOLD_ITALIC_14 = calibri(Font.BOLD | Font.ITALIC, 14);
+    Font CALIBRI_BOLD_16 = calibri(Font.BOLD, 16);
 
     /** Method to display the dialog box. */
-    public void showDialog();
+    void showDialog();
 
     @Override
-    public default T get() {
+    default T get() {
         return (T) this;
     }
 
-    public static <T extends Dialog<T>> void show(Supplier<T> supplier, BiConsumer<Throwable, String>...exceptionHandlers) {
-        try (Dialog dialog = supplier.get()) {
+    @SafeVarargs
+    static <T extends Dialog<T>> void show(Supplier<T> supplier, BiConsumer<Throwable, String>...exceptionHandlers) {
+        try (Dialog<T> dialog = supplier.get()) {
             dialog.showDialog();
         } catch (Throwable t) {
             for (BiConsumer<Throwable, String> handler : exceptionHandlers) {

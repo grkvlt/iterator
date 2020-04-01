@@ -19,7 +19,7 @@ import java.awt.geom.Point2D;
 
 /**
  * Fisheye Co-ordinate Transform.
- * <p>
+ *
  * Variation 16.
  */
 public class Fisheye extends CoordinateTransform {

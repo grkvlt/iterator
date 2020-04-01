@@ -19,7 +19,7 @@ import java.awt.geom.Point2D;
 
 /**
  * Spherical Co-ordinate Transform.
- * <p>
+ *
  * Variation 2.
  */
 public class Spherical extends CoordinateTransform {

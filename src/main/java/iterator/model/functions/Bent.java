@@ -19,7 +19,7 @@ import java.awt.geom.Point2D;
 
 /**
  * Bent Co-ordinate Transform.
- * <p>
+ *
  * Variation 14.
  */
 public class Bent extends CoordinateTransform {

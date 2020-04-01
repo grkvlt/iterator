@@ -25,18 +25,18 @@ import java.util.function.UnaryOperator;
  */
 public interface Function extends UnaryOperator<Point2D> {
 
-    public Dimension getSize();
+    Dimension getSize();
 
-    public void setSize(Dimension size);
+    void setSize(Dimension size);
 
-    public AffineTransform getTransform();
+    AffineTransform getTransform();
 
-    public default Point2D apply(Point2D src) {
+    default Point2D apply(Point2D src) {
         return getTransform().transform(src, null);
     }
 
-    public int getId();
+    int getId();
 
-    public void setId(int id);
+    void setId(int id);
 
 }

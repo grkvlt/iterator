@@ -15,12 +15,11 @@
  */
 package iterator.util;
 
-import java.text.ParseException;
+import java.util.Optional;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Range;
 
@@ -66,17 +65,17 @@ public class Formatter {
     }
 
     public static <T> OptionalFormatter<T> optional(BaseFormatter<T> formatter)  {
-        return new OptionalFormatter(formatter);
+        return new OptionalFormatter<>(formatter);
     }
 
     public static <T extends Number & Comparable<T>> BaseFormatter<T> range(Range<T> range, BaseFormatter<T> formatter)  {
-        return new RangeFormatter<T>(range, formatter);
+        return new RangeFormatter<>(range, formatter);
     }
 
     public static abstract class BaseFormatter<T> extends AbstractFormatter {
 
         @Override
-        public Object stringToValue(String text) throws ParseException {
+        public Object stringToValue(String text) {
             if (Strings.isNullOrEmpty(text)) {
                 return getDefault();
             } else {
@@ -89,7 +88,7 @@ public class Formatter {
         }
 
         @Override
-        public String valueToString(Object value) throws ParseException {
+        public String valueToString(Object value) {
             if (value == null) {
                 return "";
             } else {
@@ -128,7 +127,7 @@ public class Formatter {
         }
 
         @Override
-        public Optional<T> getDefault() { return Optional.absent(); }
+        public Optional<T> getDefault() { return Optional.empty(); }
 
     }
 
@@ -248,7 +247,7 @@ public class Formatter {
 
         @Override
         public Integer tryParse(String text) {
-            return Integer.min(max, Integer.max(min, Integer.valueOf(text)));
+            return Integer.min(max, Integer.max(min, Integer.parseInt(text)));
         }
 
         @Override
@@ -279,7 +278,7 @@ public class Formatter {
 
         @Override
         public Long tryParse(String text) {
-            return Long.min(max, Long.max(min, Long.valueOf(text)));
+            return Long.min(max, Long.max(min, Long.parseLong(text)));
         }
 
         @Override
@@ -288,7 +287,7 @@ public class Formatter {
         }
 
         @Override
-        public Long getDefault() { return 0l; }
+        public Long getDefault() { return 0L; }
 
     }
 

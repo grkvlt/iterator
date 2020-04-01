@@ -29,11 +29,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 
 /**
@@ -50,7 +50,7 @@ public class Output implements UncaughtExceptionHandler, BiConsumer<Throwable, S
     }
 
     public void error(String format, Object...varargs) {
-        error(Optional.absent(), format, varargs);
+        error(Optional.empty(), format, varargs);
     }
 
     public void error(Throwable t, String format, Object...varargs) {
@@ -108,7 +108,7 @@ public class Output implements UncaughtExceptionHandler, BiConsumer<Throwable, S
     }
 
     public void blank() {
-        System.out.printf("\r");
+        System.out.print("\r");
     }
 
     public void println() {

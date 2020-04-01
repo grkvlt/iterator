@@ -19,7 +19,7 @@ import java.awt.geom.Point2D;
 
 /**
  * Exponential Co-ordinate Transform.
- * <p>
+ *
  * Variation 18.
  */
 public class Exponential extends CoordinateTransform {
