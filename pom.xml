@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!--
-    Copyright 2012-2017 by Andrew Kennedy.
+    Copyright 2012-2020 by Andrew Kennedy.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -179,7 +179,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-jarsigner-plugin</artifactId>
-                <version>1.2</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>sign-webstart</id>
@@ -191,6 +191,9 @@
                             <archiveDirectory>
                                 ${project.build.directory}/iterator-${project.version}-webstart/lib
                             </archiveDirectory>
+                            <archive>
+                                ${project.build.directory}/iterator-${project.version}-webstart/lib/iterator-${project.version}.jar
+                            </archive>
                             <keystore>${explorer.crypto.keystore}</keystore>
                             <alias>${explorer.crypto.alias}</alias>
                             <storepass>${explorer.crypto.storepass}</storepass>
@@ -290,6 +293,39 @@
                                 <configuration>
                                     <sources>
                                         <source>src/main/osx</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <!-- Microsoft Windows specific code -->
+            <id>windows</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>1.7</version>
+                        <executions>
+                            <execution>
+                                <id>add-source</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/main/windows</source>
                                     </sources>
                                 </configuration>
                             </execution>

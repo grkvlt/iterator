@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 by Andrew Kennedy.
+ * Copyright 2012-2020 by Andrew Kennedy.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,7 +139,7 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
             "",
             "    Iterated Function System Explorer %s",
             "",
-            "    Copyright 2012-2017 by Andrew Donald Kennedy",
+            "    Copyright 2012-2020 by Andrew Donald Kennedy",
             "    Licensed under the Apache Software License, Version 2.0",
             "    Documentation at https://grkvlt.github.io/iterator/",
             "");
@@ -511,18 +511,23 @@ public class Explorer extends JFrame implements KeyListener, SubscriberException
         addKeyListener(viewer);
 
         // Platform specifics
-        // TODO Windows specific UI configuration
-        if (platform == Platform.MAC) {
+        Optional<String> supportClass = Optional.empty();
+        if (platform == Platform.WINDOWS) {
+            supportClass = Optional.of("iterator.WindowsSupport");
+        } else if (platform == Platform.MAC) {
+            supportClass = Optional.of("iterator.AppleSupport");
+        }
+        if (supportClass.isPresent()) {
             try {
-                Class<?> support = Class.forName("iterator.AppleSupport");
+                Class<?> support = Class.forName(supportClass.get());
                 Constructor<?> ctor = support.getConstructor(Explorer.class);
                 Method setup = support.getDeclaredMethod("setup");
-                Object apple = ctor.newInstance(this);
-                setup.invoke(apple);
+                Object supportObject = ctor.newInstance(this);
+                setup.invoke(supportObject);
             } catch (InvocationTargetException ite) {
-                out.error(ite.getCause(), "Error while configuring OSX support: %s", ite.getCause().getMessage());
+                out.error(ite.getCause(), "Error while configuring platform support for %s: %s", platform.getName(), ite.getCause().getMessage());
             } catch (Exception e) {
-                out.error(e, "Unable to configure OSX support");
+                out.error(e, "Unable to configure platform support for %s", platform.getName());
             }
         }
 

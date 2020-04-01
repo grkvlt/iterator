@@ -50,7 +50,6 @@ article and the [HTML documentation](http://grkvlt.github.io/iterator/) - also a
 - Platform support
   - Web application and REST API
   - Android application
-  - Windows platform integration
 - Animator enhancements
   - Document usage
   - JSON configuration file parser
@@ -63,5 +62,5 @@ currently work-in-progress, both performance and UX improvements
 are always on-going.
 
 ---
-Copyright 2012-2017 by [Andrew Donald Kennedy](mailto:andrew.international+iterator@gmail.com) and
+Copyright 2012-2020 by [Andrew Donald Kennedy](mailto:andrew.international+iterator@gmail.com) and
 Licensed under the [Apache Software License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
