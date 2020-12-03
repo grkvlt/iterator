@@ -78,7 +78,7 @@
         -->
 
         <jquery.version>1.7.2</jquery.version>
-        <guava.version>23.0</guava.version>
+        <guava.version>24.1.1-jre</guava.version>
 
         <jquery.js.src>http://ajax.googleapis.com/ajax/libs/jquery/${jquery.version}/jquery.min.js</jquery.js.src>
     </properties>
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
+            <version>[${guava.version},)</version>
         </dependency>
         <dependency>
             <groupId>com.yuvimasory</groupId>
@@ -344,22 +344,22 @@
             </activation>
             <build>
                 <plugins>
-					<plugin>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<groupId>org.apache.maven.plugins</groupId>
-						<version>1.6</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
-		</profile>
-	</profiles>
+        </profile>
+    </profiles>
 </project>
